@@ -1,0 +1,88 @@
+/* =========================================================================
+   login.css — halaman login. Memakai token warna/font dari style.css
+   (var(--paper), var(--ink), var(--c-*), dsb) supaya temanya menyatu
+   dengan halaman lain, termasuk mode terang/gelap.
+   ========================================================================= */
+
+.login-wrap {
+  min-height: calc(100vh - 68px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px clamp(20px, 6vw, 80px) 80px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--paper-raised);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px clamp(24px, 5vw, 40px);
+}
+
+.login-card .kicker {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.login-card h1 {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  margin-bottom: 28px;
+}
+
+.login-card .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.login-card .field label {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.login-card .field input {
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  padding: 11px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-card .field input:focus {
+  border-color: var(--c-itemvendor);
+  box-shadow: 0 0 0 3px rgba(35, 61, 99, 0.12);
+  outline: none;
+}
+
+.login-error {
+  min-height: 1.2em;
+  font-size: 0.85rem;
+  color: var(--c-vendor-spend);
+  margin-bottom: 14px;
+}
+
+#login-submit {
+  width: 100%;
+  padding: 14px 26px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+#login-submit:hover { transform: translateY(-2px); background: var(--c-vendor-spend); }
+#login-submit:disabled { opacity: 0.5; cursor: progress; transform: none; }
+
+@media (max-width: 480px) {
+  .login-card { padding: 32px 22px; }
+}

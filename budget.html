@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="id">
+<head>
+<script src="js/auth-guard.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Budget — MAXIMUM THE ULTIMATE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/budget.css" />
+</head>
+<body>
+  <header class="topnav">
+    <div class="brand">PURCHASING MAXIMUM THE ULTIMATE</div>
+    <div class="topnav-actions"><nav aria-label="Navigasi utama">
+      <a href="input.html">Input Report</a>
+      <a href="events.html">Daftar Event</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="budget.html" class="active">Budget</a>
+      <a href="feasibility.html">Feasibility</a>
+      <a href="vendor.html">Database</a>
+    </nav><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+  </header>
+
+  <main class="budget-page">
+    <div class="eyebrow">BUDGET EVENT</div>
+    <div class="b-title"><label for="b-nama">Budget:</label><input id="b-nama" placeholder="Nama event" autocomplete="off"></div>
+    <div class="b-row"><label class="b-k" for="b-venue">Venue:</label><input class="b-in" id="b-venue" placeholder="Nama venue" autocomplete="off"></div>
+    <div class="b-row"><span class="b-k">Durasi:</span>
+      <label for="b-gr">GR</label><input class="b-in num" id="b-gr" inputmode="numeric" placeholder="0"><span>hari</span>
+      <label for="b-ev" style="margin-left:12px">Event</label><input class="b-in num" id="b-ev" inputmode="numeric" placeholder="0"><span>hari</span>
+    </div>
+    <div class="b-status" id="b-status" role="status">Memuat database…</div>
+
+    <div class="b-bar noprint">
+      <button class="btn btn-primary" id="b-print" type="button">Cetak / Simpan PDF</button>
+      <button class="btn btn-secondary" id="b-reset" type="button">Kosongkan semua isian</button>
+    </div>
+
+    <div class="b-wrap"><table id="b-sheet">
+      <thead><tr><th style="text-align:center">No</th><th>Nama Barang</th><th style="width:230px">Vendor</th><th class="r" style="width:80px">Pcs</th><th class="r" style="width:150px">Harga satuan (Rp)</th><th class="r" style="width:150px">Total (Rp)</th><th class="noprint" style="width:44px"></th></tr></thead>
+    </table></div>
+    <button class="b-addcat noprint" id="b-addcat" type="button">+ Tambah kategori</button>
+
+    <div class="b-grand"><span>Total Keseluruhan</span><strong id="b-grand">Rp 0</strong></div>
+    <div class="b-foot" id="b-foot"></div>
+  </main>
+  <ul class="b-list" id="b-list" role="listbox" hidden></ul>
+
+  <script src="js/theme.js"></script>
+  <script src="js/budget.js"></script>
+</body>
+</html>

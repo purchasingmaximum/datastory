@@ -1,0 +1,22 @@
+name: Keep Apps Script warm
+
+on:
+  schedule:
+    # Setiap 10 menit. Catatan: GitHub kadang menunda jadwal ini beberapa
+    # menit kalau server sedang sibuk — ini normal dan di luar kendali kita.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}   # supaya bisa dites/dipicu manual dari tab Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Code.gs (data EVENTS/ITEMS)
+        run: |
+          curl -sS -o /dev/null -w "Code.gs -> HTTP %{http_code}\n" \
+            "${{ secrets.CODE_API_URL }}"
+
+      - name: Ping Login.gs (login)
+        run: |
+          curl -sS -o /dev/null -w "Login.gs -> HTTP %{http_code}\n" \
+            "${{ secrets.LOGIN_API_URL }}"

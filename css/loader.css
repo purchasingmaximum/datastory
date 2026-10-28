@@ -1,0 +1,95 @@
+/* =========================================================================
+   loader.css — loader "grid fill" MAXIMUM THE ULTIMATE.
+   Satu tampilan loading untuk semua halaman: login, index, input,
+   analytics, dan vendor. Warna mengikuti tema (var --ink / --paper di
+   style.css) sehingga otomatis benar di mode gelap maupun terang.
+   ========================================================================= */
+
+.mx-loader {
+  --mx-duration: 1.8s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.mx-loader .mx-logo {
+  width: 160px;
+  height: 160px;
+}
+
+.mx-loader .mx-circle { fill: var(--ink); }
+
+.mx-loader .mx-sq {
+  fill: var(--paper);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0.4);
+  animation: mx-pop var(--mx-duration) ease forwards infinite;
+}
+
+.mx-loader .mx-sq:nth-of-type(1) { animation-delay: 0s; }
+.mx-loader .mx-sq:nth-of-type(2) { animation-delay: 0.13s; }
+.mx-loader .mx-sq:nth-of-type(3) { animation-delay: 0.26s; }
+.mx-loader .mx-sq:nth-of-type(4) { animation-delay: 0.39s; }
+.mx-loader .mx-sq:nth-of-type(5) { animation-delay: 0.52s; }
+.mx-loader .mx-sq:nth-of-type(6) { animation-delay: 0.65s; }
+.mx-loader .mx-sq:nth-of-type(7) { animation-delay: 0.78s; }
+.mx-loader .mx-sq:nth-of-type(8) { animation-delay: 0.91s; }
+.mx-loader .mx-sq:nth-of-type(9) { animation-delay: 1.04s; }
+
+@keyframes mx-pop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  12%  { opacity: 1; transform: scale(1.08); }
+  20%  { opacity: 1; transform: scale(1); }
+  75%  { opacity: 1; transform: scale(1); }
+  88%  { opacity: 0; transform: scale(0.4); }
+  100% { opacity: 0; transform: scale(0.4); }
+}
+
+.mx-loader .mx-label {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* Loader kecil untuk dipakai di dalam tombol / area sempit ----------------- */
+.mx-loader.mx-sm .mx-logo { width: 72px; height: 72px; }
+.mx-loader.mx-sm .mx-label { font-size: 14px; }
+
+/* Overlay layar penuh ------------------------------------------------------ */
+.mx-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+.mx-overlay.mx-hiding { opacity: 0; pointer-events: none; }
+
+/* Loader inline (mengisi area konten, bukan menutup layar) ------------------ */
+.mx-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 55vh;
+  gap: 15px;
+}
+
+/* pastikan atribut hidden tetap menang atas display:flex di atas */
+.mx-inline[hidden], .mx-loader[hidden] { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-loader .mx-sq { animation: none; opacity: 1; transform: scale(1); }
+}

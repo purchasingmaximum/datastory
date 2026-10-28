@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="id">
+<head>
+<script src="js/auth-guard.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://script.google.com" crossorigin />
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin />
+<link rel="dns-prefetch" href="https://script.google.com" />
+<link rel="dns-prefetch" href="https://script.googleusercontent.com" />
+<title>MAXIMUM THE ULTIMATE — Laporan Event &amp; Analytics</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/loader.css" />
+</head>
+<body>
+  <header class="topnav">
+    <div class="brand">PURCHASING MAXIMUM THE ULTIMATE</div>
+    <div class="topnav-actions"><nav aria-label="Navigasi utama">
+      <a href="input.html">Input Report</a>
+      <a href="events.html">Daftar Event</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="budget.html">Budget</a>
+      <a href="feasibility.html">Feasibility</a>
+      <a href="vendor.html">Database</a>
+    </nav><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+  </header>
+
+  <main class="landing-hero">
+    <p class="kicker">Pencatatan laporan event &amp; analisis data untuk Event Organizer — MAXIMUM THE ULTIMATE</p>
+    <h1>Setiap event menyimpan cerita. <em>Kami membantu Anda membacanya.</em></h1>
+    <div class="landing-actions">
+      <a class="btn btn-primary" href="input.html">Isi laporan event →</a>
+      <a class="btn btn-secondary" href="analytics.html">Lihat analytics</a>
+    </div>
+
+    <div class="landing-glance" id="glance-strip" aria-live="polite">
+      <div class="glance-item"><div class="num" id="glance-events">–</div><div class="label">Event tercatat</div></div>
+      <div class="glance-item"><div class="num" id="glance-vendors">–</div><div class="label">Vendor aktif</div></div>
+      <div class="glance-item"><div class="num" id="glance-items">–</div><div class="label">Jenis barang</div></div>
+    </div>
+  </main>
+
+  <script src="js/loader.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/firebase-data.js"></script>
+  <script>
+    (async function () {
+      MaximumLoader.show("Harap Tunggu");
+      try {
+        const stats = await loadStats();
+        document.getElementById("glance-events").textContent = stats.eventCount;
+        document.getElementById("glance-vendors").textContent = stats.vendorCount;
+        document.getElementById("glance-items").textContent = stats.itemCount;
+      } catch (e) {
+        console.error(e);
+      } finally {
+        MaximumLoader.hide();
+      }
+    })();
+  </script>
+</body>
+</html>
