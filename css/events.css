@@ -1,0 +1,189 @@
+/* =========================================================================
+   events.css — "Daftar Event" page: browse & edit existing reports.
+   Reuses the same design tokens as input.css/style.css so it doesn't read
+   as a bolted-on admin screen.
+   ========================================================================= */
+
+.events-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px clamp(20px, 5vw, 0px) 120px;
+}
+
+.events-page .page-heading {
+  margin-bottom: 32px;
+}
+
+.events-page .page-heading .eyebrow {
+  color: var(--c-vendor-spend);
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.events-page .page-heading h1 {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1.2;
+}
+
+.events-page .page-heading p {
+  color: var(--muted);
+  margin-top: 10px;
+  max-width: 62ch;
+}
+
+.events-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+#events-search {
+  flex: 1;
+  min-width: 220px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  padding: 11px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+#events-search:focus {
+  border-color: var(--c-itemvendor);
+  box-shadow: 0 0 0 3px rgba(35, 61, 99, 0.12);
+  outline: none;
+}
+
+.events-count {
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.events-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+#events-sort {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  max-width: 100%;
+  cursor: pointer;
+}
+#events-sort:focus {
+  border-color: var(--c-itemvendor);
+  box-shadow: 0 0 0 3px rgba(35, 61, 99, 0.12);
+  outline: none;
+}
+
+.events-error {
+  color: var(--c-vendor-spend);
+  font-size: 0.9rem;
+}
+
+.events-empty {
+  color: var(--muted);
+  font-style: italic;
+  padding: 24px 0;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.event-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: var(--paper-raised);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.event-row:hover { border-color: var(--c-itemvendor); }
+
+.event-row-main { min-width: 0; }
+
+.event-row-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.event-row-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+}
+.event-row-meta .dot { margin: 0 6px; }
+.event-row-price { white-space: nowrap; }   /* "Rp 51.500.000" tidak boleh terpotong jadi 2 baris */
+
+.event-row-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.event-row-sub strong { color: var(--ink); font-weight: 600; }
+
+.event-row-actions { flex-shrink: 0; }
+
+.btn-edit-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.btn-edit-event:hover {
+  background: var(--ink);
+  color: var(--paper);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .events-page { padding-top: 32px; padding-bottom: 80px; }
+
+  /* Toolbar: kolom pencarian penuh, di bawahnya urutan + jumlah event */
+  .events-toolbar { gap: 12px; }
+  #events-search { flex: 1 1 100%; min-width: 0; }
+  .events-sort { flex: 1 1 auto; min-width: 0; }
+  #events-sort { flex: 1 1 auto; min-width: 0; text-overflow: ellipsis; }
+  .events-sort-label { display: none; }   /* aria-label sudah menjelaskan fungsi dropdown */
+
+  .event-row { flex-direction: column; align-items: stretch; padding: 16px; }
+  .event-row-actions { display: flex; }
+  .btn-edit-event { width: 100%; justify-content: center; padding: 11px 22px; }
+
+  /* Client · Kota · Harga: tiap bagian satu baris sendiri, tanpa titik yang terdampar */
+  .event-row-meta { display: flex; flex-direction: column; gap: 2px; }
+  .event-row-meta .dot { display: none; }
+
+  .event-row-sub { flex-direction: column; gap: 2px; }
+}

@@ -1,0 +1,30 @@
+/* input-feas.css — Input Report dipadatkan ala Feasibility: kartu rapat, 4 kolom, tombol Submit menempel di bawah. */
+.input-page{max-width:1240px;padding:18px clamp(14px,3vw,28px) 40px}
+.input-page .page-heading{margin-bottom:12px}
+.input-page .page-heading .eyebrow,.input-page .page-heading p{display:none}
+.input-page .page-heading h1{font-size:1.5rem;font-weight:700}
+fieldset.form-section{background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:10px 16px 14px;margin:0 0 12px;min-width:0}
+fieldset.form-section legend{font-size:.95rem;font-weight:700;padding:0 6px;width:auto;border:0;margin:0}
+.field-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 12px}
+@media (max-width:1000px){.field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.field-grid{grid-template-columns:1fr}}
+.field{gap:3px}
+.field label{font-size:.78rem;font-weight:600;color:var(--muted)}
+.field .hint{font-size:.72rem}
+.field .error-msg{min-height:0;font-size:.74rem}
+.field input,.field select,.field textarea{font-size:.9rem;padding:7px 10px;border:1px solid var(--line);border-radius:6px}
+.field select{padding-right:30px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--f-blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--f-blue) 22%,transparent)}
+.field textarea{min-height:0;height:34px;resize:vertical}
+.items-header{margin-bottom:6px}
+.items-count{font-size:.9rem}
+.items-hint{font-size:.76rem;color:var(--muted);margin:0 0 8px}
+.items-table th,.items-table td{padding:4px 6px}
+.items-table th{font-size:.74rem}
+.items-table .item-block .btn-remove-item{padding:4px 10px;font-size:.74rem;border-radius:6px}
+.btn-add-item{padding:8px;border-width:1px;border-radius:8px;font-size:.85rem;color:var(--f-blue);margin-top:8px}
+.btn-add-item:hover{border-color:var(--f-blue);background:color-mix(in srgb,var(--f-blue) 8%,transparent)}
+.no-items-msg{padding:6px 0;font-size:.82rem}
+.submit-row:not(.preview-actions){position:sticky;bottom:0;z-index:5;background:var(--paper);padding:10px 0;margin-top:0;border-top:1px solid var(--line)}
+#submit-report,#preview-submit{padding:9px 24px;border-radius:6px;background:var(--f-blue);color:var(--f-blue-ink);font-size:.92rem;font-weight:600}
+#submit-report:hover{background:var(--f-blue);filter:brightness(1.08);transform:none}

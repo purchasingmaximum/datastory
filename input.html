@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="id">
+<head>
+<script src="js/auth-guard.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://script.google.com" crossorigin />
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin />
+<link rel="dns-prefetch" href="https://script.google.com" />
+<link rel="dns-prefetch" href="https://script.googleusercontent.com" />
+<title>Input Laporan Event — MAXIMUM THE ULTIMATE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/loader.css" />
+<link rel="stylesheet" href="css/input.css" />
+<link rel="stylesheet" href="css/input-feas.css" />
+<link rel="stylesheet" href="css/feas.css" />
+</head>
+<body>
+  <header class="topnav homebar">
+    <a class="home-btn" href="index.html" aria-label="Kembali ke Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
+    <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v6M9 15h6"/></svg>Input Report</div>
+    <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+  </header>
+
+  <main class="input-page">
+    <div class="page-heading">
+      <div class="eyebrow" id="page-eyebrow">LAPORAN EVENT</div>
+      <h1 id="page-title">Catat detail event Anda</h1>
+      <p id="page-desc">Lengkapi informasi event, lokasi, dan barang yang disewa. Timestamp pengisian dicatat otomatis — Anda tidak perlu mengisinya.</p>
+      <a href="events.html" class="back-to-list" id="back-to-list" hidden>← Kembali ke Daftar Event tanpa menyimpan</a>
+    </div>
+
+    <form id="report-form" novalidate>
+      <fieldset class="form-section">
+        <legend>Event Information &amp; Lokasi</legend>
+        <div class="field-grid">
+          <div class="field" data-field="user">
+            <label for="f-user">Nama user / pengisi laporan</label>
+            <input id="f-user" name="user" type="text" autocomplete="name" required />
+            <div class="error-msg" role="alert"></div>
+          </div>
+          <div class="field" data-field="event">
+            <label for="f-event">Nama event</label>
+            <input id="f-event" name="event" type="text" required />
+            <div class="error-msg" role="alert"></div>
+          </div>
+          <div class="field" data-field="client">
+            <label for="f-client">Nama perusahaan / client</label>
+            <input id="f-client" name="client" type="text" required />
+            <div class="error-msg" role="alert"></div>
+          </div>
+          <div class="field" data-field="eventDateStart">
+            <label for="f-date-start">Tanggal mulai event (di luar GR)</label>
+            <input id="f-date-start" name="eventDateStart" type="date" required />
+            <div class="error-msg" role="alert"></div>
+          </div>
+          <div class="field" data-field="eventDateEnd">
+            <label for="f-date-end">Tanggal selesai event (di luar GR)</label>
+            <input id="f-date-end" name="eventDateEnd" type="date" required />
+            <div class="error-msg" role="alert"></div>
+          </div>
+          <div class="field" data-field="eventDays">
+            <label>Jumlah day event</label>
+            <input id="f-days" type="text" readonly tabindex="-1" value="—" />
+            <span class="hint">Dihitung otomatis dari tanggal mulai &amp; selesai di atas.</span>
+          </div>
+          <div class="field" data-field="gr">
+            <label for="f-gr">Jumlah GR (General Rehearsal)</label>
+            <input id="f-gr" name="gr" type="number" min="0" step="1" required />
+            <span class="hint" id="total-days-hint"></span>
+            <div class="error-msg" role="alert"></div>
+          </div>
+                  <div class="field" data-field="city">
+            <label for="f-city">Kota</label>
+            <input id="f-city" name="city" type="text" required />
+            <div class="error-msg" role="alert"></div>
+          </div>
+          <div class="field" data-field="country">
+            <label for="f-country">Negara</label>
+            <input id="f-country" name="country" type="text" value="Indonesia" required />
+            <div class="error-msg" role="alert"></div>
+          </div>
+        </div>
+      </fieldset>
+
+
+      <fieldset class="form-section">
+        <legend>Rental Items</legend>
+        <div class="items-header">
+          <div class="items-count">TOTAL ITEMS: <strong id="items-count">0</strong></div>
+        </div>
+        <p class="items-hint">Ketik nama barang — saran dari dictionary muncul sebagai teks abu-abu (tekan Tab atau → untuk menerima), dan Kategori terisi otomatis. Barang yang belum ada di dictionary tetap bisa diisi dan otomatis ditambahkan ke dictionary saat disubmit. Nama vendor: klik atau ketik untuk mencari. Nominal DP otomatis sama dengan Harga total jika Lunas; isi manual hanya untuk DP.</p>
+        <div class="items-table-wrap">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th class="col-no">No</th>
+                <th class="col-name" title="Ketik nama barang — saran dari dictionary muncul sebagai teks abu-abu. Tekan Tab / → (atau ketuk saran) untuk menerima.">Nama Barang</th>
+                <th class="col-cat">Kategori</th>
+                <th class="col-vendor">Nama vendor</th>
+                <th class="col-status">Status Pembayaran</th>
+                <th class="col-price">Harga total (Rp)</th>
+                <th class="col-dp" title="Otomatis sama dengan Harga Total (Lunas). Isi manual hanya untuk DP.">Nominal DP (Rp)</th>
+                <th class="col-desc">Keterangan <span class="optional">(opsional)</span></th>
+                <th class="col-act"><span class="sr-only">Aksi</span></th>
+              </tr>
+            </thead>
+            <tbody id="items-container"></tbody>
+          </table>
+        </div>
+        <p class="no-items-msg" id="no-items-msg">Belum ada barang ditambahkan.</p>
+        <button type="button" class="btn-add-item" id="add-item">+ Tambah Barang</button>
+      </fieldset>
+
+      <div class="submit-row">
+        <button type="submit" id="submit-report">Submit Report</button>
+        <span class="edit-mode-note" id="edit-mode-note" hidden>Mengedit event yang sudah ada — item lama akan diganti dengan yang ada di form ini.</span>
+        <span class="form-level-error" id="form-level-error" role="alert"></span>
+      </div>
+    </form>
+
+    <!-- Halaman pratinjau: muncul setelah tombol Submit/Update ditekan dan validasi lolos. -->
+    <section class="report-preview" id="report-preview" hidden aria-live="polite">
+      <div id="preview-body"></div>
+      <div class="submit-row preview-actions">
+        <button type="button" id="preview-submit">Submit Report</button>
+        <button type="button" id="preview-edit">← Edit</button>
+        <span class="form-level-error" id="preview-error" role="alert"></span>
+      </div>
+    </section>
+  </main>
+
+  <div class="success-toast" id="success-toast" role="status" aria-live="polite">
+    <div><span class="check">✓</span><strong>REPORT SAVED</strong></div>
+    <p>Your event has been added to the dataset.</p>
+  </div>
+
+  <template id="item-block-template">
+    <tr class="item-block" data-item-block>
+      <td class="col-no" data-label="No"><span data-item-number>1</span></td>
+      <td class="col-name" data-label="Nama Barang">
+        <div class="field" data-field="itemName">
+          <input type="text" data-name="itemName" aria-label="Nama Barang" placeholder="Ketik nama barang…" required />
+          <div class="error-msg" role="alert"></div>
+        </div>
+      </td>
+      <td class="col-cat" data-label="Kategori">
+        <div class="field" data-field="category">
+          <select data-name="category" aria-label="Kategori" required>
+            <option value="">Pilih kategori</option>
+            <option>LED</option>
+            <option>Genset</option>
+            <option>Audio</option>
+            <option>Lighting</option>
+            <option>Documentation</option>
+            <option>Rigging</option>
+            <option>Effect</option>
+            <option>Internet</option>
+            <option>Multimedia</option>
+            <option>TV</option>
+            <option>Streaming</option>
+            <option>Show Management</option>
+            <option>Misty Fan & AC</option>
+            <option>Photobooth</option>
+            <option>Abrocadebra</option>
+            <option>Camera</option>
+            <option>LO</option>
+            <option>LD</option>
+            <option>Performance</option>
+            <option>Lainnya</option>
+          </select>
+          <div class="error-msg" role="alert"></div>
+        </div>
+      </td>
+      <td class="col-vendor" data-label="Nama vendor">
+        <div class="field" data-field="vendor">
+          <input type="text" data-name="vendor" aria-label="Nama vendor" placeholder="Cari / pilih vendor" required />
+          <div class="error-msg" role="alert"></div>
+        </div>
+      </td>
+      <td class="col-status" data-label="Status Pembayaran">
+        <div class="field" data-field="paymentStatus">
+          <select data-name="paymentStatus" aria-label="Status Pembayaran" required>
+            <option value="">Pilih status</option>
+            <option value="Lunas">Lunas</option>
+            <option value="DP">DP</option>
+          </select>
+          <div class="error-msg" role="alert"></div>
+        </div>
+      </td>
+      <td class="col-price" data-label="Harga total (Rp)">
+        <div class="field" data-field="totalPrice">
+          <input type="text" inputmode="numeric" placeholder="cth. 5.000.000" data-name="totalPrice" aria-label="Harga total (Rp)" required />
+          <div class="error-msg" role="alert"></div>
+        </div>
+      </td>
+      <td class="col-dp" data-label="Nominal DP (Rp)">
+        <div class="field" data-field="nominalDP">
+          <input type="text" inputmode="numeric" placeholder="cth. 2.000.000" data-name="nominalDP" aria-label="Nominal DP (Rp)" disabled />
+          <span class="hint" data-sisa-dp-display></span>
+          <div class="error-msg" role="alert"></div>
+        </div>
+      </td>
+      <td class="col-desc" data-label="Keterangan (opsional)">
+        <div class="field" data-field="description">
+          <textarea data-name="description" rows="2" aria-label="Keterangan (opsional)" placeholder="Spesifikasi, ukuran, warna, dll."></textarea>
+          <div class="error-msg" role="alert"></div>
+        </div>
+      </td>
+      <td class="col-act" data-label="">
+        <button type="button" class="btn-remove-item" data-remove-item>Hapus</button>
+      </td>
+    </tr>
+  </template>
+
+  <script src="js/loader.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/firebase-data.js"></script>
+  <script src="js/outbox.js"></script>
+  <script src="js/combobox.js"></script>
+  <script src="js/input.js"></script>
+</body>
+</html>

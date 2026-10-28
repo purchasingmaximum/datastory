@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://script.google.com" crossorigin />
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin />
+<link rel="dns-prefetch" href="https://script.google.com" />
+<link rel="dns-prefetch" href="https://script.googleusercontent.com" />
+<title>Login — MAXIMUM THE ULTIMATE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/loader.css" />
+<link rel="stylesheet" href="css/login.css" />
+</head>
+<body>
+  <header class="topnav">
+    <div class="brand">PURCHASING MAXIMUM THE ULTIMATE</div>
+    <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+  </header>
+
+  <main class="login-wrap">
+    <div class="login-card">
+      <p class="kicker">Masuk untuk melanjutkan</p>
+      <h1>Login</h1>
+
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" name="username" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" name="password" autocomplete="current-password" required />
+        </div>
+        <p class="login-error" id="login-error" role="alert"></p>
+        <button type="submit" id="login-submit">Masuk</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/loader.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/auth-config.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
