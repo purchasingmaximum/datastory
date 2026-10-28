@@ -9,6 +9,7 @@
   const CATS = ['Venue', 'Equipment', 'Creative Content', 'Support Event', 'Production Cost', 'Talent'];
   const COMBO = /^(\d+)\s*day\s*\+\s*(\d+)\s*gr$/;
   const KEY = 'mx_budget_v1';
+  const CUSTOM = '__custom__';   /* nilai opsi "isi vendor sendiri" di dropdown */
   const $ = id => document.getElementById(id);
   const canon = s => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
   const nf = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
@@ -100,7 +101,7 @@
     nama: keep ? keep.nama : '', venue: keep ? keep.venue : '', gr: keep ? keep.gr : 0, ev: keep ? keep.ev : 0,
     cats: CATS.map(n => ({ id: nid(), name: n, custom: false, items: [newItem()] }))
   });
-  const newItem = () => ({ id: nid(), name: '', vendor: '', offerId: null, pcs: 0, price: 0 });
+  const newItem = () => ({ id: nid(), name: '', vendor: '', customVendor: false, offerId: null, pcs: 0, price: 0 });
   let state = fresh(), saveT;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 300); };
   (function load() {
@@ -176,10 +177,18 @@
       e.offers.forEach(o => { const p = priceOf(o); if (!p) return; const c = by.get(o.vendor); if (!c || p.unit < c.p.unit) by.set(o.vendor, { o, p }); });
       [...by.entries()].sort((a, b) => a[1].p.unit - b[1].p.unit).forEach(([v, x]) => sel.append(h('option', { value: v, text: v + ' · Rp ' + fmt(x.p.unit) })));
     } else DB.vendors.forEach(v => sel.append(h('option', { value: v, text: v })));
-    if (it.vendor && ![...sel.options].some(o => o.value === it.vendor)) sel.append(h('option', { value: it.vendor, text: it.vendor }));
-    sel.value = it.vendor || '';
+    sel.append(h('option', { value: CUSTOM, text: '✎ Isi vendor sendiri…' }));
+    if (it.vendor && !it.customVendor && ![...sel.options].some(o => o.value === it.vendor)) sel.append(h('option', { value: it.vendor, text: it.vendor }));
+    sel.value = it.customVendor ? CUSTOM : (it.vendor || '');
+  }
+  /* tampilkan dropdown atau kolom ketik vendor sendiri, sesuai mode baris */
+  function vendorMode(it) {
+    const c = !!it.customVendor;
+    it._sel.hidden = c; it._vin.hidden = !c; it._back.hidden = !c;
+    if (c) it._vin.value = it.vendor || '';
   }
   function applyVendor(it, silent) {
+    if (it.customVendor) { it.offerId = null; return; }
     const e = DB.items.get(canon(it.name));
     const offers = e ? e.offers.filter(o => o.vendor === it.vendor) : [];
     const best = offers.length ? cheapest(offers) : null;
@@ -207,8 +216,10 @@
   }
   function row(cat, it, i) {
     const nm = h('input', { class: 'cell name', value: it.name, placeholder: 'Ketik nama barang…', 'aria-label': 'Nama barang', autocomplete: 'off' });
-    const ghost = h('span', { class: 'ghost', 'aria-hidden': 'true' });
+    const ghost = h('span', { class: 'ghost-t', 'aria-hidden': 'true' });
     it._sel = h('select', { 'aria-label': 'Vendor' });
+    it._vin = h('input', { class: 'v-in', placeholder: 'Ketik nama vendor…', 'aria-label': 'Nama vendor (isi sendiri)', autocomplete: 'off' });
+    it._back = h('button', { class: 'back noprint', type: 'button', title: 'Kembali ke daftar vendor', text: '↩ Daftar' });
     it.rebuild = () => { vendorOptions(it); };
     const pcs = h('input', { class: 'cell', inputmode: 'decimal', placeholder: '0', 'aria-label': 'Pcs' });
     const price = h('input', { class: 'cell', inputmode: 'decimal', placeholder: '0', 'aria-label': 'Harga satuan' });
@@ -220,7 +231,7 @@
       it.name = nm.value;
       const e = DB.items.get(canon(it.name));
       if (it.offerId && !(e && e.offers.some(o => o.id === it.offerId))) { it.offerId = null; it.vendor = ''; }
-      vendorOptions(it); showAc(nm, it, ghost); update(); save();
+      if (!it.customVendor) vendorOptions(it); showAc(nm, it, ghost); update(); save();
     });
     nm.addEventListener('keydown', e => {
       if (list.hidden || acInp !== nm) return;
@@ -232,9 +243,18 @@
     nm.addEventListener('focus', () => { if (nm.value) showAc(nm, it, ghost); });
     nm.addEventListener('blur', () => setTimeout(() => { if (acInp === nm) closeAc(); }, 120));
     vendorOptions(it);
-    it._sel.addEventListener('change', () => { it.vendor = it._sel.value; applyVendor(it); update(); save(); });
+    it._sel.addEventListener('change', () => {
+      if (it._sel.value === CUSTOM) {   /* mode vendor ketik sendiri: harga tetap bisa diisi manual */
+        it.customVendor = true; it.vendor = ''; it.offerId = null; refs[it.id].price.title = '';
+        vendorMode(it); it._vin.focus(); update(); save(); return;
+      }
+      it.vendor = it._sel.value; applyVendor(it); update(); save();
+    });
+    it._vin.addEventListener('input', () => { it.vendor = it._vin.value; save(); });
+    it._back.addEventListener('click', () => { it.customVendor = false; it.vendor = ''; it.offerId = null; vendorOptions(it); vendorMode(it); it._sel.focus(); update(); save(); });
+    vendorMode(it);
     const del = h('td', { class: 'noprint' }, h('button', { class: 'x', type: 'button', title: 'Hapus baris', 'aria-label': 'Hapus baris', text: '×', onclick: () => { cat.items = cat.items.filter(x => x.id !== it.id); if (!cat.items.length) cat.items.push(newItem()); render(); update(); save(); } }));
-    return h('tr', {}, h('td', { class: 'no', text: String(i + 1) }), h('td', {}, h('div', { class: 'ac' }, ghost, nm)), h('td', {}, it._sel), h('td', {}, pcs), h('td', {}, price), tot, del);
+    return h('tr', {}, h('td', { class: 'no', text: String(i + 1) }), h('td', {}, h('div', { class: 'ac' }, ghost, nm)), h('td', {}, h('div', { class: 'vcell' }, it._sel, it._vin, it._back)), h('td', {}, pcs), h('td', {}, price), tot, del);
   }
   /* Total baris: harga dari database sudah mencakup kombinasi hari, jadi tidak dikali hari lagi. Harga manual dikali (hari GR + hari Event). */
   const lineTotal = it => r2((it.pcs || 0) * (it.price || 0) * (it.offerId ? 1 : days()));
@@ -254,7 +274,7 @@
       const o = DB.rows.find(x => x.id === it.offerId); const p = o && priceOf(o);
       if (p) { it.price = p.unit; refs[it.id].show(); refs[it.id].price.title = 'Database: ' + p.label + (p.exact ? '' : ' (kombinasi terdekat)'); }
     }));
-    state.cats.forEach(c => c.items.forEach(it => { if (DB.rows.length) vendorOptions(it); }));
+    state.cats.forEach(c => c.items.forEach(it => { if (DB.rows.length && !it.customVendor) vendorOptions(it); }));
   }
 
   /* ---------- kontrol atas ---------- */
@@ -277,7 +297,7 @@
 
   sync(); render(); update();
   fetchDb().then(res => {
-    indexDb(res); state.cats.forEach(c => c.items.forEach(it => { vendorOptions(it); if (it.offerId) applyVendor(it, true); }));
+    indexDb(res); state.cats.forEach(c => c.items.forEach(it => { if (it.customVendor) return; vendorOptions(it); if (it.offerId) applyVendor(it, true); }));
     refreshPrices(); update();
     $('b-status').textContent = 'Database terhubung: ' + DB.items.size + ' item dari ' + DB.vendors.length + ' vendor.';
   }).catch(err => {

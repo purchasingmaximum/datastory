@@ -17,25 +17,28 @@
   </header>
 
   <main class="budget-page">
-    <div class="b-title"><label for="b-nama">Budget:</label><input id="b-nama" placeholder="Nama event" autocomplete="off"></div>
-    <div class="b-row"><label class="b-k" for="b-venue">Venue:</label><input class="b-in" id="b-venue" placeholder="Nama venue" autocomplete="off"></div>
-    <div class="b-row"><span class="b-k">Durasi:</span>
-      <label for="b-gr">GR</label><input class="b-in num" id="b-gr" inputmode="numeric" placeholder="0"><span>hari</span>
-      <label for="b-ev" style="margin-left:12px">Event</label><input class="b-in num" id="b-ev" inputmode="numeric" placeholder="0"><span>hari</span>
-    </div>
-    <div class="b-status" id="b-status" role="status">Memuat database…</div>
-
-    <div class="b-bar noprint">
-      <button class="btn btn-primary" id="b-print" type="button">Cetak / Simpan PDF</button>
-      <button class="btn btn-secondary" id="b-reset" type="button">Kosongkan semua isian</button>
+    <div class="b-head">
+      <div class="b-top">
+        <div class="b-title"><label for="b-nama">Budget:</label><input id="b-nama" placeholder="Nama event" autocomplete="off"></div>
+        <div class="b-row"><label class="b-k" for="b-venue">Venue:</label><input class="b-in" id="b-venue" placeholder="Nama venue" autocomplete="off"></div>
+        <div class="b-row"><span class="b-k">Durasi:</span>
+          <label for="b-gr">GR</label><input class="b-in num" id="b-gr" inputmode="numeric" placeholder="0"><span class="b-sd">hari</span>
+          <label for="b-ev" style="margin-left:12px">Event</label><input class="b-in num" id="b-ev" inputmode="numeric" placeholder="0"><span class="b-sd">hari</span>
+        </div>
+      </div>
+      <div class="b-actions noprint">
+        <button class="ghost" id="b-reset" type="button">Kosongkan semua isian</button>
+        <button class="primary" id="b-print" type="button">Cetak / Simpan PDF</button>
+        <span class="b-status" id="b-status" role="status">Memuat database…</span>
+      </div>
     </div>
 
     <div class="b-wrap"><table id="b-sheet">
-      <thead><tr><th style="text-align:center">No</th><th>Nama Barang</th><th style="width:230px">Vendor</th><th class="r" style="width:80px">Pcs</th><th class="r" style="width:150px">Harga satuan (Rp)</th><th class="r" style="width:150px">Total (Rp)</th><th class="noprint" style="width:44px"></th></tr></thead>
+      <colgroup><col class="c-no"><col><col class="c-ven"><col class="c-pcs"><col class="c-num"><col class="c-num"><col class="c-act noprint"></colgroup>
+      <thead><tr><th class="c">No</th><th>Nama Barang</th><th>Vendor</th><th class="r">Pcs</th><th class="r">Harga satuan (Rp)</th><th class="r">Total (Rp)</th><th class="noprint"></th></tr></thead>
+      <tfoot><tr class="grand"><td colspan="5">Total Keseluruhan</td><td class="n" id="b-grand">Rp 0</td><td class="noprint"></td></tr></tfoot>
     </table></div>
     <button class="b-addcat noprint" id="b-addcat" type="button">+ Tambah kategori</button>
-
-    <div class="b-grand"><span>Total Keseluruhan</span><strong id="b-grand">Rp 0</strong></div>
     <div class="b-foot" id="b-foot"></div>
   </main>
   <ul class="b-list" id="b-list" role="listbox" hidden></ul>
