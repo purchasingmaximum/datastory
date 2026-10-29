@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("maximum-theme")==="dark"?"dark":"light"}catch(e){}</script>
 <style>
 :root {
   --bg: #eef1f4;
@@ -31,6 +32,18 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+html[data-theme="dark"] {
+  --bg: #0f151b; --surface: #18212b; --ink: #e6ebf0; --muted: #95a3b2;
+  --line: #2b3846; --line-soft: #222d39;
+  --blue: #3f78e0; --blue-ink: #ffffff; --red: #e5584e; --red-ink: #ffffff;
+  --green: #3fb27f; --green-tint: #12291f; --red-tint: #3a1f1d; --cat-bg: #222d39;
+  --focus: #6b9bff;
+  color-scheme: dark;
+}
+html[data-theme="dark"] .fz-home { color: var(--muted); border-color: var(--line); }
+html[data-theme="dark"] .fz-home:hover { color: var(--ink); border-color: var(--muted); }
+html[data-theme="dark"] .top-in[type="date"], html[data-theme="dark"] .field input[type="date"] { color-scheme: dark; }
+html[data-theme="dark"] dialog#projects::backdrop { background: rgba(0, 0, 0, .65); }
 * { box-sizing: border-box; }
 body {
   margin: 0;
@@ -387,6 +400,7 @@ tr.off select { opacity: .4; }
     </div>
     <div class="actions">
       <span class="sync" id="sync" role="status"></span>
+      <button class="ghost" type="button" data-theme-toggle>🌙 Gelap</button>
       <button class="ghost" id="pj-open" type="button">Proyek</button>
       <button class="ghost" id="reset" type="button">Kembalikan ke template</button>
       <button class="primary go-prev" type="button">Next: Preview →</button>
@@ -424,6 +438,7 @@ tr.off select { opacity: .4; }
     <button class="ghost" id="back" type="button">← Kembali ke isian</button>
     <div class="actions">
       <span class="xmsg" id="x-msg" role="status"></span>
+      <button class="ghost" id="xlsx" type="button" hidden>Simpan Excel</button>
       <button class="primary" id="print" type="button">Cetak / Simpan PDF</button>
     </div>
   </div>
@@ -431,6 +446,7 @@ tr.off select { opacity: .4; }
 </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 /* ===== template standar (tidak berubah dari dalam proyek) ===== */
 const TEMPLATE = [
@@ -1199,6 +1215,207 @@ $("print").addEventListener("click", () => {
   try { window.print(); } catch (e) { document.title = old; }
 });
 
+/* ===== ekspor Excel (format template Mahakreasi, sama dengan Feasibility; kolom O = nama vendor) ===== */
+const LOGO_B64 = "";   /* TEMPEL string base64 logo asli Anda di antara tanda kutip ini */
+const XL_EO_PCT = 10, XL_VAT_PCT = 11;   /* Budget tidak punya isian EO Fee/VAT: memakai nilai awal yang sama dengan Feasibility (bisa diubah langsung di sel E pada Excel) */
+function visibleCats() {
+  return state.cats
+    .map(cat => ({ cat, items: cat.items.filter(it => !it.off) }))
+    .filter(v => v.items.length);
+}
+
+function buildWorkbook() {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Cost");
+  const widths = { A: 4.7, B: 5.3, C: 27.7, D: 44.3, E: 8.1, F: 13, G: 13, H: 13, I: 14.8, J: 16.1, K: 18.7, L: 24, M: 16.7, N: 15.8, O: 24 };
+  Object.keys(widths).forEach(k => { ws.getColumn(k).width = widths[k]; });
+
+  const thin = { style: "thin", color: { argb: "FF000000" } };
+  const GRID = { left: thin, right: thin, top: thin, bottom: thin };
+  const F = { name: "Calibri", size: 10 }, FB = { name: "Calibri", size: 10, bold: true };
+  const cc = calc();
+  const eoAll = round2(cc.total * XL_EO_PCT / 100), vatAll = round2((cc.total + eoAll) * XL_VAT_PCT / 100);
+  const allLines = [];
+  state.cats.forEach(c => c.items.forEach(it => { if (it.off) return; ((it.subs || []).length ? it.subs.filter(x => !x.off) : [it]).forEach(o => allLines.push(o)); }));
+  const hasDec = [cc.total, cc.modal, eoAll, vatAll].some(v => !Number.isInteger(v)) || allLines.some(o => [o.jual || 0, lineModal(o)].some(v => !Number.isInteger(v)));
+  const D = hasDec ? ".00" : "";
+  const ACC = '_(* #,##0' + D + '_);_(* \\(#,##0' + D + '\\);_(* "-"??_);_(@_)';
+  const ACC2 = '_-* #,##0' + D + '_-;\\-* #,##0' + D + '_-;_-* "-"_-;_-@_-';
+  const CENTER = { horizontal: "center", vertical: "middle" }, RIGHT = { horizontal: "right" };
+  const solid = argb => ({ type: "pattern", pattern: "solid", fgColor: { argb } });
+  const GREY = "FFCCCCCC";
+  const put = (addr, v, o = {}) => {
+    const c = ws.getCell(addr);
+    if (v !== undefined) c.value = v;
+    c.font = o.font || F;
+    if (o.fmt) c.numFmt = o.fmt;
+    if (o.align) c.alignment = o.align;
+    if (o.border) c.border = o.border;
+    if (o.fill) c.fill = solid(o.fill);
+  };
+  const MAIN = "BCDEFGHIJK".split(""), INTERNAL = ["M", "N", "O"];
+  const grid = (r, internal) => (internal ? MAIN.concat(INTERNAL) : MAIN).forEach(col => put(col + r, undefined, { border: GRID }));
+
+  /* bingkai & header proyek */
+  for (let r = 1; r <= 14; r++) {
+    ws.getCell("B" + r).border = { left: thin, top: r === 1 ? thin : undefined };
+    ws.getCell("K" + r).border = { right: thin, top: r === 1 ? thin : undefined };
+    if (r === 1) "CDEFGHIJ".split("").forEach(col => { ws.getCell(col + r).border = { top: thin }; });
+  }
+  const dfmt = v => {
+    if (!v) return "";
+    const [y, m, d] = v.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  };
+  const p = state.project;
+  const dates = [dfmt(p.mulai), dfmt(p.selesai)].filter(Boolean);
+  const dateText = dates.length === 2 && dates[0] !== dates[1] ? dates[0] + " – " + dates[1] : (dates[0] || "");
+  [["PROJECT", p.nama], ["DATE", dateText], ["VENUE", p.venue]].forEach(([lab, val], i) => {
+    put("C" + (10 + i), lab, { font: FB });
+    put("D" + (10 + i), ": " + (val || ""), { font: FB });
+  });
+  if (LOGO_B64) {
+    const logoId = wb.addImage({ base64: LOGO_B64, extension: "png" });
+    ws.addImage(logoId, { tl: { col: 2, row: 2 }, ext: { width: 383, height: 121 } });   /* mulai tepat di tepi kiri kolom C, baris 3 */
+  }
+
+  /* judul kolom */
+  grid(15, true);
+  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "MODAL"], ["N", "MARGIN"], ["O", "VENDOR"]]
+    .forEach(([col, t]) => put(col + 15, t, { font: FB, align: CENTER, border: GRID }));
+  ["E15:F15", "G15:H15", "I15:J15"].forEach(rg => ws.mergeCells(rg));
+
+  /* kategori & item (item "tidak ada" tidak ditulis) */
+  const mktFee = 0;   /* Budget tidak punya Marketing Fee */
+  let r = 16, sumJual = 0, sumMargin = 0, sumModal = 0;
+  const catRows = [];
+  visibleCats().forEach(({ cat, items }) => {
+    const catR = r;
+    grid(catR, false);
+    ws.mergeCells(`B${catR}:C${catR}`);
+    put("B" + catR, cat.name || "(tanpa nama)", { font: FB, border: GRID });
+    r++;
+    const first = r;
+    let catSum = 0;
+    items.forEach((it, i) => {
+      const hasSub = (it.subs || []).length > 0, subs = (it.subs || []).filter(sb => !sb.off);
+      const n = 2 + subs.length;   /* 1 baris item + 1 baris per sub item + 1 baris kosong pemisah */
+      for (let k = 0; k < n; k++) grid(r + k, true);
+      put("B" + r, i + 1, { fmt: "###0;###0", align: CENTER, border: GRID });
+      put("C" + r, it.name || "(tanpa nama)", { border: GRID });
+      const val = (rr, o, nm) => {
+        const jual = o.jual || 0, modal = lineModal(o);
+        if (nm !== undefined) put("D" + rr, nm, { border: GRID });
+        put("J" + rr, jual, { fmt: ACC, border: GRID });
+        put("M" + rr, modal, { fmt: ACC, border: GRID });
+        put("N" + rr, { formula: `J${rr}-M${rr}`, result: round2(jual - modal) }, { fmt: ACC2, border: GRID });
+        put("O" + rr, (o.vendor && o.vendor !== "-") ? o.vendor : "", { border: GRID });   /* nama vendor: tepat di kanan kolom margin */
+        catSum = round2(catSum + jual); sumMargin = round2(sumMargin + jual - modal); sumModal = round2(sumModal + modal);
+      };
+      if (hasSub) subs.forEach((sb, k) => val(r + 1 + k, sb, sb.name || "(tanpa nama)"));
+      else val(r, it);
+      r += n;
+    });
+    put("K" + catR, { formula: `SUM(J${first}:J${r - 1})`, result: catSum }, { font: FB, fmt: ACC2, align: RIGHT, border: GRID });
+    sumJual = round2(sumJual + catSum);
+    catRows.push(catR);
+  });
+  const bodyEnd = r - 1;
+
+  /* blok total */
+  const costR = r, agencyR = r + 1, beforeR = r + 2, vatR = r + 3, afterR = r + 4;
+  const eoV = round2(sumJual * XL_EO_PCT / 100), before = round2(sumJual + eoV), vatV = round2(before * XL_VAT_PCT / 100);
+  const labels = [[costR, "COST"], [agencyR, "Agency Fee"], [beforeR, "Total Before VAT"], [vatR, "VAT"], [afterR, "TOTAL After VAT"]];
+  labels.forEach(([rr, lab]) => {
+    MAIN.forEach(col => put(col + rr, undefined, { font: FB, border: GRID, fill: rr === beforeR ? GREY : undefined }));
+    ws.mergeCells(`B${rr}:C${rr}`);
+    put("B" + rr, lab, { font: FB, border: GRID, fill: rr === beforeR ? GREY : undefined });
+  });
+  const pf = v => Number.isInteger(v) ? "0%" : "0.0%";
+  put("E" + agencyR, XL_EO_PCT / 100, { font: FB, fmt: pf(XL_EO_PCT), align: CENTER, border: GRID });
+  put("E" + vatR, XL_VAT_PCT / 100, { font: FB, fmt: pf(XL_VAT_PCT), align: CENTER, border: GRID });
+  const kv = (rr, formula, result, fill) => put("K" + rr, { formula, result }, { font: FB, fmt: ACC2, align: RIGHT, border: GRID, fill });
+  kv(costR, `SUM(K16:K${bodyEnd})`, sumJual);
+  kv(agencyR, `ROUND(K${costR}*E${agencyR},2)`, eoV);
+  kv(beforeR, `SUM(K${costR}:K${agencyR})`, before, GREY);
+  kv(vatR, `ROUND(K${beforeR}*E${vatR},2)`, vatV);
+  kv(afterR, `SUM(K${beforeR}:K${vatR})`, round2(before + vatV));
+
+  /* blok internal L:M (tidak ikut area cetak): Modal, Marketing Fee, Total Cost, Tagihan, Margin */
+  const FN = { name: "Calibri", size: 11 }, ACC11 = ACC;
+  const lab = (rr, t) => put("L" + rr, t, { font: FN, align: RIGHT });
+  const num = (rr, v) => put("M" + rr, v, { font: FN, fmt: ACC11 });
+  const b0 = agencyR, modalAll = round2(sumModal), totalCost = round2(modalAll + mktFee), tagihan = before;
+  lab(b0 + 1, "Modal");      num(b0 + 1, { formula: `SUM(M16:M${b0})`, result: modalAll });
+  lab(b0 + 2, "Marketing Fee"); num(b0 + 2, mktFee);
+  lab(b0 + 3, "Total Cost Before VAT"); num(b0 + 3, { formula: `M${b0 + 1}+M${b0 + 2}`, result: totalCost });
+  lab(b0 + 5, "Tagihan Before VAT"); num(b0 + 5, { formula: `K${beforeR}`, result: tagihan });
+  lab(b0 + 6, "Margin");     num(b0 + 6, { formula: `M${b0 + 5}-M${b0 + 3}`, result: round2(tagihan - totalCost) });
+  put("N" + (b0 + 6), { formula: `IF(K${costR}=0,0,M${b0 + 6}/K${costR})`, result: sumJual ? round2(tagihan - totalCost) / sumJual : 0 }, { font: FN, fmt: "0%" });
+
+  /* syarat & ketentuan */
+  const tc = afterR + 2;
+  put("B" + tc, "Term & Conditions :", { font: FB });
+  const terms = [
+    ["1.", "Term Of Payment :"],
+    [null, "DP 50% after budget approval & full payment one week after event"],
+    ["2.", "Costs that have not been listed in the budget above will be charged as additional cost"],
+    ["3.", "Approval budget must be done in H-7 event, and additional cost must be approved before event"],
+    ["4.", "The price listed is the package price, can not be changed or substituted"],
+    ["5.", "Taxes and other fees on events will be charged to client"],
+    ["6.", "Any changes / revisions lead to price changes"],
+    ["7.", "Demand for budget reduction will directly affect the specification of the item"],
+    ["8.", "Budget is an estimate, the price is not fixed and still can change upon request"],
+    ["9.", "The price and availability are correct at the moment it is created"]
+  ];
+  let t = tc + 1;
+  terms.forEach(([n, txt]) => { if (n) put("B" + t, n); put("C" + t, txt); t++; });
+  put("J" + (tc + 2), "Approved", { font: FB, align: CENTER });
+  put("J" + (tc + 9), "PT Maha Kreasi Indonesia", { font: FB, align: CENTER });
+  const endR = t;
+  for (let rr = afterR + 1; rr <= endR; rr++) {
+    const bottom = rr === endR ? thin : undefined;
+    ws.getCell("B" + rr).border = { left: thin, bottom };
+    "CDEFGHIJ".split("").forEach(col => { if (bottom) ws.getCell(col + rr).border = { bottom }; });
+    ws.getCell("K" + rr).border = { right: thin, bottom };
+  }
+
+  for (let rr = 15; rr <= endR; rr++) ws.getRow(rr).height = 15;
+  ws.pageSetup = { orientation: "landscape", paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0, printArea: `B1:K${endR}` };
+  return wb;
+}
+
+let dlCap = null, directMode = false;   /* directMode: dibuka sebagai file HTML biasa (tanpa claude.ai) */
+async function exportExcel() {
+  const btn = $("xlsx"), msg = $("x-msg");
+  if (typeof ExcelJS === "undefined") { msg.textContent = "Pustaka Excel gagal dimuat."; return; }
+  btn.disabled = true; msg.textContent = "";
+  try {
+    const buf = await buildWorkbook().xlsx.writeBuffer();
+    const name = ((state.project.nama || "Budget").replace(/[\\/:*?"<>|]/g, "").trim() || "Budget") + " - Budget.xlsx";
+    if (dlCap) await dlCap.save({ filename: name, data: buf });
+    else {
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+    msg.textContent = (dlCap || directMode) ? "Tersimpan" : "Jika file tidak terunduh, buka file HTML ini langsung di browser (klik dua kali)";
+    setTimeout(() => { msg.textContent = ""; }, (dlCap || directMode) ? 2500 : 9000);
+  } catch (e) {
+    msg.textContent = e && e.code === "declined" ? "" : "Gagal menyimpan (" + ((e && e.code) || "error") + ")";
+  } finally { btn.disabled = false; }
+}
+$("xlsx").addEventListener("click", exportExcel);
+(async () => {
+  try {
+    if (window.claude && window.claude.use) dlCap = await window.claude.use("downloads");
+    else if (!window.claude) directMode = true;
+  } catch (e) {}
+  $("xlsx").hidden = false;   /* selalu tampil; unduhan langsung dicoba bila tidak ada kemampuan downloads */
+})();
+
 /* ===== daftar proyek ===== */
 const dlg = $("projects");
 const pjMsg = t => { $("pj-msg").textContent = t || ""; };
@@ -1310,5 +1527,6 @@ function bootWithTimeout() {
 })();
 </script>
 <script src="js/homebtn.js"></script>
+<script src="js/theme.js"></script>
 </body>
 </html>
