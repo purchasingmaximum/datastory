@@ -15,18 +15,13 @@
 </head>
 <body>
   <header class="topnav homebar">
-    <div class="brand">PURCHASING MAXIMUM THE ULTIMATE</div>
+    <div class="brand">MAXIMUM THE ULTIMATE</div>
     <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
   </header>
 
   <main class="home">
     <h1>Menu utama</h1>
     <p class="sub">Pilih fitur yang ingin dibuka.</p>
-    <div class="glance" id="glance-strip" aria-live="polite">
-      <div class="g"><div class="num" id="glance-events">–</div><div class="label">Event tercatat</div></div>
-      <div class="g"><div class="num" id="glance-vendors">–</div><div class="label">Vendor aktif</div></div>
-      <div class="g"><div class="num" id="glance-items">–</div><div class="label">Jenis barang</div></div>
-    </div>
     <nav class="tiles" aria-label="Fitur">
       <a class="tile" href="input.html" style="--tc:#1f8a70"><span class="tile-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v6M9 15h6"/></svg></span><span class="tile-t">Input Report</span><span class="tile-d">Catat event dan barang sewa, plus Daftar Event (buka, edit, duplikat).</span></a>
       <a class="tile" href="analytics.html" style="--tc:#6b4fa0"><span class="tile-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><rect x="5" y="11" width="3" height="9"/><rect x="10.5" y="5" width="3" height="15"/><rect x="16" y="14" width="3" height="6"/></svg></span><span class="tile-t">Analytics</span><span class="tile-d">Cerita data: vendor, harga, barang, dan pola pengeluaran.</span></a>
@@ -38,22 +33,5 @@
 
   <script src="js/loader.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/firebase-data.js"></script>
-  <script>
-    (async function () {
-      MaximumLoader.show("Harap Tunggu");
-      try {
-        const stats = await loadStats();
-        document.getElementById("glance-events").textContent = stats.eventCount;
-        document.getElementById("glance-vendors").textContent = stats.vendorCount;
-        document.getElementById("glance-items").textContent = stats.itemCount;
-      } catch (e) {
-        console.error(e);
-      } finally {
-        MaximumLoader.hide();
-      }
-    })();
-  </script>
-</body>
+  </body>
 </html>

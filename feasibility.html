@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("maximum-theme")==="dark"?"dark":"light"}catch(e){}</script>
 <style>
 :root {
   --bg: #eef1f4;
@@ -30,6 +31,18 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+html[data-theme="dark"] {
+  --bg: #0f151b; --surface: #18212b; --ink: #e6ebf0; --muted: #95a3b2;
+  --line: #2b3846; --line-soft: #222d39;
+  --blue: #3f78e0; --blue-ink: #ffffff; --red: #e5584e; --red-ink: #ffffff;
+  --green: #3fb27f; --green-tint: #12291f; --red-tint: #3a1f1d; --cat-bg: #222d39;
+  --focus: #6b9bff;
+  color-scheme: dark;
+}
+html[data-theme="dark"] .fz-home { color: var(--muted); border-color: var(--line); }
+html[data-theme="dark"] .fz-home:hover { color: var(--ink); border-color: var(--muted); }
+html[data-theme="dark"] .top-in[type="date"], html[data-theme="dark"] .field input[type="date"] { color-scheme: dark; }
+html[data-theme="dark"] dialog#projects::backdrop { background: rgba(0, 0, 0, .65); }
 * { box-sizing: border-box; }
 body {
   margin: 0;
@@ -353,6 +366,7 @@ body.booting #view-edit { opacity: .55; pointer-events: none; }
     </div>
     <div class="actions">
       <span class="sync" id="sync" role="status"></span>
+      <button class="ghost" type="button" data-theme-toggle>🌙 Gelap</button>
       <button class="ghost" id="pj-open" type="button">Proyek</button>
       <button class="ghost" id="reset" type="button">Kembalikan ke template</button>
       <button class="primary go-prev" type="button">Next: Preview →</button>
@@ -1552,5 +1566,6 @@ function bootWithTimeout() {
 })();
 </script>
 <script src="js/homebtn.js"></script>
+<script src="js/theme.js"></script>
 </body>
 </html>

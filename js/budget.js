@@ -170,7 +170,8 @@
   function vendorOptions(it) {
     const e = DB.items.get(canon(it.name));
     const sel = it._sel; sel.textContent = '';
-    sel.append(h('option', { value: '', text: e ? '— Pilih vendor (' + new Set(e.offers.map(o => o.vendor)).size + ') —' : '— Pilih vendor —' }));
+    sel.append(h('option', { value: '', text: e ? 'Pilih vendor (' + new Set(e.offers.map(o => o.vendor)).size + ')' : 'Pilih vendor' }));
+    sel.append(h('option', { value: '-', text: '-' }));   /* tanpa vendor: tidak disimpan/ditampilkan */
     if (e) {
       const by = new Map();
       e.offers.forEach(o => { const p = priceOf(o); if (!p) return; const c = by.get(o.vendor); if (!c || p.unit < c.p.unit) by.set(o.vendor, { o, p }); });
