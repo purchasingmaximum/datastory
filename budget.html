@@ -145,12 +145,21 @@ aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
 
 /* ---------- sheet ---------- */
 .sheet-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
-table.sheet { width: 100%; min-width: 1060px; border-collapse: collapse; }
+table.sheet { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+.sheet th { white-space: normal; line-height: 1.25; vertical-align: bottom; padding: 10px 6px !important; }
+.sheet .cell { padding: 9px 6px; font-size: 13px; min-width: 0; }
+.sheet .td-mod, .sheet .td-mar { padding: 9px 6px !important; }
+.sheet .td-mar small { margin-left: 4px; }
+.sheet .td-act .x { padding: 6px 3px; }
+.sheet tr.cat td { padding: 9px 6px; }
+.sheet .cell.name, .sheet .cat-in { text-overflow: ellipsis; }
+.sheet .cat-in { width: 100%; max-width: 200px; }
+@media (max-width: 760px) { table.sheet { min-width: 900px; } }
 .sheet th { text-align: right; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); }
 .sheet th:first-child { text-align: left; }
 .sheet td { padding: 0; border-bottom: 1px solid var(--line-soft); }
-.c-num { width: 150px; }
-.c-mar { width: 150px; }
+.c-num { width: 140px; }
+.c-mar { width: 130px; }
 .c-act { width: 112px; }
 tr.cat td { background: var(--cat-bg); font-weight: 600; padding: 9px 12px; border-bottom: 1px solid var(--line); }
 tr.cat td.n { text-align: right; font-weight: 600; }
@@ -339,8 +348,8 @@ body.booting #view-edit { opacity: .55; pointer-events: none; }
 
 /* ---------- khusus Budget ---------- */
 .td-mod { text-align: right; padding: 9px 12px !important; white-space: nowrap; }
-.c-vend { width: 190px; } .c-pcs { width: 84px; }
-.sheet th:nth-child(2) { text-align: left; }
+.c-pcs { width: 84px; }
+.cell.man { text-decoration: underline dotted; text-underline-offset: 3px; }
 .sheet select { width: 100%; font: inherit; color: var(--ink); background: transparent; border: 0; padding: 9px 8px; text-overflow: ellipsis; }
 .sheet select:hover:not(:disabled) { background: color-mix(in srgb, var(--focus) 7%, transparent); }
 .sheet select:focus { outline: 2px solid var(--focus); outline-offset: -2px; background: var(--surface); }
@@ -363,7 +372,10 @@ tr.off select { opacity: .4; }
 .b-grand { position: sticky; bottom: 10px; z-index: 5; margin-top: 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; background: var(--blue); color: var(--blue-ink); border-radius: 10px; padding: 14px 20px; }
 .b-grand strong { font-size: 24px; letter-spacing: -.01em; }
 .b-foot { color: var(--muted); font-size: 12.5px; margin: 10px 0 4px; }
-.ptable th:nth-child(2), .ptable td:nth-child(2) { text-align: left; }
+table.ptable { font-size: 12.5px; }
+.ptable td, .ptable th { padding-left: 8px; padding-right: 8px; }
+.ptable td { white-space: nowrap; }
+.ptable td:first-child { white-space: normal; }
 @media (max-width: 600px) { .b-grand strong { font-size: 20px; } .dur .top-in { flex: 0 0 64px; } }
 </style>
 </head>
@@ -389,13 +401,6 @@ tr.off select { opacity: .4; }
         <label class="top-k req" for="p-venue">Venue:</label>
         <input class="top-in" id="p-venue" placeholder="Nama venue (wajib diisi)" autocomplete="off">
       </div>
-      <div class="top-row">
-        <span class="top-k">Durasi:</span>
-        <div class="dur">
-          <label class="sd" for="p-gr">GR</label><input class="top-in" id="p-gr" inputmode="numeric" placeholder="0"><span class="sd">hari</span>
-          <label class="sd" for="p-ev" style="margin-left:10px">Event</label><input class="top-in" id="p-ev" inputmode="numeric" placeholder="0"><span class="sd">hari</span>
-        </div>
-      </div>
       <p class="req-msg" id="req-msg" role="alert" hidden></p>
     </div>
     <div class="actions">
@@ -411,8 +416,8 @@ tr.off select { opacity: .4; }
   <main>
     <div class="sheet-wrap">
       <table class="sheet" id="sheet">
-        <colgroup><col><col class="c-vend"><col class="c-pcs"><col class="c-num"><col class="c-num"><col class="c-num"><col class="c-mar"><col class="c-act"></colgroup>
-        <thead><tr><th>Item</th><th>Vendor</th><th>Pcs</th><th>Modal satuan</th><th>Modal</th><th>Harga Jual</th><th>Margin</th><th style="text-align:center">Ada</th></tr></thead>
+        <colgroup><col style="width:19%"><col style="width:6%"><col style="width:6%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:9%"></colgroup>
+        <thead><tr><th>Item</th><th>Qty</th><th>Durasi</th><th>Harga Jual Satuan</th><th>Total Harga Jual</th><th>Modal Satuan</th><th>Total Modal</th><th>Margin</th><th style="text-align:center">Ada</th></tr></thead>
       </table>
     </div>
     <button class="add-cat" id="add-cat" type="button">+ Tambah kategori khusus untuk proyek ini</button>
@@ -461,9 +466,9 @@ const STORE_KEY = "budget-event-v1";
 let uid = 0;
 const nid = () => "i" + (++uid);
 
-const newItem = c => ({ id: nid(), name: "", vendor: "", offerId: null, pcs: 0, price: 0, jual: 0, off: false, custom: !!c, subs: [] });
+const newItem = c => ({ id: nid(), name: "", pcs: 0, dur: 1, hjs: 0, price: 0, jual: 0, jm: false, off: false, custom: !!c, subs: [] });
 function freshState() {
-  return { project: { nama: "", venue: "", mulai: "", selesai: "", gr: 0, ev: 0 },
+  return { project: { nama: "", venue: "", mulai: "", selesai: "" },
     cats: TEMPLATE.map(([name, items]) => ({ id: nid(), name, custom: false, items: items.map(([n]) => Object.assign(newItem(), { name: n })) })) };
 }
 let state = freshState();
@@ -785,7 +790,7 @@ function bindNum(inp, getVal, setVal, fxo, fxk) {
    sedang terpilih (baru masuk sel) atau kursor SUDAH berada di ujung angka. Selain itu kursor
    bergerak di dalam angka seperti biasa, jadi nilai masih bisa disunting digit per digit. */
 function moveCell(inp, dr, dc) {
-  const cols = ["name", "pcs", "price", "jual"];
+  const cols = ["name", "pcs", "dur", "hjs", "jual", "price"];
   const ok = (tr, col) => { const a = tr.querySelector('input[data-col="' + col + '"]'); return a && !a.disabled && !a.readOnly ? a : null; };
   const rows = [...document.querySelectorAll("#sheet tbody tr")].filter(tr => cols.some(c => ok(tr, c)));
   const ri = rows.indexOf(inp.closest("tr")), ci = cols.indexOf(inp.dataset.col);
@@ -819,7 +824,6 @@ const SS = { id: '1X03xTnUsCz-QOWNeIXfTKhdMO1eaVDNmqBuIClHnAWk', key: 'AIzaSyAGQ
 const COMBO = /^(\d+)\s*day\s*\+\s*(\d+)\s*gr$/;
 const canon = s => String(s || "").trim().replace(/\s+/g, " ").toLowerCase();
 const r2 = round2;
-const days = (st = state) => Math.max((st.project.gr || 0) + (st.project.ev || 0), 1);
 /* ---------- database (Google Sheets) ---------- */
   let DB = { rows: [], combos: {}, items: new Map(), vendors: [] };
   async function fetchDb() {
@@ -874,21 +878,6 @@ const days = (st = state) => Math.max((st.project.gr || 0) + (st.project.ev || 0
     });
     DB.vendors = [...vs].sort((a, b) => a.localeCompare(b));
   }
-  /* harga satuan untuk kombinasi hari saat ini (persis, atau terdekat bila tidak ada) */
-  function priceOf(o) {
-    const e = state.project.ev || 0, g = state.project.gr || 0, keys = Object.keys(o.combos);
-    if (!keys.length) return null;
-    let k = e + '_' + g, exact = true;
-    if (o.combos[k] === undefined) {
-      exact = false; let best = null, bd = Infinity;
-      keys.forEach(c => { const m = DB.combos[c]; if (!m) return; const d = Math.abs(m.e - e) * 1000 + Math.abs(m.g - g); if (d < bd || (d === bd && o.combos[c] < o.combos[best])) { bd = d; best = c; } });
-      k = best;
-    }
-    const m = DB.combos[k];
-    return { unit: r2(o.combos[k] / o.qty), exact, label: m ? m.e + ' Hari Event' + (m.g ? ' + ' + m.g + ' Hari GR' : ' (Tanpa GR)') : '' };
-  }
-  const cheapest = list => list.reduce((b, o) => { const p = priceOf(o); return p && (!b || p.unit < b.p.unit) ? { o, p } : b; }, null);
-
   
 const refs = { items: {}, cats: {}, catInp: {} };
 /* ---------- autocomplete nama barang (ghost + daftar) ---------- */
@@ -912,8 +901,7 @@ const refs = { items: {}, cats: {}, catInp: {} };
     if (!acItems.length) { list.hidden = true; return; }
     list.textContent = '';
     acItems.forEach((e, i) => {
-      const n = new Set(e.offers.map(o => o.vendor)).size;
-      const li = h('li', { class: i === acIdx ? 'on' : '', role: 'option' }, h('span', { text: e.name }), h('small', { text: (e.kat ? e.kat + ' · ' : '') + n + ' vendor' }));
+      const li = h('li', { class: i === acIdx ? 'on' : '', role: 'option' }, h('span', { text: e.name }), h('small', { text: e.kat || '' }));
       li.addEventListener('mousedown', ev => { ev.preventDefault(); pick(e.name); });
       list.append(li);
     });
@@ -921,48 +909,9 @@ const refs = { items: {}, cats: {}, catInp: {} };
     list.style.left = r.left + 'px'; list.style.top = (r.bottom + 2) + 'px'; list.style.minWidth = Math.max(r.width, 320) + 'px';
     list.hidden = false;
   }
-  function pick(name) {
-    acInp.value = name; acRow.name = name;
-    const e = DB.items.get(canon(name));
-    if (acRow.offerId && !(e && e.offers.some(o => o.id === acRow.offerId))) { acRow.offerId = null; acRow.vendor = ''; }
-    vendorOptions(acRow); autoVendor(acRow); closeAc(); update(); save();
-  }
+  function pick(name) { acInp.value = name; acRow.name = name; closeAc(); update(); save(); }
   function markAc() { [...list.children].forEach((li, i) => li.classList.toggle('on', i === acIdx)); }
 
-    function vendorOptions(it) {
-    const e = DB.items.get(canon(it.name));
-    const sel = refs.items[it.id].sel; sel.textContent = '';
-    sel.append(h('option', { value: '', text: e ? 'Pilih vendor (' + new Set(e.offers.map(o => o.vendor)).size + ')' : 'Pilih vendor' }));
-    sel.append(h('option', { value: '-', text: '-' }));   /* tanpa vendor: tidak disimpan/ditampilkan */
-    if (e) {
-      const by = new Map();
-      e.offers.forEach(o => { const p = priceOf(o); if (!p) return; const c = by.get(o.vendor); if (!c || p.unit < c.p.unit) by.set(o.vendor, { o, p }); });
-      [...by.entries()].sort((a, b) => a[1].p.unit - b[1].p.unit).forEach(([v, x]) => sel.append(h('option', { value: v, text: v + ' · Rp ' + fmt(x.p.unit) })));
-    } else DB.vendors.forEach(v => sel.append(h('option', { value: v, text: v })));
-    if (it.vendor && ![...sel.options].some(o => o.value === it.vendor)) sel.append(h('option', { value: it.vendor, text: it.vendor }));
-    sel.value = it.vendor || '';
-  }
-
-function applyVendor(it, silent) {
-  const r = refs.items[it.id], e = DB.items.get(canon(it.name));
-  const offers = e ? e.offers.filter(o => o.vendor === it.vendor) : [];
-  const best = offers.length ? cheapest(offers) : null;
-  if (best) {
-    it.offerId = best.o.id; it.price = best.p.unit; if (!it.pcs && !silent) it.pcs = 1;
-    if (r) { r.price.value = fmt(it.price); r.pcs.value = it.pcs ? fmt(it.pcs) : ""; r.price.title = "Database: " + best.p.label + (best.p.exact ? "" : " (kombinasi terdekat)"); }
-  } else { it.offerId = null; if (r) r.price.title = ""; }
-}
-function autoVendor(it) {   /* pilih item dari database: vendor termurah terisi otomatis (bisa diganti) */
-  const e = DB.items.get(canon(it.name)), b = e && cheapest(e.offers);
-  if (!it.vendor && b) { it.vendor = b.o.vendor; vendorOptions(it); applyVendor(it); }
-}
-function refreshPrices() {   /* hari berubah / database selesai dimuat */
-  state.cats.forEach(c => c.items.forEach(it => [it].concat(it.subs || []).forEach(x => {
-    const r = refs.items[x.id];
-    if (x.offerId) { const o = DB.rows.find(y => y.id === x.offerId), p = o && priceOf(o); if (p) { x.price = p.unit; if (r) { r.price.value = fmt(x.price); r.price.title = "Database: " + p.label + (p.exact ? "" : " (kombinasi terdekat)"); } } }
-    if (r && DB.rows.length) vendorOptions(x);
-  })));
-}
 window.addEventListener("scroll", closeAc, true);
 
 /* ===== render struktur tabel ===== */
@@ -982,27 +931,38 @@ function render() {
     const actCell = h("td", { class: "td-act" });
     if (cat.custom) actCell.append(h("button", { class: "x", type: "button", title: "Hapus kategori", "aria-label": "Hapus kategori", text: "×",
       onclick: () => { state.cats = state.cats.filter(c => c.id !== cat.id); render(); update(); save(); } }));
-    tb.append(h("tr", { class: "cat" }, h("td", {}, nameCell), h("td", { colspan: "3" }), modalT, jualT, marT, actCell));
+    tb.append(h("tr", { class: "cat" }, h("td", {}, nameCell), h("td", { colspan: "3" }), jualT, h("td"), modalT, marT, actCell));
     refs.cats[cat.id] = { modalT, jualT, marT };
     cat.items.forEach(it => { tb.append(lineRow(cat, it)); (it.subs || []).forEach(sb => tb.append(lineRow(cat, sb, it))); });
-    tb.append(h("tr", { class: "addrow" }, h("td", { colspan: "8" }, h("button", { class: "add", type: "button", text: "+ Tambah item",
+    tb.append(h("tr", { class: "addrow" }, h("td", { colspan: "9" }, h("button", { class: "add", type: "button", text: "+ Tambah item",
       onclick: () => { const it = newItem(true); cat.items.push(it); render(); update(); save(); const r = refs.items[it.id]; if (r) r.nameInp.focus(); } }))));
     table.append(tb);
   });
 }
 
+/* Durasi per baris. Data lama (sebelum ada kolom Durasi): modal database = 1, modal ketikan manual = jumlah hari proyek lama. */
+const days = (st = state) => Math.max(((st.project && st.project.gr) || 0) + ((st.project && st.project.ev) || 0), 1);
+const durOf = (it, st = state) => it.dur !== undefined ? it.dur : (it.offerId ? 1 : days(st));
+const isMan = it => it.jm === undefined ? true : !!it.jm;   /* true = Total Harga Jual diisi manual */
+/* Total Harga Jual = Qty x Durasi x Harga Jual Satuan, kecuali diisi manual. Total Modal = Qty x Durasi x Modal Satuan. */
+const jualOf = (it, st = state) => isMan(it) ? round2(it.jual || 0) : round2((it.pcs || 0) * durOf(it, st) * (it.hjs || 0));
+const lineModal = (it, st = state) => round2((it.pcs || 0) * durOf(it, st) * (it.price || 0));
+
 function lineRow(cat, it, parent) {
   const sub = !!parent, fixed = !sub && !it.custom;
+  if (it.dur === undefined) it.dur = durOf(it);
   const nm = h("input", { class: "cell name", value: it.name, "aria-label": "Nama item", placeholder: sub ? "Sub item" : "Nama item", autocomplete: "off", "data-col": "name" });
   const ghost = h("span", { class: "acg", "aria-hidden": "true" });
-  const sel = h("select", { "aria-label": "Vendor" });
-  const pcs = h("input", { class: "cell", inputmode: "decimal", placeholder: "0", "aria-label": "Pcs", "data-col": "pcs" });
-  const price = h("input", { class: "cell", inputmode: "decimal", placeholder: "0", "aria-label": "Harga satuan", "data-col": "price" });
-  bindNum(pcs, () => it.pcs, v => it.pcs = v, it, "pcs");
-  bindNum(price, () => it.price, v => { it.price = v; it.offerId = null; setTimeout(() => { price.title = (it.fx && it.fx.price) || ""; }, 0); }, it, "price");
-  const jual = h("input", { class: "cell", inputmode: "decimal", placeholder: "0", "aria-label": "Harga jual", "data-col": "jual" });
-  bindNum(jual, () => it.jual || 0, v => it.jual = v, it, "jual");
-  [pcs, price, jual].forEach(inp => inp.addEventListener("keydown", gridNav));
+  const num = (label, col, ph) => h("input", { class: "cell", inputmode: "decimal", placeholder: ph || "0", "aria-label": label, "data-col": col });
+  const pcs = num("Qty", "pcs"), dur = num("Durasi", "dur", "1"), hjs = num("Harga jual satuan", "hjs"), jual = num("Total harga jual", "jual"), price = num("Modal satuan", "price");
+  /* mengubah Qty / Durasi / Harga Jual Satuan mengembalikan Total Harga Jual ke hitungan otomatis (bila Harga Jual Satuan sudah ada) */
+  const auto = () => { if ((it.hjs || 0) > 0) it.jm = false; };
+  bindNum(pcs, () => it.pcs, v => { it.pcs = v; auto(); }, it, "pcs");
+  bindNum(dur, () => it.dur, v => { it.dur = v; auto(); }, it, "dur");
+  bindNum(hjs, () => it.hjs || 0, v => { it.hjs = v; if (v > 0) it.jm = false; }, it, "hjs");
+  bindNum(jual, () => jualOf(it), v => { it.jual = v; it.jm = v > 0; }, it, "jual");   /* mengetik di sini = total diisi manual; dikosongkan = kembali otomatis */
+  bindNum(price, () => it.price || 0, v => { it.price = v; }, it, "price");
+  [pcs, dur, hjs, jual, price].forEach(inp => inp.addEventListener("keydown", gridNav));
   const mod = h("td", { class: "td-mod" }), mar = h("td", { class: "td-mar" });
   const ada = h("input", { type: "checkbox", "aria-label": "Item ada" });
   ada.checked = !it.off;
@@ -1010,21 +970,16 @@ function lineRow(cat, it, parent) {
   const act = h("td", { class: "td-act" }, ada);
   if (!sub) act.append(h("button", { class: "x add-sub", type: "button", title: "Tambah sub item", "aria-label": "Tambah sub item", text: "+",
     onclick: () => {
-      if (!(it.subs && it.subs.length)) { it.pcs = 0; it.price = 0; it.jual = 0; it.vendor = ""; it.offerId = null; }
+      if (!(it.subs && it.subs.length)) { it.pcs = 0; it.dur = 1; it.hjs = 0; it.price = 0; it.jual = 0; it.jm = false; }
       const sb = newItem(); (it.subs = it.subs || []).push(sb); render(); update(); save();
       const r = refs.items[sb.id]; if (r) r.nameInp.focus();
     } }));
   if (sub || it.custom) act.append(h("button", { class: "x", type: "button", title: "Hapus", "aria-label": "Hapus", text: "×",
     onclick: () => { if (sub) parent.subs = parent.subs.filter(x => x.id !== it.id); else cat.items = cat.items.filter(x => x.id !== it.id); render(); update(); save(); } }));
-  const r = refs.items[it.id] = { tr: null, mod, mar, jual, pcs, price, sel, ada, nameInp: nm, sub };
+  const r = refs.items[it.id] = { tr: null, mod, mar, jual, pcs, dur, hjs, price, ada, nameInp: nm, sub };
   if (fixed) { nm.readOnly = true; nm.tabIndex = -1; }
   else {
-    nm.addEventListener("input", () => {
-      it.name = nm.value;
-      const e = DB.items.get(canon(it.name));
-      if (it.offerId && !(e && e.offers.some(o => o.id === it.offerId))) { it.offerId = null; it.vendor = ""; }
-      vendorOptions(it); showAc(nm, it, ghost); update(); save();
-    });
+    nm.addEventListener("input", () => { it.name = nm.value; showAc(nm, it, ghost); update(); save(); });
     nm.addEventListener("keydown", e => {
       if (!list.hidden && acInp === nm) {
         if (e.key === "ArrowDown") { e.preventDefault(); acIdx = (acIdx + 1) % acItems.length; markAc(); return; }
@@ -1039,14 +994,10 @@ function lineRow(cat, it, parent) {
     nm.addEventListener("focus", () => { if (nm.value) showAc(nm, it, ghost); });
     nm.addEventListener("blur", () => setTimeout(() => { if (acInp === nm) closeAc(); }, 120));
   }
-  vendorOptions(it);
-  sel.addEventListener("change", () => { it.vendor = sel.value; applyVendor(it); update(); save(); });
-  r.tr = h("tr", sub ? { class: "subrow" } : {}, h("td", { class: "td-name" }, h("div", { class: "ac" }, ghost, nm)), h("td", {}, sel), h("td", {}, pcs), h("td", {}, price), mod, h("td", {}, jual), mar, act);
+  r.tr = h("tr", sub ? { class: "subrow" } : {}, h("td", { class: "td-name" }, h("div", { class: "ac" }, ghost, nm)), h("td", {}, pcs), h("td", {}, dur), h("td", {}, hjs), h("td", {}, jual), h("td", {}, price), mod, mar, act);
   return r.tr;
 }
 
-/* Modal dari database sudah mencakup kombinasi hari, jadi tidak dikali hari lagi; modal ketikan manual dikali (hari GR + hari Event). Harga Jual diisi manual (total baris). */
-const lineModal = (it, st = state) => round2((it.pcs || 0) * (it.price || 0) * (it.offerId ? 1 : days(st)));
 const sgn = n => { n = round2(n); return (n > 0 ? "+" : n < 0 ? "−" : "") + fmt(Math.abs(n)); };
 function marText(td, j, m, dead) {
   td.textContent = "";
@@ -1056,10 +1007,13 @@ function marText(td, j, m, dead) {
 }
 const rowCls = (j, m, dead) => dead ? "off" : (!j && !m) ? "empty" : j - m > 0 ? "profit" : j - m < 0 ? "loss" : "even";
 function paint(r, it, dead) {
-  const m = lineModal(it), j = it.jual || 0;
+  const m = lineModal(it), j = jualOf(it);
   r.tr.className = rowCls(j, m, dead) + (r.sub ? " subrow" : "");
-  r.pcs.disabled = r.price.disabled = r.sel.disabled = r.jual.disabled = dead;
+  r.pcs.disabled = r.dur.disabled = r.hjs.disabled = r.price.disabled = r.jual.disabled = dead;
   r.mod.textContent = dead || !m ? "–" : fmt(m);
+  if (document.activeElement !== r.jual) r.jual.value = j ? fmt(j) : "";   /* total otomatis ikut berubah saat Qty / Durasi / harga diubah */
+  r.jual.classList.toggle("man", isMan(it) && j > 0);
+  if (!(it.fx && it.fx.jual)) r.jual.title = isMan(it) && j > 0 ? "Total diisi manual" : "Qty × Durasi × Harga Jual Satuan";
   marText(r.mar, j, m, dead);
 }
 function calc(st = state) {
@@ -1067,7 +1021,7 @@ function calc(st = state) {
   st.cats.forEach(c => c.items.forEach(it => {
     if (it.off) return;
     const rows = (it.subs || []).length ? it.subs.filter(x => !x.off) : [it];
-    rows.forEach(o => { total = round2(total + (o.jual || 0)); modal = round2(modal + lineModal(o, st)); });
+    rows.forEach(o => { total = round2(total + jualOf(o, st)); modal = round2(modal + lineModal(o, st)); });
   }));
   return { total, modal, ok: true };
 }
@@ -1080,13 +1034,14 @@ function update() {
       const subs = it.subs || [];
       if (subs.length) {
         let ij = 0, im = 0;
-        subs.forEach(sb => { const sr = refs.items[sb.id], dead = it.off || sb.off; if (sr) paint(sr, sb, dead); if (!dead) { ij = round2(ij + (sb.jual || 0)); im = round2(im + lineModal(sb)); } });
+        subs.forEach(sb => { const sr = refs.items[sb.id], dead = it.off || sb.off; if (sr) paint(sr, sb, dead); if (!dead) { ij = round2(ij + jualOf(sb)); im = round2(im + lineModal(sb)); } });
         r.tr.className = rowCls(ij, im, it.off) + " parent";
-        r.pcs.disabled = r.price.disabled = r.sel.disabled = r.jual.disabled = true;
-        r.pcs.value = r.price.value = r.jual.value = ""; r.sel.value = "";
+        r.pcs.disabled = r.dur.disabled = r.hjs.disabled = r.price.disabled = r.jual.disabled = true;
+        r.pcs.value = r.dur.value = r.hjs.value = r.price.value = "";
+        r.jual.value = ij ? fmt(ij) : ""; r.jual.classList.remove("man"); r.jual.title = "";
         r.mod.textContent = it.off || !im ? "–" : fmt(im); marText(r.mar, ij, im, it.off);
         if (!it.off) { cj = round2(cj + ij); cm = round2(cm + im); }
-      } else { paint(r, it, it.off); if (!it.off) { cj = round2(cj + (it.jual || 0)); cm = round2(cm + lineModal(it)); } }
+      } else { paint(r, it, it.off); if (!it.off) { cj = round2(cj + jualOf(it)); cm = round2(cm + lineModal(it)); } }
     });
     const cr = refs.cats[cat.id];
     if (cr) { cr.modalT.textContent = fmt(cm); cr.jualT.textContent = fmt(cj); cr.marT.textContent = sgn(cj - cm); }
@@ -1094,7 +1049,7 @@ function update() {
   });
   $("grand").textContent = rp(GJ);
   $("grand-sub").textContent = "Modal " + rp(GM) + " · Margin " + rp(GJ - GM) + (GJ > 0 ? " (" + (Math.round((GJ - GM) / GJ * 1000) / 10).toString().replace(".", ",") + "%)" : "");
-  $("b-foot").textContent = "Modal dari database sudah sesuai kombinasi " + (state.project.ev || 0) + " Hari Event + " + (state.project.gr || 0) + " Hari GR. Modal yang diketik manual dikali " + days() + " hari. Harga Jual diisi manual.";
+  $("b-foot").textContent = "Total Harga Jual = Qty × Durasi × Harga Jual Satuan, atau ketik langsung di kolom Total Harga Jual untuk mengisi manual (garis putus-putus = manual). Total Modal = Qty × Durasi × Modal Satuan.";
 }
 
 /* ===== kontrol di luar tabel ===== */
@@ -1110,22 +1065,14 @@ function bindStatic() {   /* dipasang sekali */
         $("p-selesai").min = p.mulai || "";
         if (p.mulai && p.selesai && p.selesai < p.mulai) { p.selesai = p.mulai; $("p-selesai").value = p.selesai; }
       }
-      if ((key === "mulai" || key === "selesai") && p.mulai && p.selesai) {   /* hari event mengikuti tanggal (tetap bisa diubah manual) */
-        p.ev = Math.round((new Date(p.selesai) - new Date(p.mulai)) / 864e5) + 1; $("p-ev").value = p.ev; refreshPrices(); update();
-      }
       save();
     };
-  });
-  [["p-gr", "gr"], ["p-ev", "ev"]].forEach(([id, key]) => {
-    const el = $(id);
-    el.oninput = () => { const v = parseInt(el.value.replace(/\D/g, ""), 10) || 0; state.project[key] = v; el.value = v || ""; refreshPrices(); update(); save(); };
   });
 }
 function syncStatic() {   /* isi ulang kolom dari proyek yang sedang dibuka */
   const p = state.project;
   [["p-nama", "nama"], ["p-venue", "venue"], ["p-mulai", "mulai"], ["p-selesai", "selesai"]].forEach(([id, key]) => { $(id).value = p[key] || ""; $(id).classList.remove("invalid"); });
   $("p-selesai").min = p.mulai || "";
-  $("p-gr").value = p.gr || ""; $("p-ev").value = p.ev || "";
   $("req-msg").hidden = true;
 }
 
@@ -1163,28 +1110,31 @@ function buildPreview() {
   const info = (k, v) => h("div", { class: "p-info" }, h("span", { class: "p-info-k", text: k }), h("span", { text: v || "–" }));
   root.append(
     h("h1", { class: "p-title", text: "Budget: " + (p.nama || "–") }),
-    h("div", { class: "p-meta" }, info("Tanggal Event:", dates), info("Venue:", p.venue), info("Durasi:", (p.ev || 0) + " hari event + " + (p.gr || 0) + " hari GR")));
+    h("div", { class: "p-meta" }, info("Tanggal Event:", dates), info("Venue:", p.venue)));
   const table = h("table", { class: "ptable" },
-    h("thead", {}, h("tr", {}, ...["Item", "Vendor", "Pcs", "Modal", "Harga Jual", "Margin"].map(t => h("th", { text: t })))));
+    h("thead", {}, h("tr", {}, ...["Item", "Qty", "Durasi", "Harga Jual Satuan", "Total Harga Jual", "Modal Satuan", "Total Modal", "Margin"].map(t => h("th", { text: t })))));
   let GJ = 0, GM = 0;
   const marTd = (j, m) => { const td = h("td", { class: "td-mar" }); marText(td, j, m, false); return td; };
+  const nz = v => v ? fmt(v) : "–";
+  const E = () => h("td");
   state.cats.map(cat => ({ cat, items: cat.items.filter(it => !it.off) })).filter(v => v.items.length).forEach(({ cat, items }, ci) => {
     let cj = 0, cm = 0; const body = [];
-    const line = (o, indent) => { const m = lineModal(o), j = o.jual || 0; return h("tr", { class: rowCls(j, m, false) },
-      h("td", indent ? { text: o.name || "(tanpa nama)", style: "padding-left:48px" } : { text: o.name || "(tanpa nama)" }),
-      h("td", { text: (o.vendor && o.vendor !== "-") ? o.vendor : "–" }), h("td", { text: o.pcs ? fmt(o.pcs) : "–" }), h("td", { text: fmt(m) }), h("td", { text: fmt(j) }), marTd(j, m)); };
+    const line = (o, indent) => { const m = lineModal(o), j = jualOf(o); return h("tr", { class: rowCls(j, m, false) },
+      h("td", indent ? { text: o.name || "(tanpa nama)", style: "padding-left:32px" } : { text: o.name || "(tanpa nama)" }),
+      h("td", { text: nz(o.pcs) }), h("td", { text: nz(o.dur) }), h("td", { text: isMan(o) ? "–" : nz(o.hjs) }), h("td", { text: fmt(j) }),
+      h("td", { text: nz(o.price) }), h("td", { text: fmt(m) }), marTd(j, m)); };
     items.forEach(it => {
       const subs = (it.subs || []).filter(x => !x.off);
       if ((it.subs || []).length) {
-        let ij = 0, im = 0; subs.forEach(x => { ij = round2(ij + (x.jual || 0)); im = round2(im + lineModal(x)); });
-        body.push(h("tr", { class: rowCls(ij, im, false) + " parent" }, h("td", { text: it.name || "(tanpa nama)" }), h("td"), h("td"), h("td", { text: fmt(im) }), h("td", { text: fmt(ij) }), marTd(ij, im)));
+        let ij = 0, im = 0; subs.forEach(x => { ij = round2(ij + jualOf(x)); im = round2(im + lineModal(x)); });
+        body.push(h("tr", { class: rowCls(ij, im, false) + " parent" }, h("td", { text: it.name || "(tanpa nama)" }), E(), E(), E(), h("td", { text: fmt(ij) }), E(), h("td", { text: fmt(im) }), marTd(ij, im)));
         subs.forEach(x => body.push(line(x, true))); cj = round2(cj + ij); cm = round2(cm + im);
-      } else { body.push(line(it, false)); cj = round2(cj + (it.jual || 0)); cm = round2(cm + lineModal(it)); }
+      } else { body.push(line(it, false)); cj = round2(cj + jualOf(it)); cm = round2(cm + lineModal(it)); }
     });
     GJ = round2(GJ + cj); GM = round2(GM + cm);
-    table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: letter(ci) + ".  " + (cat.name || "(tanpa nama)") }), h("td"), h("td"), h("td", { text: fmt(cm) }), h("td", { text: fmt(cj) }), h("td", { text: sgn(cj - cm) })), ...body));
+    table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: letter(ci) + ".  " + (cat.name || "(tanpa nama)") }), E(), E(), E(), h("td", { text: fmt(cj) }), E(), h("td", { text: fmt(cm) }), h("td", { text: sgn(cj - cm) })), ...body));
   });
-  table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: "Total" }), h("td"), h("td"), h("td", { text: rp(GM) }), h("td", { text: rp(GJ) }), h("td", { text: sgn(GJ - GM) + (GJ > 0 ? "  (" + (Math.round((GJ - GM) / GJ * 1000) / 10).toString().replace(".", ",") + "%)" : "") }))));
+  table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: "Total" }), E(), E(), E(), h("td", { text: rp(GJ) }), E(), h("td", { text: rp(GM) }), h("td", { text: sgn(GJ - GM) + (GJ > 0 ? "  (" + (Math.round((GJ - GM) / GJ * 1000) / 10).toString().replace(".", ",") + "%)" : "") }))));
   root.append(h("div", { class: "p-tablewrap" }, table));
   root.append(h("div", { class: "p-foot", text: "Dibuat " + new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) }));
 }
@@ -1237,7 +1187,7 @@ function buildWorkbook() {
   const eoAll = round2(cc.total * XL_EO_PCT / 100), vatAll = round2((cc.total + eoAll) * XL_VAT_PCT / 100);
   const allLines = [];
   state.cats.forEach(c => c.items.forEach(it => { if (it.off) return; ((it.subs || []).length ? it.subs.filter(x => !x.off) : [it]).forEach(o => allLines.push(o)); }));
-  const hasDec = [cc.total, cc.modal, eoAll, vatAll].some(v => !Number.isInteger(v)) || allLines.some(o => [o.jual || 0, lineModal(o)].some(v => !Number.isInteger(v)));
+  const hasDec = [cc.total, cc.modal, eoAll, vatAll].some(v => !Number.isInteger(v)) || allLines.some(o => [jualOf(o), lineModal(o), o.price || 0].some(v => !Number.isInteger(v)));
   const D = hasDec ? ".00" : "";
   const ACC = '_(* #,##0' + D + '_);_(* \\(#,##0' + D + '\\);_(* "-"??_);_(@_)';
   const ACC2 = '_-* #,##0' + D + '_-;\\-* #,##0' + D + '_-;_-* "-"_-;_-@_-';
@@ -1281,7 +1231,7 @@ function buildWorkbook() {
 
   /* judul kolom */
   grid(15, true);
-  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "MODAL"], ["N", "MARGIN"], ["O", "VENDOR"]]
+  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "MODAL"], ["N", "MARGIN"], ["O", "MODAL SATUAN"]]
     .forEach(([col, t]) => put(col + 15, t, { font: FB, align: CENTER, border: GRID }));
   ["E15:F15", "G15:H15", "I15:J15"].forEach(rg => ws.mergeCells(rg));
 
@@ -1304,12 +1254,14 @@ function buildWorkbook() {
       put("B" + r, i + 1, { fmt: "###0;###0", align: CENTER, border: GRID });
       put("C" + r, it.name || "(tanpa nama)", { border: GRID });
       const val = (rr, o, nm) => {
-        const jual = o.jual || 0, modal = lineModal(o);
+        const jual = jualOf(o), modal = lineModal(o);
+        put("E" + rr, o.pcs || "", { fmt: "#,##0.##", align: CENTER, border: GRID });
+        put("G" + rr, o.dur || "", { fmt: "#,##0.##", align: CENTER, border: GRID });
         if (nm !== undefined) put("D" + rr, nm, { border: GRID });
         put("J" + rr, jual, { fmt: ACC, border: GRID });
         put("M" + rr, modal, { fmt: ACC, border: GRID });
         put("N" + rr, { formula: `J${rr}-M${rr}`, result: round2(jual - modal) }, { fmt: ACC2, border: GRID });
-        put("O" + rr, (o.vendor && o.vendor !== "-") ? o.vendor : "", { border: GRID });   /* nama vendor: tepat di kanan kolom margin */
+        put("O" + rr, o.price || "", { fmt: ACC, border: GRID });   /* modal satuan: tepat di kanan kolom margin */
         catSum = round2(catSum + jual); sumMargin = round2(sumMargin + jual - modal); sumModal = round2(sumModal + modal);
       };
       if (hasSub) subs.forEach((sb, k) => val(r + 1 + k, sb, sb.name || "(tanpa nama)"));
@@ -1522,7 +1474,7 @@ function bootWithTimeout() {
   syncStatic(); render(); update(); save(true);
   if (!store.items[curId]) save();
   document.body.classList.remove("booting");
-  fetchDb().then(res => { indexDb(res); refreshPrices(); update(); $("b-status").textContent = "Database terhubung: " + DB.items.size + " item dari " + DB.vendors.length + " vendor."; })
+  fetchDb().then(res => { indexDb(res); $("b-status").textContent = "Database terhubung: " + DB.items.size + " item (untuk saran nama item)."; })
     .catch(err => { const s = $("b-status"); s.className = "b-status err"; s.textContent = "Database gagal dimuat (" + ((err && err.message) || "error") + "). Anda tetap bisa mengisi manual."; });
 })();
 </script>
