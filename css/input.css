@@ -1,0 +1,675 @@
+/* =========================================================================
+   input.css — the report form. Kept simple and legible: this page's job
+   is to be filled in quickly and correctly, not to be a visual moment.
+   ========================================================================= */
+
+.input-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px clamp(20px, 5vw, 0px) 120px;
+}
+
+.input-page .page-heading {
+  margin-bottom: 40px;
+}
+
+.input-page .page-heading .eyebrow {
+  color: var(--c-vendor-spend);
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.input-page .page-heading h1 {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.input-page .page-heading p {
+  color: var(--muted);
+  margin-top: 10px;
+  max-width: 52ch;
+}
+
+.input-page .page-heading .back-to-list {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-itemvendor);
+  text-decoration: none;
+}
+.input-page .page-heading .back-to-list:hover { text-decoration: underline; }
+
+.edit-mode-note {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+fieldset.form-section {
+  border: none;
+  padding: 0;
+  margin: 0 0 40px;
+}
+
+fieldset.form-section legend {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  padding: 0 0 16px;
+  width: 100%;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.field-grid .span-2 { grid-column: 1 / -1; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.field .hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.field input,
+.field select,
+.field textarea {
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  padding: 11px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Native <select> gets the same downward-triangle affordance as the
+   custom combobox toggle (js/combobox.js) so every "click to see a list"
+   field in the form reads as the same control, instead of the combobox's
+   custom ▾ button next to the browser's own (different-looking) arrow. */
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 34px;
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 11px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%236f6d66' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  cursor: pointer;
+}
+:root[data-theme="dark"] .field select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23a3a3ad' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--c-itemvendor);
+  box-shadow: 0 0 0 3px rgba(35, 61, 99, 0.12);
+  outline: none;
+}
+
+.field.has-error input,
+.field.has-error select,
+.field.has-error textarea { border-color: var(--c-vendor-spend); }
+
+.field input[readonly] {
+  background: var(--paper);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.field .error-msg {
+  font-size: 0.8rem;
+  color: var(--c-vendor-spend);
+  min-height: 1.1em;
+}
+
+/* Rental items ----------------------------------------------------------- */
+.items-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.items-count {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+
+.items-count strong { color: var(--c-item); }
+
+.item-block {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  background: var(--paper-raised);
+  position: relative;
+}
+
+.item-block .item-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.item-block .item-block-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--c-itemvendor);
+}
+
+.btn-remove-item {
+  background: none;
+  border: 1.5px solid var(--c-vendor-spend);
+  color: var(--c-vendor-spend);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.btn-remove-item:hover { background: var(--c-vendor-spend); color: #fff; }
+
+.btn-add-item {
+  background: none;
+  border: 2px dashed var(--muted);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 16px;
+  width: 100%;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.btn-add-item:hover { border-color: var(--c-item); background: rgba(201, 151, 31, 0.08); }
+
+.no-items-msg {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 16px 0;
+  font-style: italic;
+}
+
+/* Submit ------------------------------------------------------------------ */
+.submit-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+#submit-report {
+  padding: 16px 34px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+#submit-report:hover { transform: translateY(-2px); background: var(--c-vendor-spend); }
+#submit-report:disabled { opacity: 0.5; cursor: progress; transform: none; }
+
+.form-level-error {
+  color: var(--c-vendor-spend);
+  font-size: 0.9rem;
+}
+
+/* Success toast ------------------------------------------------------------ */
+.success-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 20px 26px;
+  border-radius: var(--radius);
+  max-width: 320px;
+  transform: translateY(140%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 60;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+.success-toast.visible { transform: translateY(0); }
+.success-toast .check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--c-price);
+  margin-right: 10px;
+  font-size: 0.85rem;
+}
+.success-toast strong { font-family: var(--font-display); font-size: 1.05rem; }
+.success-toast p { margin: 6px 0 0; font-size: 0.85rem; opacity: 0.85; }
+
+@media (max-width: 640px) {
+  .field-grid { grid-template-columns: 1fr; }
+  .submit-row { flex-direction: column; align-items: stretch; }
+  #submit-report { width: 100%; }
+}
+
+/* Searchable combobox (Item ID / Vendor dropdown-search) ------------------- */
+.combo-wrapper {
+  position: relative;
+  display: flex;
+}
+.combo-wrapper .combo-input {
+  flex: 1;
+  padding-right: 34px !important;
+}
+.combo-toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 11px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%236f6d66' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  cursor: pointer;
+  border-radius: 6px;
+}
+:root[data-theme="dark"] .combo-toggle {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23a3a3ad' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+.combo-toggle:hover { background-color: rgba(0, 0, 0, 0.05); }
+.combo-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--paper-raised);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+.combo-option {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.combo-option:hover,
+.combo-option.active {
+  background: var(--c-itemvendor);
+  color: var(--paper);
+}
+.combo-option.combo-empty {
+  color: var(--muted);
+  white-space: normal;
+  cursor: default;
+}
+.combo-option.combo-empty:hover { background: transparent; color: var(--muted); }
+
+.field textarea { resize:vertical; min-height:84px; line-height:1.45; }
+.optional { font-weight:400; color:var(--muted); }
+
+/* Pratinjau sebelum submit -------------------------------------------------- */
+.report-preview .preview-section { margin: 0 0 36px; }
+.report-preview .preview-section h2 {
+  font-size: 1.3rem;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+.preview-list { margin: 0; }
+.preview-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 34%) 1fr;
+  gap: 4px 16px;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.preview-row dt { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.preview-row dd { margin: 0; font-size: 0.98rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.preview-item {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 18px 6px;
+  margin-bottom: 16px;
+  background: var(--paper-raised);
+}
+.preview-item-title { font-weight: 600; font-size: 0.95rem; color: var(--c-itemvendor); }
+.preview-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 0;
+  margin-bottom: 24px;
+  border-top: 2px solid var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+.preview-total strong { color: var(--c-price); font-size: 1.3rem; }
+
+#preview-submit {
+  padding: 16px 34px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+#preview-submit:hover { transform: translateY(-2px); background: var(--c-vendor-spend); }
+#preview-edit {
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  font-weight: 700;
+  font-size: 1rem;
+}
+#preview-edit:hover { background: var(--ink); color: var(--paper); }
+#preview-submit:disabled, #preview-edit:disabled { opacity: 0.5; cursor: progress; transform: none; }
+
+@media (max-width: 640px) {
+  .preview-row { grid-template-columns: 1fr; }
+  #preview-submit, #preview-edit { width: 100%; }
+}
+
+/* Tabel barang (form + pratinjau) ------------------------------------------ */
+/* <fieldset> bawaan browser tidak mau menyempit di bawah lebar isinya; ini
+   mencegah tabel lebar "mendorong" halaman keluar dari kolom form. */
+fieldset.form-section { min-width: 0; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.items-hint {
+  margin: 0 0 14px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+/* Kontainer tabel dilebarkan melewati kolom form (760px) supaya kolomnya
+   muat, tetap rata tengah, dan bisa di-scroll ke samping bila layar sempit. */
+.items-table-wrap {
+  --tbl-w: min(1320px, calc(100vw - 40px));
+  width: var(--tbl-w);
+  margin-left: calc(50% - var(--tbl-w) / 2);
+  max-height: 70vh;
+  overflow: auto;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  margin-bottom: 16px;
+}
+.preview-items .items-table-wrap { max-height: none; }
+
+.items-table {
+  width: 100%;
+  min-width: 1309px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+}
+.items-table th,
+.items-table td {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.items-table th:last-child,
+.items-table td:last-child { border-right: none; }
+.items-table tbody tr:last-child td { border-bottom: none; }
+
+.items-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 10px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--ink) 7%, var(--paper-raised));
+  border-bottom: 1.5px solid var(--line);
+}
+.items-table thead .optional { font-weight: 400; }
+
+.items-table th.col-no,   .items-table td.col-no   { width: 44px; text-align: center; }
+.items-table th.col-name, .items-table td.col-name { width: 200px; }
+.items-table th.col-cat,  .items-table td.col-cat  { width: 135px; }
+.items-table th.col-vendor, .items-table td.col-vendor { width: 160px; }
+.items-table th.col-status, .items-table td.col-status { width: 110px; }
+.items-table th.col-price, .items-table td.col-price { width: 130px; }
+.items-table th.col-dp,   .items-table td.col-dp   { width: 130px; }
+.items-table th.col-sisa, .items-table td.col-sisa { width: 120px; }
+.items-table th.col-desc, .items-table td.col-desc { width: 190px; }
+.items-table th.col-act,  .items-table td.col-act  { width: 70px; text-align: center; }
+
+.items-table tbody td {
+  padding: 4px;
+  background: var(--paper-raised);
+}
+.items-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--c-item) 7%, var(--paper-raised));
+}
+
+/* Dua kolom pertama (No, Nama Barang) tetap terlihat saat tabel di-scroll ke samping. */
+.items-table .col-no,
+.items-table .col-name { position: sticky; z-index: 2; }
+.items-table .col-no   { left: 0; }
+.items-table .col-name { left: 44px; }
+.items-table thead th.col-no,
+.items-table thead th.col-name { z-index: 5; }
+/* Sel yang sedang dipakai (dropdown terbuka) harus di atas baris di bawahnya. */
+.items-table td:focus-within { z-index: 30; }
+
+.items-table td.col-no {
+  padding-top: 14px;
+  font-weight: 600;
+  color: var(--c-itemvendor);
+}
+
+/* Input di dalam sel: tanpa bingkai sampai di-hover / fokus, seperti sel spreadsheet. */
+.items-table .field { gap: 2px; }
+.items-table .field input,
+.items-table .field select,
+.items-table .field textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 9px;
+  font-size: 0.9rem;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  background-color: transparent;
+}
+.items-table .field select { padding-right: 26px; background-position: right 8px center; }
+.items-table .field input:hover,
+.items-table .field select:hover,
+.items-table .field textarea:hover { border-color: var(--line); }
+.items-table .field input:focus,
+.items-table .field select:focus,
+.items-table .field textarea:focus {
+  border-color: var(--c-itemvendor);
+  background-color: var(--paper-raised);
+  box-shadow: 0 0 0 3px rgba(35, 61, 99, 0.12);
+}
+.items-table .field.has-error input,
+.items-table .field.has-error select,
+.items-table .field.has-error textarea {
+  border-color: var(--c-vendor-spend);
+  background-color: color-mix(in srgb, var(--c-vendor-spend) 8%, transparent);
+}
+.items-table .field input:disabled {
+  background-color: color-mix(in srgb, var(--ink) 5%, transparent);
+  color: var(--muted);
+  -webkit-text-fill-color: var(--muted);
+  opacity: 1;
+  cursor: not-allowed;
+}
+.items-table .field textarea { min-height: 52px; resize: vertical; line-height: 1.35; }
+.items-table .field input[data-name="totalPrice"],
+.items-table .field input[data-name="nominalDP"] { text-align: right; }
+.items-table .field .error-msg { font-size: 0.72rem; min-height: 0; line-height: 1.25; padding: 0 4px; }
+.items-table .field .hint { font-size: 0.72rem; padding: 0 4px; text-align: right; }
+.items-table .field .hint:empty { display: none; }
+.items-table .combo-wrapper .combo-input { padding-right: 30px !important; }
+.items-table .combo-toggle { right: 2px; }
+.items-table .combo-list { position: fixed; z-index: 35; }
+
+.items-table td.col-act { padding-top: 9px; }
+.items-table .btn-remove-item { padding: 5px 10px; font-size: 0.78rem; }
+
+/* Reset gaya kartu lama (.item-block) yang kini dipakai pada baris tabel. */
+.items-table tr.item-block {
+  border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; position: static;
+}
+
+/* Tabel pratinjau: sel berisi teks biasa. */
+.preview-table tbody td,
+.preview-table tfoot td {
+  padding: 9px 10px;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.preview-table td.num,
+.preview-table th.col-price,
+.preview-table th.col-dp,
+.preview-table th.col-sisa { text-align: right; }
+.preview-table td.col-no { padding-top: 9px; }
+.preview-table tfoot td {
+  font-weight: 700;
+  background: color-mix(in srgb, var(--ink) 7%, var(--paper-raised));
+  border-top: 1.5px solid var(--line);
+  border-bottom: none;
+}
+.preview-table tfoot td.num { color: var(--c-price); }
+
+/* Layar sempit: tabel kembali menjadi kartu per barang agar nyaman di HP. */
+@media (max-width: 900px) {
+  .items-table-wrap {
+    width: auto; margin-left: 0; max-height: none; overflow: visible;
+    border: none; border-radius: 0; background: transparent;
+  }
+  .items-table { min-width: 0; display: block; table-layout: auto; }
+  .items-table thead { display: none; }
+  .items-table tbody, .items-table tfoot, .items-table tr { display: block; }
+  .items-table th, .items-table td { width: auto !important; }
+  .items-table td {
+    display: block;
+    position: static !important;
+    border: none;
+    box-shadow: none !important;
+    padding: 6px 0;
+    text-align: left;
+    background: transparent !important;
+  }
+  .items-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .items-table td[data-label=""]::before { display: none; }
+  .items-table tbody tr {
+    position: relative;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    background: var(--paper-raised);
+  }
+  .items-table tbody tr.item-block { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin: 0 0 16px; background: var(--paper-raised); position: relative; }
+  .items-table .field input,
+  .items-table .field select,
+  .items-table .field textarea { border-color: var(--line); background-color: var(--paper-raised); padding: 11px 13px; font-size: 0.98rem; }
+  .items-table .field select { padding-right: 34px; background-position: right 12px center; }
+  .items-table .field input:disabled { background-color: color-mix(in srgb, var(--ink) 5%, var(--paper-raised)); }
+  .items-table .field input[data-name="totalPrice"],
+  .items-table .field input[data-name="nominalDP"] { text-align: left; }
+  .items-table .field .hint { text-align: left; padding: 0; }
+  .items-table td.col-no { display: flex; gap: 4px; padding: 0 0 8px; font-size: 0.95rem; }
+  .items-table td.col-no::before { content: "BARANG #"; margin: 0; font-size: 0.95rem; }
+  .items-table td.col-act { position: absolute !important; top: 10px; right: 12px; padding: 0; }
+  .items-table td.col-act::before { display: none; }
+
+  .items-table.preview-table td {
+    display: grid;
+    grid-template-columns: minmax(110px, 38%) 1fr;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--line);
+    text-align: left;
+  }
+  .items-table.preview-table td::before { margin: 0; }
+  .items-table.preview-table td[data-label=""] { grid-template-columns: 1fr; }
+  .items-table.preview-table td.col-no { display: flex; border-bottom: none; }
+  .items-table.preview-table tfoot tr { padding: 4px 0; }
+  .preview-table tfoot td { border-top: none; background: transparent !important; }
+}
+
+/* Kontras nomor baris pada dark mode. */
+:root[data-theme="dark"] .items-table td.col-no { color: var(--ink); }
+/* Ghost-text autocomplete (Nama Barang) ------------------------------------ */
+.ghost-wrapper { position: relative; display: flex; }
+.ghost-wrapper .ghost-input { flex: 1; min-width: 0; }
+.ghost-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  white-space: pre;
+  pointer-events: none;
+  z-index: 1;
+}
+.ghost-overlay .ghost-inner { display: inline-block; will-change: transform; }
+.ghost-overlay .ghost-typed { color: transparent; }
+.ghost-overlay .ghost-rest {
+  color: var(--muted, #8a8880);
+  opacity: 0.75;
+  pointer-events: auto;   /* ketuk saran untuk menerima (HP tidak punya Tab) */
+  cursor: pointer;
+}
+.ghost-new-badge {
+  display: none;
+  margin: 2px 4px 0;
+  font-size: 0.7rem;
+  color: var(--muted, #8a8880);
+}
+.ghost-new-badge.show { display: block; }

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="id">
+<head>
+<script src="js/auth-guard.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://sheets.googleapis.com" crossorigin />
+<link rel="dns-prefetch" href="https://sheets.googleapis.com" />
+<title>Database &amp; Harga — MAXIMUM THE ULTIMATE</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/loader.css" />
+<link rel="stylesheet" href="css/vendor.css" />
+</head>
+<body>
+  <header class="topnav">
+    <div class="brand">PURCHASING MAXIMUM THE ULTIMATE</div>
+    <div class="topnav-actions"><nav aria-label="Navigasi utama">
+      <a href="input.html">Input Report</a>
+      <a href="events.html">Daftar Event</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="vendor.html" class="active">Database</a>
+    </nav><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+  </header>
+
+  <main class="vendor-page">
+    <div class="loading" id="loading" data-mx-loader="Memuat Database"></div>
+
+    <div class="topbar">
+      <div>
+        <div class="eyebrow">SISTEM DATABASE</div>
+        <h1>Pusat Database &amp; Harga</h1>
+        <div class="sub">Database MAXIMUM THE ULTIMATE.</div>
+      </div>
+    </div>
+
+    <div class="searchbar">
+      <div class="field">
+        <input type="text" id="searchInput" placeholder="Cari item, ID item, vendor, kategori, spesifikasi, sheet...">
+        <div class="searchmeta">
+          <span>Pencarian real-time</span>
+          <span><span class="count" id="resultCount">0</span> hasil</span>
+        </div>
+    </div>
+    </div>
+
+    <div class="filters">
+      <select class="sel" id="selKategori"><option value="">Semua Kategori</option></select>
+      <select class="sel" id="selVendor"><option value="">Semua Vendor</option></select>
+      <select class="sel" id="selJenis"><option value="">Item &amp; Package</option></select>
+      <select class="sel" id="selSort">
+        <option value="nama_asc">Nama A-Z</option>
+        <option value="harga_desc">Harga tertinggi</option>
+        <option value="harga_asc">Harga terendah</option>
+        <option value="vendor_asc">Vendor A-Z</option>
+        <option value="kategori_asc">Kategori A-Z</option>
+      </select>
+      <div class="divider-dot"></div>
+      <div class="duration-controls">
+        <label>Kombinasi Hari + GR</label>
+        <select id="selKombinasi"></select>
+      </div>
+    </div>
+    <div class="notebar" id="durationNote"></div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Vendor</th>
+            <th>Kategori</th>
+            <th>Spesifikasi</th>
+            <th>Harga</th>
+            <th>Sumber</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="emptyState" style="display:none">Tidak ada data.</div>
+    </div>
+
+    <!-- OPTIMIZER -->
+    <div class="section-divider">
+      <h2>Optimasi Kombinasi Pembelian/Sewa</h2>
+      <div class="sub">
+        Masukkan kebutuhan (item, qty, kombinasi hari event + GR). Sistem mencari vendor termurah
+        untuk tiap item, memakai Item ID untuk mencocokkan penawaran antar vendor. Karena harga
+        per kombinasi bersifat sparse, sistem otomatis memakai kombinasi terdekat yang tersedia
+        (ditandai "≈") bila kombinasi yang diminta tidak ada datanya persis untuk vendor tsb.
+        Harga disesuaikan proporsional bila qty yang diminta berbeda dari qty per listing.
+      </div>
+
+      <div class="opt-layout">
+        <div class="opt-panel">
+          <h3>Daftar Kebutuhan</h3>
+          <div class="opt-headrow">
+            <span>Item</span><span>Qty</span><span>Kombinasi Hari + GR</span><span></span>
+          </div>
+          <div id="optRows"></div>
+          <div class="opt-actions">
+            <button class="btn btn-ghost" id="btnAddRow">+ Tambah Item</button>
+            <button class="btn btn-primary" id="btnOptimize">Cari Kombinasi Termurah</button>
+          </div>
+        </div>
+
+        <div class="opt-panel">
+          <h3>Hasil Optimasi</h3>
+          <div id="optResult">
+            <div class="opt-result-empty">Isi kebutuhan lalu klik "Cari Kombinasi Termurah".</div>
+          </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- VENDOR COMPARISON -->
+    <div class="section-divider">
+      <h2>Bandingkan Harga Semua Vendor</h2>
+      <div class="sub">
+        Memakai Item ID yang sudah distandardisasi lintas vendor supaya perbandingan apple-to-apple.
+        Ketik nama item, pilih dari saran yang muncul, lalu klik <b>"Bandingkan"</b> untuk melihat
+        spesifikasi lengkap dan harga dari setiap vendor. Setelah hasil muncul, kombinasi Hari Event +
+        Hari GR bisa diganti langsung di dalam kartu hasil — karena vendor termurah bisa berbeda-beda
+        tergantung kombinasi yang dipilih.
+      </div>
+
+      <div class="cmp-panel">
+        <div class="cmp-controls">
+          <div class="cmp-search-wrap">
+            <input type="text" id="cmpSearchInput" placeholder="Ketik nama item/package, mis. &quot;LED P2.6 Indoor&quot;..." autocomplete="off">
+            <div class="cmp-suggestions" id="cmpSuggestions"></div>
+          </div>
+          <select class="sel" id="cmpKategori"><option value="">Semua Kategori</option></select>
+          <button class="btn btn-primary" id="btnCompare" type="button">🔍 Bandingkan</button>
+        </div>
+        <div class="cmp-hint" id="cmpHint">Ketik nama item, pilih dari daftar saran, lalu klik "Bandingkan". Atau klik kolom pencarian untuk melihat beberapa contoh item.</div>
+        <div id="cmpResult"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/loader.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/vendor.js"></script>
+</body>
+</html>
