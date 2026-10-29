@@ -25,68 +25,90 @@
   <main class="input-page">
     <form id="report-form" novalidate>
       <div class="head">
-        <div class="top">
+        <div class="title-bar">
           <div class="field top-title" data-field="event">
-            <label for="f-event">Input Report:</label>
+            <label for="f-event" id="title-label">Input Report:</label>
             <input class="title-in" id="f-event" name="event" type="text" placeholder="Nama event (wajib diisi)" autocomplete="off" required />
             <div class="error-msg" role="alert"></div>
           </div>
-          <span class="edit-mode-note" id="edit-mode-note" hidden>Mengedit event yang sudah ada: item lama diganti dengan isi form ini.</span>
-          <div class="field-grid">
-          <div class="field" data-field="user">
-            <label for="f-user">Nama user / pengisi laporan</label>
-            <input id="f-user" name="user" type="text" autocomplete="name" required />
-            <div class="error-msg" role="alert"></div>
-          </div>
-          <div class="field" data-field="client">
-            <label for="f-client">Nama perusahaan / client</label>
-            <input id="f-client" name="client" type="text" required />
-            <div class="error-msg" role="alert"></div>
-          </div>
-          <div class="field" data-field="eventDateStart">
-            <label for="f-date-start">Tanggal mulai event (di luar GR)</label>
-            <input id="f-date-start" name="eventDateStart" type="date" required />
-            <div class="error-msg" role="alert"></div>
-          </div>
-          <div class="field" data-field="eventDateEnd">
-            <label for="f-date-end">Tanggal selesai event (di luar GR)</label>
-            <input id="f-date-end" name="eventDateEnd" type="date" required />
-            <div class="error-msg" role="alert"></div>
-          </div>
-          <div class="field" data-field="eventDays">
-            <label>Jumlah day event</label>
-            <input id="f-days" type="text" readonly tabindex="-1" value="—" />
-            <span class="hint">Dihitung otomatis dari tanggal mulai &amp; selesai di atas.</span>
-          </div>
-          <div class="field" data-field="gr">
-            <label for="f-gr">Jumlah GR (General Rehearsal)</label>
-            <input id="f-gr" name="gr" type="number" min="0" step="1" required />
-            <span class="hint" id="total-days-hint"></span>
-            <div class="error-msg" role="alert"></div>
-          </div>
-                  <div class="field" data-field="city">
-            <label for="f-city">Kota</label>
-            <input id="f-city" name="city" type="text" required />
-            <div class="error-msg" role="alert"></div>
-          </div>
-          <div class="field" data-field="country">
-            <label for="f-country">Negara</label>
-            <input id="f-country" name="country" type="text" value="Indonesia" required />
-            <div class="error-msg" role="alert"></div>
+          <div class="actions">
+            <button class="ghost" id="pj-open" type="button">Daftar Event</button>
+            <a class="ghost" id="new-event" href="input.html">+ Event baru</a>
+            <button class="primary" type="submit" id="top-submit">Next: Preview →</button>
           </div>
         </div>
-        </div>
-        <div class="actions">
-          <button class="ghost" id="pj-open" type="button">Daftar Event</button>
-          <a class="ghost" id="new-event" href="input.html">+ Event baru</a>
-          <button class="primary" type="submit" id="top-submit">Next: Preview →</button>
+        <span class="edit-mode-note" id="edit-mode-note" hidden>Mengedit event yang sudah ada: item lama diganti dengan isi form ini.</span>
+
+        <div class="info-grid">
+          <div class="info-col">
+          <div class="top-row">
+            <div class="field" data-field="client">
+              <label class="top-k req" for="f-client">Client:</label>
+              <input class="top-in" id="f-client" name="client" type="text" placeholder="Nama perusahaan / client" autocomplete="organization" required />
+              <div class="error-msg" role="alert"></div>
+            </div>
+          </div>
+          <div class="top-row">
+            <div class="field" data-field="user">
+              <label class="top-k req" for="f-user">Pengisi Laporan:</label>
+              <input class="top-in" id="f-user" name="user" type="text" placeholder="Nama pengisi laporan" autocomplete="name" required />
+              <div class="error-msg" role="alert"></div>
+            </div>
+          </div>
+          <div class="top-row">
+            <div class="field" data-field="city">
+              <label class="top-k req" for="f-city">Kota:</label>
+              <input class="top-in" id="f-city" name="city" type="text" placeholder="Kota" required />
+              <div class="error-msg" role="alert"></div>
+            </div>
+          </div>
+          <div class="top-row">
+            <div class="field" data-field="country">
+              <label class="top-k req" for="f-country">Negara:</label>
+              <input class="top-in" id="f-country" name="country" type="text" value="Indonesia" required />
+              <div class="error-msg" role="alert"></div>
+            </div>
+          </div>
+          </div>
+          <div class="info-col">
+          <div class="top-row">
+            <span class="top-k req">Tanggal Event:</span>
+            <div class="dates">
+              <div class="field" data-field="eventDateStart">
+                <input class="top-in" id="f-date-start" name="eventDateStart" type="date" aria-label="Tanggal mulai event (di luar GR)" required />
+                <div class="error-msg" role="alert"></div>
+              </div>
+              <span class="sd">sampai</span>
+              <div class="field" data-field="eventDateEnd">
+                <input class="top-in" id="f-date-end" name="eventDateEnd" type="date" aria-label="Tanggal selesai event (di luar GR)" required />
+                <div class="error-msg" role="alert"></div>
+              </div>
+              <span class="top-hint">di luar GR</span>
+            </div>
+          </div>
+          <div class="top-row">
+            <div class="field" data-field="eventDays">
+              <label class="top-k" for="f-days">Jumlah Day:</label>
+              <input class="top-in short" id="f-days" type="text" readonly tabindex="-1" value="—" />
+              <span class="top-hint">Dihitung otomatis dari tanggal event</span>
+            </div>
+          </div>
+          <div class="top-row">
+            <div class="field" data-field="gr">
+              <label class="top-k req" for="f-gr">Jumlah GR:</label>
+              <input class="top-in short" id="f-gr" name="gr" type="number" min="0" step="1" required />
+              <span class="top-hint" id="total-days-hint">General Rehearsal</span>
+              <div class="error-msg" role="alert"></div>
+            </div>
+          </div>
+          </div>
         </div>
       </div>
 
-      <fieldset class="form-section">
-        <legend>Rental Items</legend>
-        <div class="items-header">
-          <div class="items-count">TOTAL ITEMS: <strong id="items-count">0</strong></div>
+      <section class="form-section" aria-labelledby="items-title">
+        <div class="sec-head">
+          <h2 id="items-title">Rental Items</h2>
+          <div class="items-count">Total barang: <strong id="items-count">0</strong></div>
         </div>
         <p class="items-hint" hidden>Ketik nama barang — saran dari dictionary muncul sebagai teks abu-abu (tekan Tab atau → untuk menerima), dan Kategori terisi otomatis. Barang yang belum ada di dictionary tetap bisa diisi dan otomatis ditambahkan ke dictionary saat disubmit. Nama vendor: klik atau ketik untuk mencari. Nominal DP otomatis sama dengan Harga total jika Lunas; isi manual hanya untuk DP.</p>
         <div class="items-table-wrap">
@@ -96,9 +118,9 @@
                 <th class="col-no">No</th>
                 <th class="col-name" title="Ketik nama barang — saran dari dictionary muncul sebagai teks abu-abu. Tekan Tab / → (atau ketuk saran) untuk menerima.">Nama Barang</th>
                 <th class="col-cat">Kategori</th>
-                <th class="col-vendor">Nama vendor</th>
+                <th class="col-vendor">Nama Vendor</th>
                 <th class="col-status">Status Pembayaran</th>
-                <th class="col-price">Harga total (Rp)</th>
+                <th class="col-price">Harga Total (Rp)</th>
                 <th class="col-dp" title="Otomatis sama dengan Harga Total (Lunas). Isi manual hanya untuk DP.">Nominal DP (Rp)</th>
                 <th class="col-desc">Keterangan <span class="optional">(opsional)</span></th>
                 <th class="col-act"><span class="sr-only">Aksi</span></th>
@@ -109,7 +131,7 @@
         </div>
         <p class="no-items-msg" id="no-items-msg">Belum ada barang ditambahkan.</p>
         <button type="button" class="btn-add-item" id="add-item">+ Tambah Barang</button>
-      </fieldset>
+      </section>
 
       <div class="submit-row bar">
         <div class="totals" aria-live="polite">
@@ -123,21 +145,18 @@
       </div>
     </form>
 
-    <div class="page-heading">
-      <div class="eyebrow" id="page-eyebrow">LAPORAN EVENT</div>
-      <h1 id="page-title">Catat detail event Anda</h1>
-      <p id="page-desc">Lengkapi informasi event, lokasi, dan barang yang disewa. Timestamp pengisian dicatat otomatis — Anda tidak perlu mengisinya.</p>
-      <a href="input.html?list=1" class="back-to-list" id="back-to-list" hidden>← Kembali ke Daftar Event tanpa menyimpan</a>
-    </div>
-
-    <!-- Halaman pratinjau: muncul setelah tombol Submit/Update ditekan dan validasi lolos. -->
+    <!-- Halaman pratinjau: muncul setelah tombol Next: Preview ditekan dan validasi lolos. -->
     <section class="report-preview" id="report-preview" hidden aria-live="polite">
-      <div id="preview-body"></div>
-      <div class="submit-row preview-actions">
-        <button type="button" id="preview-submit">Submit Report</button>
-        <button type="button" id="preview-edit">← Edit</button>
-        <span class="form-level-error" id="preview-error" role="alert"></span>
+      <div class="pv-toolbar">
+        <button type="button" class="ghost" id="preview-edit">← Edit</button>
+        <div class="actions">
+          <a href="input.html?list=1" class="ghost" id="back-to-list" hidden>Kembali ke Daftar Event tanpa menyimpan</a>
+          <span class="form-level-error" id="preview-error" role="alert"></span>
+          <button type="button" class="primary" id="preview-submit">Submit Report</button>
+        </div>
       </div>
+      <div class="pv-paper" id="preview-body"></div>
+      <button type="button" class="primary block" id="preview-submit-2">Submit Report</button>
     </section>
   </main>
 
@@ -225,12 +244,12 @@
       </td>
       <td class="col-desc" data-label="Keterangan (opsional)">
         <div class="field" data-field="description">
-          <textarea data-name="description" rows="1" aria-label="Keterangan (opsional)" placeholder="Spesifikasi, ukuran, warna, dll."></textarea>
+          <textarea data-name="description" rows="1" aria-label="Keterangan (opsional)" placeholder="Spesifikasi / catatan"></textarea>
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
       <td class="col-act" data-label="">
-        <button type="button" class="btn-remove-item" data-remove-item>Hapus</button>
+        <button type="button" class="btn-remove-item" data-remove-item aria-label="Hapus barang" title="Hapus barang"><span class="x-ic" aria-hidden="true">×</span><span class="x-tx">Hapus</span></button>
       </td>
     </tr>
   </template>

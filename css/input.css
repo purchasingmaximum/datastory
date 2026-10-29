@@ -218,19 +218,6 @@ fieldset.form-section legend {
   margin-top: 8px;
 }
 
-#submit-report {
-  padding: 16px 34px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--paper);
-  border: none;
-  font-weight: 700;
-  font-size: 1rem;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-#submit-report:hover { transform: translateY(-2px); background: var(--c-vendor-spend); }
-#submit-report:disabled { opacity: 0.5; cursor: progress; transform: none; }
-
 .form-level-error {
   color: var(--c-vendor-spend);
   font-size: 0.9rem;
@@ -340,72 +327,6 @@ fieldset.form-section legend {
 
 .field textarea { resize:vertical; min-height:84px; line-height:1.45; }
 .optional { font-weight:400; color:var(--muted); }
-
-/* Pratinjau sebelum submit -------------------------------------------------- */
-.report-preview .preview-section { margin: 0 0 36px; }
-.report-preview .preview-section h2 {
-  font-size: 1.3rem;
-  padding: 0 0 14px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 8px;
-}
-.preview-list { margin: 0; }
-.preview-row {
-  display: grid;
-  grid-template-columns: minmax(150px, 34%) 1fr;
-  gap: 4px 16px;
-  padding: 9px 0;
-  border-bottom: 1px dashed var(--line);
-}
-.preview-row dt { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
-.preview-row dd { margin: 0; font-size: 0.98rem; overflow-wrap: anywhere; white-space: pre-wrap; }
-.preview-item {
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius);
-  padding: 14px 18px 6px;
-  margin-bottom: 16px;
-  background: var(--paper-raised);
-}
-.preview-item-title { font-weight: 600; font-size: 0.95rem; color: var(--c-itemvendor); }
-.preview-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 16px 0;
-  margin-bottom: 24px;
-  border-top: 2px solid var(--ink);
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-}
-.preview-total strong { color: var(--c-price); font-size: 1.3rem; }
-
-#preview-submit {
-  padding: 16px 34px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--paper);
-  border: none;
-  font-weight: 700;
-  font-size: 1rem;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-#preview-submit:hover { transform: translateY(-2px); background: var(--c-vendor-spend); }
-#preview-edit {
-  padding: 14px 28px;
-  border-radius: 999px;
-  background: none;
-  color: var(--ink);
-  border: 1.5px solid var(--ink);
-  font-weight: 700;
-  font-size: 1rem;
-}
-#preview-edit:hover { background: var(--ink); color: var(--paper); }
-#preview-submit:disabled, #preview-edit:disabled { opacity: 0.5; cursor: progress; transform: none; }
-
-@media (max-width: 640px) {
-  .preview-row { grid-template-columns: 1fr; }
-  #preview-submit, #preview-edit { width: 100%; }
-}
 
 /* Tabel barang (form + pratinjau) ------------------------------------------ */
 /* <fieldset> bawaan browser tidak mau menyempit di bawah lebar isinya; ini

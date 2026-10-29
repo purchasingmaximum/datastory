@@ -23,16 +23,12 @@
   const copyEventId = urlParams.get("copy");   // "Duplikat" dari Daftar Event: isi form dari event lain, simpan sebagai event baru
   let editOriginalEvent = null;
 
-  const pageEyebrow = document.getElementById("page-eyebrow");
-  const pageTitle = document.getElementById("page-title");
-  const pageDesc = document.getElementById("page-desc");
+  const titleLabel = document.getElementById("title-label");
   const backToList = document.getElementById("back-to-list");
   const editModeNote = document.getElementById("edit-mode-note");
 
   if (editEventId) {
-    pageEyebrow.textContent = "EDIT LAPORAN EVENT";
-    pageTitle.textContent = "Edit detail event";
-    pageDesc.textContent = "Perbaiki data yang salah, atau ubah status pembayaran (mis. DP → Lunas), lalu simpan perubahan.";
+    titleLabel.textContent = "Edit Report:";
     backToList.hidden = false;
     editModeNote.hidden = false;
     submitBtn.textContent = "Next: Preview →";
@@ -652,7 +648,6 @@
   const previewSubmitBtn = document.getElementById("preview-submit");
   const previewEditBtn = document.getElementById("preview-edit");
   const previewError = document.getElementById("preview-error");
-  let headingBackup = null;
   let pendingReport = null;
 
   function previewEl(tag, className, text) {
@@ -672,22 +667,20 @@
     return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
   }
 
-  function previewList(rows) {
-    const dl = previewEl("dl", "preview-list");
-    rows.forEach(([label, value]) => {
-      const row = previewEl("div", "preview-row");
-      row.appendChild(previewEl("dt", "", label));
-      row.appendChild(previewEl("dd", "", value === "" || value == null ? "—" : String(value)));
-      dl.appendChild(row);
-    });
-    return dl;
+  const previewSubmitBtn2 = document.getElementById("preview-submit-2");
+
+  function previewInfo(label, value) {
+    const row = previewEl("div", "pv-info");
+    row.appendChild(previewEl("span", "pv-info-k", label));
+    row.appendChild(previewEl("span", "", value === "" || value == null ? "—" : String(value)));
+    return row;
   }
 
-  function previewSectionBlock(title, contentNode) {
-    const section = previewEl("section", "preview-section");
-    section.appendChild(previewEl("h2", "", title));
-    section.appendChild(contentNode);
-    return section;
+  function previewRow(label, value, strong) {
+    const row = previewEl("div", strong ? "pv-row strong" : "pv-row");
+    row.appendChild(previewEl("span", "k", label));
+    row.appendChild(previewEl("span", "v", String(value)));
+    return row;
   }
 
   function showPreview(report) {
@@ -696,32 +689,76 @@
     previewBody.innerHTML = "";
 
     const days = report.eventDays;
-    previewBody.appendChild(previewSectionBlock("Event Information", previewList([
-      ["Nama user / pengisi laporan", report.user],
-      ["Nama event", report.event],
-      ["Nama perusahaan / client", report.client],
-      ["Tanggal mulai event (di luar GR)", formatDateId(report.eventDate)],
-      ["Tanggal selesai event (di luar GR)", formatDateId(report.eventDateEnd)],
-      ["Jumlah day event", days ? `${days} hari` : "—"],
-      ["Jumlah GR (General Rehearsal)", report.gr],
-      ["Total termasuk GR", days ? `${days + report.gr} hari (${days} event + ${report.gr} GR)` : "—"],
-    ])));
+    const items = report.items;
 
-    previewBody.appendChild(previewSectionBlock("Location", previewList([
-      ["Kota", report.city],
-      ["Negara", report.country],
-    ])));
+    // Total per barang + hitungan status pembayaran.
+    let sumTotal = 0, sumDP = 0, sumSisa = 0, nLunas = 0, nDP = 0;
+    items.forEach((item) => {
+      const total = item.totalPrice || 0;
+      const dp = item.nominalDP || 0;
+      sumTotal += total;
+      sumDP += dp;
+      sumSisa += Math.max(0, total - dp);
+      if (item.paymentStatus === "Lunas") nLunas++;
+      else if (item.paymentStatus === "DP") nDP++;
+    });
+    const paidPct = sumTotal > 0 ? Math.min(100, Math.round((sumDP / sumTotal) * 100)) : 0;
 
-    const itemsWrap = previewEl("div", "preview-items");
-    if (report.items.length === 0) {
-      itemsWrap.appendChild(previewEl("p", "no-items-msg", "Tanpa barang — event ini disimpan tanpa item sewa."));
+    // Judul + info singkat (gaya Feasibility).
+    previewBody.appendChild(previewEl("h2", "pv-title", `${editEventId ? "Edit Report" : "Input Report"}: ${report.event || "—"}`));
+    const meta = previewEl("div", "pv-meta");
+    meta.appendChild(previewInfo("Client:", report.client));
+    const sameDay = report.eventDate === report.eventDateEnd;
+    meta.appendChild(previewInfo("Tanggal Event:", (sameDay
+      ? formatDateId(report.eventDate)
+      : `${formatDateId(report.eventDate)} sampai ${formatDateId(report.eventDateEnd)}`) + " (di luar GR)"));
+    meta.appendChild(previewInfo("Lokasi:", [report.city, report.country].filter(Boolean).join(", ")));
+    meta.appendChild(previewInfo("Pengisi Laporan:", report.user));
+    previewBody.appendChild(meta);
+
+    // Tiga kotak ringkasan: total biaya (biru), barang, durasi.
+    const boxes = previewEl("div", "pv-boxes");
+
+    const verdict = previewEl("div", "pv-verdict");
+    verdict.appendChild(previewEl("div", "pv-label", "Total biaya event"));
+    verdict.appendChild(previewEl("div", "pv-word", formatRupiah(sumTotal)));
+    const gauge = previewEl("div", "pv-gauge");
+    const bar = document.createElement("i");
+    bar.style.width = paidPct + "%";
+    gauge.appendChild(bar);
+    verdict.appendChild(gauge);
+    [["Terbayar", `${formatRupiah(sumDP)} (${paidPct}%)`], ["Sisa pembayaran", formatRupiah(sumSisa)]].forEach(([k, v]) => {
+      const gap = previewEl("div", "pv-gap");
+      gap.appendChild(previewEl("span", "", k));
+      gap.appendChild(previewEl("strong", "", v));
+      verdict.appendChild(gap);
+    });
+    boxes.appendChild(verdict);
+
+    const cardItems = previewEl("div", "pv-card");
+    cardItems.appendChild(previewRow("Jumlah barang", items.length));
+    cardItems.appendChild(previewRow("Barang Lunas", nLunas));
+    cardItems.appendChild(previewRow("Barang DP", nDP));
+    boxes.appendChild(cardItems);
+
+    const cardDays = previewEl("div", "pv-card");
+    cardDays.appendChild(previewRow("Jumlah Day event", days ? `${days} hari` : "—"));
+    cardDays.appendChild(previewRow("Jumlah GR", report.gr));
+    cardDays.appendChild(previewRow("Total termasuk GR", days ? `${days + report.gr} hari` : "—", true));
+    boxes.appendChild(cardDays);
+    previewBody.appendChild(boxes);
+
+    // Tabel barang.
+    previewBody.appendChild(previewEl("h3", "pv-h", `Rental Items (${items.length})`));
+    if (items.length === 0) {
+      previewBody.appendChild(previewEl("p", "no-items-msg", "Tanpa barang — event ini disimpan tanpa item sewa."));
     } else {
       const wrap = previewEl("div", "items-table-wrap");
       const table = previewEl("table", "items-table preview-table");
 
       const headers = [
         ["No", "col-no"], ["Nama Barang", "col-name"], ["Kategori", "col-cat"],
-        ["Nama vendor", "col-vendor"], ["Status Pembayaran", "col-status"], ["Harga total (Rp)", "col-price"],
+        ["Nama Vendor", "col-vendor"], ["Status Pembayaran", "col-status"], ["Harga Total (Rp)", "col-price"],
         ["Nominal DP (Rp)", "col-dp"], ["Sisa DP (Rp)", "col-sisa"], ["Keterangan", "col-desc"],
       ];
       const thead = previewEl("thead");
@@ -737,22 +774,16 @@
       };
 
       const tbody = previewEl("tbody");
-      let sumTotal = 0;
-      let sumDP = 0;
-      let sumSisa = 0;
-      report.items.forEach((item, i) => {
+      items.forEach((item, i) => {
         const total = item.totalPrice || 0;
         const dp = item.nominalDP || 0;
         const sisa = Math.max(0, total - dp);
-        sumTotal += total;
-        sumDP += dp;
-        sumSisa += sisa;
         const tr = previewEl("tr", "preview-item-row");
         tr.appendChild(cell(i + 1, "No", "col-no"));
         tr.appendChild(cell(item.itemName, "Nama Barang", "col-name"));
         tr.appendChild(cell(item.category, "Kategori", "col-cat"));
         tr.appendChild(cell(item.vendor, "Nama vendor", "col-vendor"));
-        tr.appendChild(cell(item.paymentStatus, "Status Pembayaran", "col-status"));
+        tr.appendChild(cell(item.paymentStatus, "Status Pembayaran", "col-status st-" + String(item.paymentStatus || "").toLowerCase()));
         tr.appendChild(cell(formatRupiah(total), "Harga total", "col-price num"));
         tr.appendChild(cell(formatRupiah(dp), "Nominal DP", "col-dp num"));
         tr.appendChild(cell(formatRupiah(sisa), "Sisa DP", "col-sisa num"));
@@ -763,7 +794,7 @@
 
       const tfoot = previewEl("tfoot");
       const footRow = previewEl("tr");
-      const footLabel = previewEl("td", "foot-label", `Total (${report.items.length} barang)`);
+      const footLabel = previewEl("td", "foot-label", `Total (${items.length} barang)`);
       footLabel.colSpan = 5;
       footLabel.dataset.label = "";
       footRow.appendChild(footLabel);
@@ -777,23 +808,12 @@
       table.appendChild(tfoot);
 
       wrap.appendChild(table);
-      itemsWrap.appendChild(wrap);
+      previewBody.appendChild(wrap);
     }
-    previewBody.appendChild(previewSectionBlock(`Rental Items (${report.items.length})`, itemsWrap));
 
-    if (!headingBackup) {
-      headingBackup = {
-        eyebrow: pageEyebrow.textContent,
-        title: pageTitle.textContent,
-        desc: pageDesc.textContent,
-      };
-    }
-    pageEyebrow.textContent = editEventId ? "PRATINJAU PERUBAHAN" : "PRATINJAU LAPORAN";
-    pageTitle.textContent = editEventId ? "Periksa sebelum menyimpan perubahan" : "Periksa sebelum submit";
-    pageDesc.textContent = editEventId
-      ? "Pastikan semua isian sudah benar. Pilih Edit untuk kembali ke form, atau Update Report untuk menyimpan perubahan."
-      : "Pastikan semua isian sudah benar. Pilih Edit untuk kembali ke form, atau Submit Report untuk menyimpan laporan.";
-    previewSubmitBtn.textContent = editEventId ? "Update Report" : "Submit Report";
+    const submitLabel = editEventId ? "Update Report" : "Submit Report";
+    previewSubmitBtn.textContent = submitLabel;
+    previewSubmitBtn2.textContent = submitLabel;
 
     form.hidden = true;
     previewSection.hidden = false;
@@ -801,12 +821,6 @@
   }
 
   function hidePreview() {
-    if (headingBackup) {
-      pageEyebrow.textContent = headingBackup.eyebrow;
-      pageTitle.textContent = headingBackup.title;
-      pageDesc.textContent = headingBackup.desc;
-      headingBackup = null;
-    }
     previewSection.hidden = true;
     form.hidden = false;
     window.scrollTo(0, 0);
@@ -820,6 +834,7 @@
   previewSubmitBtn.addEventListener("click", () => {
     if (pendingReport) confirmSubmit(pendingReport);
   });
+  previewSubmitBtn2.addEventListener("click", () => previewSubmitBtn.click());
 
   // Submit TANPA layar loading: laporan disimpan ke antrean lokal (instan) lalu
   // dikirim di latar belakang oleh js/outbox.js lewat submitEvent() yang sama.
