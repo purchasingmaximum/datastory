@@ -385,6 +385,12 @@ table.ptable { font-size: 12.5px; }
 .ptable td:first-child, .ptable td:nth-child(2) { white-space: normal; }
 .ptable th:nth-child(2), .ptable td:nth-child(2) { text-align: left; }
 @media (max-width: 600px) { .b-grand strong { font-size: 20px; } .dur .top-in { flex: 0 0 64px; } }
+
+.v-list { position: fixed; z-index: 60; margin: 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 20px rgba(15,23,42,.12); max-height: 300px; overflow: auto; }
+.v-list[hidden] { display: none; }
+.v-list li { display: flex; justify-content: space-between; gap: 20px; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.v-list li b { font-weight: 600; white-space: nowrap; color: var(--blue); }
+.v-list li.on, .v-list li:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
 </style>
 </head>
 <body>
@@ -435,6 +441,7 @@ table.ptable { font-size: 12.5px; }
   </main>
 </div>
 <ul class="b-list" id="b-list" role="listbox" hidden></ul>
+<ul class="v-list" id="v-list" role="listbox" hidden></ul>
 
 <dialog id="projects" aria-labelledby="pj-title">
   <div class="pj-head"><h2 id="pj-title">Proyek tersimpan</h2><button class="x" id="pj-close" type="button" aria-label="Tutup">×</button></div>
@@ -934,6 +941,37 @@ const refs = { items: {}, cats: {}, catInp: {} };
   function markAc() { [...list.children].forEach((li, i) => li.classList.toggle('on', i === acIdx)); }
 
 window.addEventListener("scroll", closeAc, true);
+/* pencarian item longgar: cocok persis, atau nama item DB mengandung teks yang diketik */
+function findItem(name) {
+  const q = canon(name); if (!q) return null;
+  const exact = DB.items.get(q); if (exact) return exact;
+  const hits = []; DB.items.forEach((v, k) => { if (k.includes(q)) hits.push(v); });
+  return hits.length ? { name, kat: hits[0].kat, ids: new Set(), offers: hits.flatMap(v => v.offers) } : null;
+}
+/* dropdown vendor kustom: nama di kiri, harga rata kanan */
+const vlist = $("v-list");
+function closeV() { vlist.hidden = true; }
+function openV(sel) {
+  vlist.textContent = "";
+  [...sel.options].forEach(o => {
+    const li = h("li", { class: o.value === sel.value ? "on" : "", role: "option" },
+      h("span", { text: o.dataset.v || o.text }),
+      o.dataset.price ? h("b", { text: "Rp " + o.dataset.price }) : null);
+    li.addEventListener("mousedown", ev => {
+      ev.preventDefault(); sel.value = o.value; closeV();
+      sel.dispatchEvent(new Event("change"));
+    });
+    vlist.append(li);
+  });
+  const r = sel.getBoundingClientRect();
+  vlist.style.minWidth = Math.max(r.width, 320) + "px";
+  vlist.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 340)) + "px";
+  vlist.style.top = (r.bottom + 2) + "px";
+  vlist.hidden = false;
+}
+document.addEventListener("mousedown", e => { if (!vlist.contains(e.target) && e.target.tagName !== "SELECT") closeV(); });
+window.addEventListener("scroll", closeV, true);
+
 
 /* ===== render struktur tabel ===== */
 function render() {
@@ -980,14 +1018,14 @@ function lineRow(cat, it, parent) {
   const vo = h("input", { class: "cell", placeholder: "Ketik nama vendor", "aria-label": "Nama vendor (manual)", autocomplete: "off", hidden: "" });
   const vb = h("button", { class: "x vback", type: "button", title: "Pilih dari daftar vendor", "aria-label": "Pilih dari daftar vendor", text: "▾", hidden: "" });
   function vendorOptions() {
-    const e = DB.items.get(canon(it.name));
+    const e = findItem(it.name);
     sel.textContent = "";
     sel.append(h("option", { value: "", text: "Pilih vendor" }), h("option", { value: "-", text: "-" }));
     let names = [];
     if (e) {
       const by = new Map();
       e.offers.forEach(o => { const p = priceOf(o, it.dur); if (!p) return; const c = by.get(o.vendor); if (!c || p.unit < c.p.unit) by.set(o.vendor, { o, p }); });
-      [...by.entries()].sort((a, b) => a[1].p.unit - b[1].p.unit).forEach(([v, x]) => { names.push(v); sel.append(h("option", { value: v, text: v + " · Rp " + fmt(x.p.unit) })); });
+      [...by.entries()].sort((a, b) => a[1].p.unit - b[1].p.unit).forEach(([v, x]) => { names.push(v); const op = h("option", { value: v, text: v + " · Rp " + fmt(x.p.unit) }); op.dataset.v = v; op.dataset.price = fmt(x.p.unit); sel.append(op); });
     } else { names = DB.vendors.slice().sort((a, b) => a.localeCompare(b)); names.forEach(v => sel.append(h("option", { value: v, text: v }))); }
     if (it.vendor && !it.vOther && it.vendor !== "-" && !names.includes(it.vendor)) sel.append(h("option", { value: it.vendor, text: it.vendor }));
     sel.append(h("option", { value: OTHER, text: "Lainnya…" }));
@@ -996,7 +1034,7 @@ function lineRow(cat, it, parent) {
   }
   /* vendor dari database dipilih: Modal Satuan terisi otomatis (per hari); mengetik Modal Satuan sendiri menghentikan pengisian otomatis */
   function applyVendor(silent) {
-    const e = DB.items.get(canon(it.name));
+    const e = findItem(it.name);
     const offers = e && it.vendor ? e.offers.filter(o => o.vendor === it.vendor) : [];
     const best = offers.length ? cheapest(offers, it.dur) : null;
     const r = refs.items[it.id];
@@ -1006,7 +1044,7 @@ function lineRow(cat, it, parent) {
     } else { it.offerId = null; if (r) r.price.title = ""; }
   }
   function autoVendor() {   /* item dipilih dari database: vendor termurah terisi otomatis (bisa diganti) */
-    const e = DB.items.get(canon(it.name)), b = e && cheapest(e.offers, it.dur);
+    const e = findItem(it.name), b = e && cheapest(e.offers, it.dur);
     if (!it.vendor && !it.vOther && b) { it.vendor = b.o.vendor; applyVendor(); }
     vendorOptions();
   }
@@ -1017,7 +1055,9 @@ function lineRow(cat, it, parent) {
     else { it.vOther = false; it.vendor = sel.value; applyVendor(); }
     update(); save();
   });
-  vo.addEventListener("input", () => { it.vendor = vo.value; save(); });
+    sel.addEventListener("mousedown", e => { if (sel.disabled) return; e.preventDefault(); sel.focus(); openV(sel); });
+  sel.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") { e.preventDefault(); openV(sel); } else if (e.key === "Escape") closeV(); });
+vo.addEventListener("input", () => { it.vendor = vo.value; save(); });
   vo.addEventListener("keydown", e => { if (e.key === "Escape") { e.preventDefault(); backToList(true); } });
   vo.addEventListener("blur", () => { if (it.vOther && !vo.value.trim()) setTimeout(() => { if (it.vOther && !vo.value.trim()) backToList(false); }, 120); });
   vb.addEventListener("click", () => backToList(true));
@@ -1049,7 +1089,7 @@ function lineRow(cat, it, parent) {
   if (fixed) { nm.readOnly = true; nm.tabIndex = -1; }
   else {
     nm.addEventListener("input", () => { it.name = nm.value;
-      { const e = DB.items.get(canon(it.name)); if (it.offerId && !(e && e.offers.some(o => o.id === it.offerId))) { it.offerId = null; it.vendor = ""; it.vOther = false; } }
+      { const e = findItem(it.name); if (it.offerId && !(e && e.offers.some(o => o.id === it.offerId))) { it.offerId = null; it.vendor = ""; it.vOther = false; } }
       vendorOptions(); showAc(nm, it, ghost); update(); save(); });
     nm.addEventListener("keydown", e => {
       if (!list.hidden && acInp === nm) {
