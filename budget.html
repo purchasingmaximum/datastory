@@ -154,7 +154,14 @@ table.sheet { width: 100%; table-layout: fixed; border-collapse: collapse; font-
 .sheet tr.cat td { padding: 9px 6px; }
 .sheet .cell.name, .sheet .cat-in { text-overflow: ellipsis; }
 .sheet .cat-in { width: 100%; max-width: 200px; }
-@media (max-width: 760px) { table.sheet { min-width: 900px; } }
+@media (max-width: 760px) { table.sheet { min-width: 980px; } }
+.sheet th:nth-child(2) { text-align: left; }
+.sheet select { font-size: 13px; padding: 9px 4px; }
+.vwrap { position: relative; }
+.vwrap .cell { text-align: left; padding-right: 22px; }
+.vwrap [hidden] { display: none !important; }
+.vback { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); font-size: 12px !important; padding: 4px 5px !important; }
+tr.off .vwrap .cell { opacity: .4; }
 .sheet th { text-align: right; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); }
 .sheet th:first-child { text-align: left; }
 .sheet td { padding: 0; border-bottom: 1px solid var(--line-soft); }
@@ -375,7 +382,8 @@ tr.off select { opacity: .4; }
 table.ptable { font-size: 12.5px; }
 .ptable td, .ptable th { padding-left: 8px; padding-right: 8px; }
 .ptable td { white-space: nowrap; }
-.ptable td:first-child { white-space: normal; }
+.ptable td:first-child, .ptable td:nth-child(2) { white-space: normal; }
+.ptable th:nth-child(2), .ptable td:nth-child(2) { text-align: left; }
 @media (max-width: 600px) { .b-grand strong { font-size: 20px; } .dur .top-in { flex: 0 0 64px; } }
 </style>
 </head>
@@ -416,8 +424,8 @@ table.ptable { font-size: 12.5px; }
   <main>
     <div class="sheet-wrap">
       <table class="sheet" id="sheet">
-        <colgroup><col style="width:19%"><col style="width:6%"><col style="width:6%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:9%"></colgroup>
-        <thead><tr><th>Item</th><th>Qty</th><th>Durasi</th><th>Harga Jual Satuan</th><th>Total Harga Jual</th><th>Modal Satuan</th><th>Total Modal</th><th>Margin</th><th style="text-align:center">Ada</th></tr></thead>
+        <colgroup><col style="width:15%"><col style="width:12%"><col style="width:5%"><col style="width:5%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:10%"><col style="width:8%"></colgroup>
+        <thead><tr><th>Item</th><th>Vendor</th><th>Qty</th><th>Durasi</th><th>Harga Jual Satuan</th><th>Total Harga Jual</th><th>Modal Satuan</th><th>Total Modal</th><th>Margin</th><th style="text-align:center">Ada</th></tr></thead>
       </table>
     </div>
     <button class="add-cat" id="add-cat" type="button">+ Tambah kategori khusus untuk proyek ini</button>
@@ -466,7 +474,7 @@ const STORE_KEY = "budget-event-v1";
 let uid = 0;
 const nid = () => "i" + (++uid);
 
-const newItem = c => ({ id: nid(), name: "", pcs: 0, dur: 1, hjs: 0, price: 0, jual: 0, jm: false, off: false, custom: !!c, subs: [] });
+const newItem = c => ({ id: nid(), name: "", vendor: "", vOther: false, pcs: 0, dur: 1, hjs: 0, price: 0, jual: 0, jm: false, off: false, custom: !!c, subs: [] });
 function freshState() {
   return { project: { nama: "", venue: "", mulai: "", selesai: "" },
     cats: TEMPLATE.map(([name, items]) => ({ id: nid(), name, custom: false, items: items.map(([n]) => Object.assign(newItem(), { name: n })) })) };
@@ -909,7 +917,7 @@ const refs = { items: {}, cats: {}, catInp: {} };
     list.style.left = r.left + 'px'; list.style.top = (r.bottom + 2) + 'px'; list.style.minWidth = Math.max(r.width, 320) + 'px';
     list.hidden = false;
   }
-  function pick(name) { acInp.value = name; acRow.name = name; closeAc(); update(); save(); }
+  function pick(name) { acInp.value = name; acRow.name = name; const rr = refs.items[acRow.id]; if (rr && rr.vopt) rr.vopt(); closeAc(); update(); save(); }
   function markAc() { [...list.children].forEach((li, i) => li.classList.toggle('on', i === acIdx)); }
 
 window.addEventListener("scroll", closeAc, true);
@@ -931,10 +939,10 @@ function render() {
     const actCell = h("td", { class: "td-act" });
     if (cat.custom) actCell.append(h("button", { class: "x", type: "button", title: "Hapus kategori", "aria-label": "Hapus kategori", text: "×",
       onclick: () => { state.cats = state.cats.filter(c => c.id !== cat.id); render(); update(); save(); } }));
-    tb.append(h("tr", { class: "cat" }, h("td", {}, nameCell), h("td", { colspan: "3" }), jualT, h("td"), modalT, marT, actCell));
+    tb.append(h("tr", { class: "cat" }, h("td", {}, nameCell), h("td", { colspan: "4" }), jualT, h("td"), modalT, marT, actCell));
     refs.cats[cat.id] = { modalT, jualT, marT };
     cat.items.forEach(it => { tb.append(lineRow(cat, it)); (it.subs || []).forEach(sb => tb.append(lineRow(cat, sb, it))); });
-    tb.append(h("tr", { class: "addrow" }, h("td", { colspan: "9" }, h("button", { class: "add", type: "button", text: "+ Tambah item",
+    tb.append(h("tr", { class: "addrow" }, h("td", { colspan: "10" }, h("button", { class: "add", type: "button", text: "+ Tambah item",
       onclick: () => { const it = newItem(true); cat.items.push(it); render(); update(); save(); const r = refs.items[it.id]; if (r) r.nameInp.focus(); } }))));
     table.append(tb);
   });
@@ -953,6 +961,32 @@ function lineRow(cat, it, parent) {
   if (it.dur === undefined) it.dur = durOf(it);
   const nm = h("input", { class: "cell name", value: it.name, "aria-label": "Nama item", placeholder: sub ? "Sub item" : "Nama item", autocomplete: "off", "data-col": "name" });
   const ghost = h("span", { class: "acg", "aria-hidden": "true" });
+  /* vendor: dropdown dari database + "Lainnya" untuk isi manual */
+  const OTHER = "__other";
+  const sel = h("select", { "aria-label": "Vendor" });
+  const vo = h("input", { class: "cell", placeholder: "Ketik nama vendor", "aria-label": "Nama vendor (manual)", autocomplete: "off", hidden: "" });
+  const vb = h("button", { class: "x vback", type: "button", title: "Pilih dari daftar vendor", "aria-label": "Pilih dari daftar vendor", text: "▾", hidden: "" });
+  function vendorOptions() {
+    const e = DB.items.get(canon(it.name));
+    const names = (e ? [...new Set(e.offers.map(o => o.vendor))] : DB.vendors.slice()).sort((a, b) => a.localeCompare(b));
+    sel.textContent = "";
+    sel.append(h("option", { value: "", text: "Pilih vendor" }), h("option", { value: "-", text: "-" }));
+    names.forEach(v => sel.append(h("option", { value: v, text: v })));
+    if (it.vendor && !it.vOther && it.vendor !== "-" && !names.includes(it.vendor)) sel.append(h("option", { value: it.vendor, text: it.vendor }));
+    sel.append(h("option", { value: OTHER, text: "Lainnya…" }));
+    sel.value = it.vOther ? OTHER : (it.vendor || "");
+    sel.hidden = !!it.vOther; vo.hidden = vb.hidden = !it.vOther; vo.value = it.vOther ? (it.vendor || "") : "";
+  }
+  const backToList = focus => { it.vOther = false; it.vendor = ""; vendorOptions(); save(); if (focus) sel.focus(); };
+  sel.addEventListener("change", () => {
+    if (sel.value === OTHER) { it.vOther = true; it.vendor = ""; sel.hidden = true; vo.hidden = vb.hidden = false; vo.value = ""; vo.focus(); }
+    else { it.vOther = false; it.vendor = sel.value; }
+    save();
+  });
+  vo.addEventListener("input", () => { it.vendor = vo.value; save(); });
+  vo.addEventListener("keydown", e => { if (e.key === "Escape") { e.preventDefault(); backToList(true); } });
+  vo.addEventListener("blur", () => { if (it.vOther && !vo.value.trim()) setTimeout(() => { if (it.vOther && !vo.value.trim()) backToList(false); }, 120); });
+  vb.addEventListener("click", () => backToList(true));
   const num = (label, col, ph) => h("input", { class: "cell", inputmode: "decimal", placeholder: ph || "0", "aria-label": label, "data-col": col });
   const pcs = num("Qty", "pcs"), dur = num("Durasi", "dur", "1"), hjs = num("Harga jual satuan", "hjs"), jual = num("Total harga jual", "jual"), price = num("Modal satuan", "price");
   /* mengubah Qty / Durasi / Harga Jual Satuan mengembalikan Total Harga Jual ke hitungan otomatis (bila Harga Jual Satuan sudah ada) */
@@ -970,16 +1004,17 @@ function lineRow(cat, it, parent) {
   const act = h("td", { class: "td-act" }, ada);
   if (!sub) act.append(h("button", { class: "x add-sub", type: "button", title: "Tambah sub item", "aria-label": "Tambah sub item", text: "+",
     onclick: () => {
-      if (!(it.subs && it.subs.length)) { it.pcs = 0; it.dur = 1; it.hjs = 0; it.price = 0; it.jual = 0; it.jm = false; }
+      if (!(it.subs && it.subs.length)) { it.pcs = 0; it.dur = 1; it.hjs = 0; it.price = 0; it.jual = 0; it.jm = false; it.vendor = ""; it.vOther = false; }
       const sb = newItem(); (it.subs = it.subs || []).push(sb); render(); update(); save();
       const r = refs.items[sb.id]; if (r) r.nameInp.focus();
     } }));
   if (sub || it.custom) act.append(h("button", { class: "x", type: "button", title: "Hapus", "aria-label": "Hapus", text: "×",
     onclick: () => { if (sub) parent.subs = parent.subs.filter(x => x.id !== it.id); else cat.items = cat.items.filter(x => x.id !== it.id); render(); update(); save(); } }));
-  const r = refs.items[it.id] = { tr: null, mod, mar, jual, pcs, dur, hjs, price, ada, nameInp: nm, sub };
+  const r = refs.items[it.id] = { tr: null, mod, mar, jual, pcs, dur, hjs, price, ada, nameInp: nm, sub, sel, vo, vb, vopt: vendorOptions };
+  vendorOptions();
   if (fixed) { nm.readOnly = true; nm.tabIndex = -1; }
   else {
-    nm.addEventListener("input", () => { it.name = nm.value; showAc(nm, it, ghost); update(); save(); });
+    nm.addEventListener("input", () => { it.name = nm.value; vendorOptions(); showAc(nm, it, ghost); update(); save(); });
     nm.addEventListener("keydown", e => {
       if (!list.hidden && acInp === nm) {
         if (e.key === "ArrowDown") { e.preventDefault(); acIdx = (acIdx + 1) % acItems.length; markAc(); return; }
@@ -994,7 +1029,7 @@ function lineRow(cat, it, parent) {
     nm.addEventListener("focus", () => { if (nm.value) showAc(nm, it, ghost); });
     nm.addEventListener("blur", () => setTimeout(() => { if (acInp === nm) closeAc(); }, 120));
   }
-  r.tr = h("tr", sub ? { class: "subrow" } : {}, h("td", { class: "td-name" }, h("div", { class: "ac" }, ghost, nm)), h("td", {}, pcs), h("td", {}, dur), h("td", {}, hjs), h("td", {}, jual), h("td", {}, price), mod, mar, act);
+  r.tr = h("tr", sub ? { class: "subrow" } : {}, h("td", { class: "td-name" }, h("div", { class: "ac" }, ghost, nm)), h("td", { class: "td-vend" }, h("div", { class: "vwrap" }, sel, vo, vb)), h("td", {}, pcs), h("td", {}, dur), h("td", {}, hjs), h("td", {}, jual), h("td", {}, price), mod, mar, act);
   return r.tr;
 }
 
@@ -1009,7 +1044,7 @@ const rowCls = (j, m, dead) => dead ? "off" : (!j && !m) ? "empty" : j - m > 0 ?
 function paint(r, it, dead) {
   const m = lineModal(it), j = jualOf(it);
   r.tr.className = rowCls(j, m, dead) + (r.sub ? " subrow" : "");
-  r.pcs.disabled = r.dur.disabled = r.hjs.disabled = r.price.disabled = r.jual.disabled = dead;
+  r.pcs.disabled = r.dur.disabled = r.hjs.disabled = r.price.disabled = r.jual.disabled = r.sel.disabled = r.vo.disabled = r.vb.disabled = dead;
   r.mod.textContent = dead || !m ? "–" : fmt(m);
   if (document.activeElement !== r.jual) r.jual.value = j ? fmt(j) : "";   /* total otomatis ikut berubah saat Qty / Durasi / harga diubah */
   r.jual.classList.toggle("man", isMan(it) && j > 0);
@@ -1036,7 +1071,8 @@ function update() {
         let ij = 0, im = 0;
         subs.forEach(sb => { const sr = refs.items[sb.id], dead = it.off || sb.off; if (sr) paint(sr, sb, dead); if (!dead) { ij = round2(ij + jualOf(sb)); im = round2(im + lineModal(sb)); } });
         r.tr.className = rowCls(ij, im, it.off) + " parent";
-        r.pcs.disabled = r.dur.disabled = r.hjs.disabled = r.price.disabled = r.jual.disabled = true;
+        r.pcs.disabled = r.dur.disabled = r.hjs.disabled = r.price.disabled = r.jual.disabled = r.sel.disabled = true;
+        r.sel.value = ""; r.sel.hidden = false; r.vo.hidden = r.vb.hidden = true;
         r.pcs.value = r.dur.value = r.hjs.value = r.price.value = "";
         r.jual.value = ij ? fmt(ij) : ""; r.jual.classList.remove("man"); r.jual.title = "";
         r.mod.textContent = it.off || !im ? "–" : fmt(im); marText(r.mar, ij, im, it.off);
@@ -1112,7 +1148,7 @@ function buildPreview() {
     h("h1", { class: "p-title", text: "Budget: " + (p.nama || "–") }),
     h("div", { class: "p-meta" }, info("Tanggal Event:", dates), info("Venue:", p.venue)));
   const table = h("table", { class: "ptable" },
-    h("thead", {}, h("tr", {}, ...["Item", "Qty", "Durasi", "Harga Jual Satuan", "Total Harga Jual", "Modal Satuan", "Total Modal", "Margin"].map(t => h("th", { text: t })))));
+    h("thead", {}, h("tr", {}, ...["Item", "Vendor", "Qty", "Durasi", "Harga Jual Satuan", "Total Harga Jual", "Modal Satuan", "Total Modal", "Margin"].map(t => h("th", { text: t })))));
   let GJ = 0, GM = 0;
   const marTd = (j, m) => { const td = h("td", { class: "td-mar" }); marText(td, j, m, false); return td; };
   const nz = v => v ? fmt(v) : "–";
@@ -1121,20 +1157,21 @@ function buildPreview() {
     let cj = 0, cm = 0; const body = [];
     const line = (o, indent) => { const m = lineModal(o), j = jualOf(o); return h("tr", { class: rowCls(j, m, false) },
       h("td", indent ? { text: o.name || "(tanpa nama)", style: "padding-left:32px" } : { text: o.name || "(tanpa nama)" }),
+      h("td", { text: (o.vendor && o.vendor !== "-") ? o.vendor : "–" }),
       h("td", { text: nz(o.pcs) }), h("td", { text: nz(o.dur) }), h("td", { text: isMan(o) ? "–" : nz(o.hjs) }), h("td", { text: fmt(j) }),
       h("td", { text: nz(o.price) }), h("td", { text: fmt(m) }), marTd(j, m)); };
     items.forEach(it => {
       const subs = (it.subs || []).filter(x => !x.off);
       if ((it.subs || []).length) {
         let ij = 0, im = 0; subs.forEach(x => { ij = round2(ij + jualOf(x)); im = round2(im + lineModal(x)); });
-        body.push(h("tr", { class: rowCls(ij, im, false) + " parent" }, h("td", { text: it.name || "(tanpa nama)" }), E(), E(), E(), h("td", { text: fmt(ij) }), E(), h("td", { text: fmt(im) }), marTd(ij, im)));
+        body.push(h("tr", { class: rowCls(ij, im, false) + " parent" }, h("td", { text: it.name || "(tanpa nama)" }), E(), E(), E(), E(), h("td", { text: fmt(ij) }), E(), h("td", { text: fmt(im) }), marTd(ij, im)));
         subs.forEach(x => body.push(line(x, true))); cj = round2(cj + ij); cm = round2(cm + im);
       } else { body.push(line(it, false)); cj = round2(cj + jualOf(it)); cm = round2(cm + lineModal(it)); }
     });
     GJ = round2(GJ + cj); GM = round2(GM + cm);
-    table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: letter(ci) + ".  " + (cat.name || "(tanpa nama)") }), E(), E(), E(), h("td", { text: fmt(cj) }), E(), h("td", { text: fmt(cm) }), h("td", { text: sgn(cj - cm) })), ...body));
+    table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: letter(ci) + ".  " + (cat.name || "(tanpa nama)") }), E(), E(), E(), E(), h("td", { text: fmt(cj) }), E(), h("td", { text: fmt(cm) }), h("td", { text: sgn(cj - cm) })), ...body));
   });
-  table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: "Total" }), E(), E(), E(), h("td", { text: rp(GJ) }), E(), h("td", { text: rp(GM) }), h("td", { text: sgn(GJ - GM) + (GJ > 0 ? "  (" + (Math.round((GJ - GM) / GJ * 1000) / 10).toString().replace(".", ",") + "%)" : "") }))));
+  table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: "Total" }), E(), E(), E(), E(), h("td", { text: rp(GJ) }), E(), h("td", { text: rp(GM) }), h("td", { text: sgn(GJ - GM) + (GJ > 0 ? "  (" + (Math.round((GJ - GM) / GJ * 1000) / 10).toString().replace(".", ",") + "%)" : "") }))));
   root.append(h("div", { class: "p-tablewrap" }, table));
   root.append(h("div", { class: "p-foot", text: "Dibuat " + new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) }));
 }
@@ -1177,7 +1214,7 @@ function visibleCats() {
 function buildWorkbook() {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("Cost");
-  const widths = { A: 4.7, B: 5.3, C: 27.7, D: 44.3, E: 8.1, F: 13, G: 13, H: 13, I: 14.8, J: 16.1, K: 18.7, L: 24, M: 16.7, N: 15.8, O: 24 };
+  const widths = { A: 4.7, B: 5.3, C: 27.7, D: 44.3, E: 8.1, F: 13, G: 13, H: 13, I: 14.8, J: 16.1, K: 18.7, L: 24, M: 16.7, N: 15.8, O: 24, P: 24 };
   Object.keys(widths).forEach(k => { ws.getColumn(k).width = widths[k]; });
 
   const thin = { style: "thin", color: { argb: "FF000000" } };
@@ -1203,7 +1240,7 @@ function buildWorkbook() {
     if (o.border) c.border = o.border;
     if (o.fill) c.fill = solid(o.fill);
   };
-  const MAIN = "BCDEFGHIJK".split(""), INTERNAL = ["M", "N", "O"];
+  const MAIN = "BCDEFGHIJK".split(""), INTERNAL = ["M", "N", "O", "P"];
   const grid = (r, internal) => (internal ? MAIN.concat(INTERNAL) : MAIN).forEach(col => put(col + r, undefined, { border: GRID }));
 
   /* bingkai & header proyek */
@@ -1231,7 +1268,7 @@ function buildWorkbook() {
 
   /* judul kolom */
   grid(15, true);
-  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "MODAL"], ["N", "MARGIN"], ["O", "MODAL SATUAN"]]
+  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "MODAL"], ["N", "MARGIN"], ["O", "MODAL SATUAN"], ["P", "VENDOR"]]
     .forEach(([col, t]) => put(col + 15, t, { font: FB, align: CENTER, border: GRID }));
   ["E15:F15", "G15:H15", "I15:J15"].forEach(rg => ws.mergeCells(rg));
 
@@ -1262,6 +1299,7 @@ function buildWorkbook() {
         put("M" + rr, modal, { fmt: ACC, border: GRID });
         put("N" + rr, { formula: `J${rr}-M${rr}`, result: round2(jual - modal) }, { fmt: ACC2, border: GRID });
         put("O" + rr, o.price || "", { fmt: ACC, border: GRID });   /* modal satuan: tepat di kanan kolom margin */
+        put("P" + rr, (o.vendor && o.vendor !== "-") ? o.vendor : "", { border: GRID });   /* nama vendor */
         catSum = round2(catSum + jual); sumMargin = round2(sumMargin + jual - modal); sumModal = round2(sumModal + modal);
       };
       if (hasSub) subs.forEach((sb, k) => val(r + 1 + k, sb, sb.name || "(tanpa nama)"));
@@ -1474,7 +1512,7 @@ function bootWithTimeout() {
   syncStatic(); render(); update(); save(true);
   if (!store.items[curId]) save();
   document.body.classList.remove("booting");
-  fetchDb().then(res => { indexDb(res); $("b-status").textContent = "Database terhubung: " + DB.items.size + " item (untuk saran nama item)."; })
+  fetchDb().then(res => { indexDb(res); Object.values(refs.items).forEach(r => r.vopt && r.vopt()); $("b-status").textContent = "Database terhubung: " + DB.items.size + " item dari " + DB.vendors.length + " vendor."; })
     .catch(err => { const s = $("b-status"); s.className = "b-status err"; s.textContent = "Database gagal dimuat (" + ((err && err.message) || "error") + "). Anda tetap bisa mengisi manual."; });
 })();
 </script>
