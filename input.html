@@ -12,38 +12,30 @@
 <link rel="stylesheet" href="css/style.css" />
 <link rel="stylesheet" href="css/loader.css" />
 <link rel="stylesheet" href="css/input.css" />
+<link rel="stylesheet" href="css/input-feas.css" />
+<link rel="stylesheet" href="css/feas.css" />
 </head>
 <body>
-  <header class="topnav">
-    <div class="brand">PURCHASING MAXIMUM THE ULTIMATE</div>
-    <div class="topnav-actions"><nav aria-label="Navigasi utama">
-      <a href="input.html" class="active">Input Report</a>
-      <a href="events.html">Daftar Event</a>
-      <a href="analytics.html">Analytics</a>
-      <a href="vendor.html">Database</a>
-    </nav><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+  <header class="topnav homebar">
+    <a class="home-btn" href="index.html" aria-label="Kembali ke Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
+    <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v6M9 15h6"/></svg>Input Report</div>
+    <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
   </header>
 
   <main class="input-page">
-    <div class="page-heading">
-      <div class="eyebrow" id="page-eyebrow">LAPORAN EVENT</div>
-      <h1 id="page-title">Catat detail event Anda</h1>
-      <p id="page-desc">Lengkapi informasi event, lokasi, dan barang yang disewa. Timestamp pengisian dicatat otomatis — Anda tidak perlu mengisinya.</p>
-      <a href="events.html" class="back-to-list" id="back-to-list" hidden>← Kembali ke Daftar Event tanpa menyimpan</a>
-    </div>
-
     <form id="report-form" novalidate>
-      <fieldset class="form-section">
-        <legend>Event Information</legend>
-        <div class="field-grid">
+      <div class="head">
+        <div class="top">
+          <div class="field top-title" data-field="event">
+            <label for="f-event">Input Report:</label>
+            <input class="title-in" id="f-event" name="event" type="text" placeholder="Nama event (wajib diisi)" autocomplete="off" required />
+            <div class="error-msg" role="alert"></div>
+          </div>
+          <span class="edit-mode-note" id="edit-mode-note" hidden>Mengedit event yang sudah ada: item lama diganti dengan isi form ini.</span>
+          <div class="field-grid">
           <div class="field" data-field="user">
             <label for="f-user">Nama user / pengisi laporan</label>
             <input id="f-user" name="user" type="text" autocomplete="name" required />
-            <div class="error-msg" role="alert"></div>
-          </div>
-          <div class="field" data-field="event">
-            <label for="f-event">Nama event</label>
-            <input id="f-event" name="event" type="text" required />
             <div class="error-msg" role="alert"></div>
           </div>
           <div class="field" data-field="client">
@@ -72,13 +64,7 @@
             <span class="hint" id="total-days-hint"></span>
             <div class="error-msg" role="alert"></div>
           </div>
-        </div>
-      </fieldset>
-
-      <fieldset class="form-section">
-        <legend>Location</legend>
-        <div class="field-grid">
-          <div class="field" data-field="city">
+                  <div class="field" data-field="city">
             <label for="f-city">Kota</label>
             <input id="f-city" name="city" type="text" required />
             <div class="error-msg" role="alert"></div>
@@ -89,14 +75,20 @@
             <div class="error-msg" role="alert"></div>
           </div>
         </div>
-      </fieldset>
+        </div>
+        <div class="actions">
+          <button class="ghost" id="pj-open" type="button">Daftar Event</button>
+          <a class="ghost" id="new-event" href="input.html">+ Event baru</a>
+          <button class="primary" type="submit" id="top-submit">Next: Preview →</button>
+        </div>
+      </div>
 
       <fieldset class="form-section">
         <legend>Rental Items</legend>
         <div class="items-header">
           <div class="items-count">TOTAL ITEMS: <strong id="items-count">0</strong></div>
         </div>
-        <p class="items-hint">Ketik nama barang — saran dari dictionary muncul sebagai teks abu-abu (tekan Tab atau → untuk menerima), dan Kategori terisi otomatis. Barang yang belum ada di dictionary tetap bisa diisi dan otomatis ditambahkan ke dictionary saat disubmit. Nama vendor: klik atau ketik untuk mencari. Nominal DP otomatis sama dengan Harga total jika Lunas; isi manual hanya untuk DP.</p>
+        <p class="items-hint" hidden>Ketik nama barang — saran dari dictionary muncul sebagai teks abu-abu (tekan Tab atau → untuk menerima), dan Kategori terisi otomatis. Barang yang belum ada di dictionary tetap bisa diisi dan otomatis ditambahkan ke dictionary saat disubmit. Nama vendor: klik atau ketik untuk mencari. Nominal DP otomatis sama dengan Harga total jika Lunas; isi manual hanya untuk DP.</p>
         <div class="items-table-wrap">
           <table class="items-table">
             <thead>
@@ -119,12 +111,24 @@
         <button type="button" class="btn-add-item" id="add-item">+ Tambah Barang</button>
       </fieldset>
 
-      <div class="submit-row">
-        <button type="submit" id="submit-report">Submit Report</button>
-        <span class="edit-mode-note" id="edit-mode-note" hidden>Mengedit event yang sudah ada — item lama akan diganti dengan yang ada di form ini.</span>
+      <div class="submit-row bar">
+        <div class="totals" aria-live="polite">
+          <div><span>Total</span><strong id="t-total">Rp 0</strong></div>
+          <div><span>Terbayar (DP/Lunas)</span><strong id="t-dp">Rp 0</strong></div>
+          <div><span>Sisa</span><strong id="t-sisa">Rp 0</strong></div>
+          <div class="t-days" id="t-days"></div>
+        </div>
         <span class="form-level-error" id="form-level-error" role="alert"></span>
+        <button type="submit" id="submit-report">Next: Preview →</button>
       </div>
     </form>
+
+    <div class="page-heading">
+      <div class="eyebrow" id="page-eyebrow">LAPORAN EVENT</div>
+      <h1 id="page-title">Catat detail event Anda</h1>
+      <p id="page-desc">Lengkapi informasi event, lokasi, dan barang yang disewa. Timestamp pengisian dicatat otomatis — Anda tidak perlu mengisinya.</p>
+      <a href="input.html?list=1" class="back-to-list" id="back-to-list" hidden>← Kembali ke Daftar Event tanpa menyimpan</a>
+    </div>
 
     <!-- Halaman pratinjau: muncul setelah tombol Submit/Update ditekan dan validasi lolos. -->
     <section class="report-preview" id="report-preview" hidden aria-live="polite">
@@ -136,6 +140,17 @@
       </div>
     </section>
   </main>
+
+
+  <dialog id="projects" aria-labelledby="pj-title">
+    <div class="pj-head"><h2 id="pj-title">Daftar Event</h2><button class="x" id="pj-close" type="button" aria-label="Tutup">×</button></div>
+    <div class="pj-tools">
+      <input class="pj-search" id="pj-search" type="search" placeholder="Cari nama event, client, kota…" aria-label="Cari event" autocomplete="off" />
+      <select id="pj-sort" aria-label="Urutkan"><option value="new">Terbaru diubah</option><option value="old">Terlama diubah</option><option value="name">Nama A–Z</option></select>
+    </div>
+    <div class="pj-msg" id="pj-msg" role="status"></div>
+    <ul class="pj-list" id="pj-list"></ul>
+  </dialog>
 
   <div class="success-toast" id="success-toast" role="status" aria-live="polite">
     <div><span class="check">✓</span><strong>REPORT SAVED</strong></div>
@@ -210,7 +225,7 @@
       </td>
       <td class="col-desc" data-label="Keterangan (opsional)">
         <div class="field" data-field="description">
-          <textarea data-name="description" rows="2" aria-label="Keterangan (opsional)" placeholder="Spesifikasi, ukuran, warna, dll."></textarea>
+          <textarea data-name="description" rows="1" aria-label="Keterangan (opsional)" placeholder="Spesifikasi, ukuran, warna, dll."></textarea>
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
@@ -226,6 +241,7 @@
   <script src="js/firebase-data.js"></script>
   <script src="js/outbox.js"></script>
   <script src="js/combobox.js"></script>
+  <script src="js/input-sheet.js"></script>
   <script src="js/input.js"></script>
 </body>
 </html>

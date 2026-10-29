@@ -1,0 +1,104 @@
+/* input-feas.css — Input Report dipadatkan ala Feasibility: kartu rapat, 4 kolom, tombol Submit menempel di bawah. */
+.input-page{max-width:1240px;padding:18px clamp(14px,3vw,28px) 40px}
+.input-page .page-heading{margin-bottom:12px}
+.input-page .page-heading .eyebrow,.input-page .page-heading p{display:none}
+.input-page .page-heading h1{font-size:1.5rem;font-weight:700}
+fieldset.form-section{background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:10px 16px 14px;margin:0 0 12px;min-width:0}
+fieldset.form-section legend{font-size:.95rem;font-weight:700;padding:0 6px;width:auto;border:0;margin:0}
+.field-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 12px}
+@media (max-width:1000px){.field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.field-grid{grid-template-columns:1fr}}
+.field{gap:3px}
+.field label{font-size:.78rem;font-weight:600;color:var(--muted)}
+.field .hint{font-size:.72rem}
+.field .error-msg{min-height:0;font-size:.74rem}
+.field input,.field select,.field textarea{font-size:.9rem;padding:7px 10px;border:1px solid var(--line);border-radius:6px}
+.field select{padding-right:30px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--f-blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--f-blue) 22%,transparent)}
+.field textarea{min-height:0;height:34px;resize:vertical}
+.items-header{margin-bottom:6px}
+.items-count{font-size:.9rem}
+.items-hint{font-size:.76rem;color:var(--muted);margin:0 0 8px}
+.items-table th,.items-table td{padding:4px 6px}
+.items-table th{font-size:.74rem}
+.items-table .item-block .btn-remove-item{padding:4px 10px;font-size:.74rem;border-radius:6px}
+.btn-add-item{padding:8px;border-width:1px;border-radius:8px;font-size:.85rem;color:var(--f-blue);margin-top:8px}
+.btn-add-item:hover{border-color:var(--f-blue);background:color-mix(in srgb,var(--f-blue) 8%,transparent)}
+.no-items-msg{padding:6px 0;font-size:.82rem}
+.submit-row:not(.preview-actions){position:sticky;bottom:0;z-index:5;background:var(--paper);padding:10px 0;margin-top:0;border-top:1px solid var(--line)}
+#submit-report,#preview-submit{padding:9px 24px;border-radius:6px;background:var(--f-blue);color:var(--f-blue-ink);font-size:.92rem;font-weight:600}
+#submit-report:hover{background:var(--f-blue);filter:brightness(1.08);transform:none}
+
+/* ---------- kepala gaya Feasibility ---------- */
+.input-page .head{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.input-page .top{flex:1 1 560px;min-width:0}
+.input-page .top-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0 0 10px}
+.input-page .top-title label{font-size:28px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;color:var(--ink)}
+.input-page .title-in{font:inherit;font-size:28px;font-weight:700;letter-spacing:-.01em;color:var(--ink);background:transparent;border:0;border-bottom:2px solid var(--line);border-radius:0;padding:2px 0;flex:1 1 260px;min-width:0;max-width:560px}
+.input-page .title-in::placeholder{font-weight:500;color:var(--muted);opacity:.7}
+.input-page .title-in:hover{border-bottom-color:var(--muted)}
+.input-page .title-in:focus{outline:none;box-shadow:none;border-bottom-color:var(--f-blue)}
+.input-page .top-title.has-error .title-in{border-bottom-color:var(--f-red)}
+.input-page .top-title .error-msg{flex-basis:100%;min-height:0}
+.input-page .head .field-grid{margin-top:4px}
+.input-page .edit-mode-note{display:block;color:var(--muted);font-size:.82rem;margin:0 0 8px}
+.input-page .actions{display:flex;gap:10px;flex-wrap:wrap;flex:0 0 auto}
+.input-page .ghost{font:inherit;font-size:13.5px;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.input-page .ghost:hover{color:var(--ink);border-color:var(--muted)}
+.input-page .primary{font:inherit;font-weight:600;font-size:14px;color:var(--f-blue-ink);background:var(--f-blue);border:0;border-radius:6px;padding:8px 16px;cursor:pointer}
+.input-page .primary:hover{filter:brightness(1.08)}
+@media (max-width:600px){.input-page .top-title label,.input-page .title-in{font-size:21px}.input-page .title-in{flex:1 1 100%;max-width:none}.input-page .actions{width:100%}.input-page .actions .ghost,.input-page .actions .primary{flex:1 1 auto;justify-content:center;text-align:center}}
+form[hidden]~.page-heading{display:block}
+form:not([hidden])~.page-heading{display:none}
+.page-heading .eyebrow,.page-heading p{display:block}
+
+/* ---------- tabel barang: sheet ---------- */
+.items-table-wrap{width:100%;margin:0;max-height:none;background:var(--paper-raised);border:1px solid var(--line);border-radius:10px}
+.items-table{min-width:1080px}
+.items-table th{background:var(--paper-raised);color:var(--muted);text-transform:none;letter-spacing:0;font-size:.78rem;font-weight:600;border-right:0;border-bottom:1px solid var(--line);padding:9px 10px}
+.items-table td{border-right:0;border-bottom:1px solid var(--line);padding:0;position:relative}
+.items-table .field{gap:0}
+.items-table .field input,.items-table .field select,.items-table .field textarea{width:100%;border:0;border-radius:0;background:transparent;box-shadow:none;padding:9px 10px;font-size:.9rem;height:auto;min-height:0}
+.items-table .field textarea{height:36px;resize:none;overflow:hidden}
+.items-table .col-price input,.items-table .col-dp input{text-align:right}
+.items-table .field input:hover:not(:disabled),.items-table .field select:hover,.items-table .field textarea:hover{background:color-mix(in srgb,var(--f-blue) 7%,transparent)}
+.items-table .field input:focus,.items-table .field select:focus,.items-table .field textarea:focus{outline:2px solid var(--f-blue);outline-offset:-2px;background:var(--paper-raised);box-shadow:none}
+.items-table .field.has-error input,.items-table .field.has-error select,.items-table .field.has-error textarea,.items-table input.fx-invalid{outline:2px solid var(--f-red);outline-offset:-2px}
+.items-table .field input:disabled{color:var(--muted);background:transparent}
+.items-table .field .error-msg{display:none}
+.items-table .hint{display:block;padding:0 10px 4px;font-size:.68rem;margin:-2px 0 0;text-align:right}
+.items-table .psrc{position:absolute;left:8px;top:3px;font-size:.58rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;pointer-events:none;color:var(--muted)}
+.items-table .psrc[data-src="db"]{color:var(--f-blue)}
+.items-table .psrc[data-src="perday"]{color:#c9971f}
+.items-table .psrc:empty{display:none}
+.items-table .btn-remove-item{border:0;background:transparent;color:var(--muted);font-size:1.05rem;padding:6px 10px;border-radius:6px}
+.items-table .btn-remove-item:hover{color:var(--f-red);background:transparent}
+.items-table .col-no{color:var(--muted);text-align:center}
+@media (max-width:900px){.items-table{min-width:0}.items-table .psrc{left:auto;right:10px}}
+
+/* ---------- bar total (menempel di bawah) ---------- */
+.submit-row.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:10px 16px;margin-top:12px;position:sticky;bottom:10px;z-index:5;box-shadow:var(--shadow)}
+.totals{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline}
+.totals>div{display:flex;flex-direction:column;line-height:1.2}
+.totals span{font-size:.72rem;color:var(--muted)}
+.totals strong{font-size:1.05rem}
+.totals .t-days{font-size:.78rem;color:var(--muted);align-self:center}
+.submit-row.bar #submit-report{margin-left:auto}
+
+/* ---------- dialog Daftar Event ---------- */
+dialog#projects{border:1px solid var(--line);border-radius:12px;background:var(--paper-raised);color:var(--ink);padding:18px 20px;width:min(700px,calc(100% - 32px));max-height:82vh;overflow:auto;font:inherit}
+dialog#projects::backdrop{background:rgba(8,14,20,.5)}
+.pj-head{display:flex;justify-content:space-between;align-items:center}
+.pj-head h2{margin:0;font-size:18px}
+.pj-head .x{font:inherit;background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:20px;padding:4px 8px}
+.pj-tools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 8px}
+.pj-tools input,.pj-tools select{font:inherit;font-size:14px;color:var(--ink);background:var(--paper-raised);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.pj-tools input{flex:1 1 220px}
+.pj-msg{min-height:20px;font-size:13px;color:var(--muted);margin-bottom:6px}
+.pj-list{list-style:none;margin:0;padding:0}
+.pj-list li{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
+.pj-list .nm{font-weight:600}
+.pj-list .sub{font-size:12.5px;color:var(--muted)}
+.pj-list .btns{display:flex;gap:6px}
+.pj-list .ghost{padding:5px 10px;font-size:13px}
+.pj-list li.cur .nm::after{content:" · dibuka";font-weight:400;color:var(--muted)}

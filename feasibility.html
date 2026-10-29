@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cek Kelayakan Anggaran Event</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #131d27;
+  --muted: #647282;
+  --line: #dbe1e7;
+  --line-soft: #eaeef2;
+  --blue: #1d5fd6;
+  --blue-ink: #ffffff;
+  --red: #c7352b;
+  --red-ink: #ffffff;
+  --green: #17824f;
+  --green-tint: #e7f5ed;
+  --red-tint: #fbebe9;
+  --cat-bg: #e4e9ee;
+  --focus: #1d5fd6;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+.wrap { max-width: 1160px; margin: 0 auto; padding: 24px 20px 64px; }
+
+/* ---------- header ---------- */
+.head { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.top { flex: 1 1 520px; min-width: 0; }
+.top-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 10px; }
+.top-title label { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.title-in {
+  font: inherit; font-size: 28px; font-weight: 700; letter-spacing: -0.01em;
+  color: var(--ink); background: transparent; border: 0; border-bottom: 2px solid var(--line);
+  padding: 2px 0; flex: 1 1 260px; min-width: 0; max-width: 520px;
+}
+.title-in::placeholder { font-weight: 500; color: var(--muted); opacity: .7; }
+.title-in:hover { border-bottom-color: var(--muted); }
+.title-in:focus { outline: none; border-bottom-color: var(--focus); }
+.top-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; }
+.top-k { width: 124px; flex: none; white-space: nowrap; font-size: 14px; font-weight: 600; color: var(--ink); }
+.top-k.req::after { content: " *"; color: var(--red); }
+.top-in {
+  font: inherit; font-size: 14px; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; min-width: 0;
+  flex: 1 1 220px; max-width: 360px;
+}
+.top-in:focus { outline: 2px solid var(--focus); outline-offset: -1px; }
+.top-in[type="date"] { flex: 0 0 160px; color-scheme: light; }
+.dates { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1 1 auto; }
+.dates .sd { color: var(--muted); font-size: 14px; }
+.invalid { border-color: var(--red) !important; }
+.title-in.invalid { border-bottom-color: var(--red) !important; }
+.req-msg { color: var(--red); font-size: 13.5px; margin: 10px 0 0; font-weight: 500; }
+.meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+.field { display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--muted); }
+.field input, .field select {
+  font: inherit; font-size: 14px; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 0;
+}
+.field input:focus, .field select:focus { outline: 2px solid var(--focus); outline-offset: -1px; }
+.field input[type="date"] { color-scheme: light; }
+.ghost {
+  font: inherit; font-size: 13.5px; color: var(--muted); background: transparent;
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.ghost:hover { color: var(--ink); border-color: var(--muted); }
+.ghost:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- layout ---------- */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start; }
+aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  aside { position: static; order: -1; }
+}
+
+/* ---------- verdict ---------- */
+.verdict { border-radius: 10px; padding: 18px 20px 16px; background: var(--blue); color: var(--blue-ink); transition: background-color .25s; }
+.verdict.no { background: var(--red); color: var(--red-ink); }
+.v-label { font-size: 13px; opacity: .85; }
+.v-word { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin: 2px 0 12px; }
+.v-reason { font-size: 13.5px; opacity: .95; margin: -6px 0 10px; }
+.v-gap { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 8px; font-size: 13px; opacity: .92; }
+.v-gap strong { font-size: 14px; font-weight: 600; }
+.gauge { height: 8px; border-radius: 4px; background: rgba(255,255,255,.28); margin-top: 12px; overflow: hidden; }
+.verdict.no .gauge { background: rgba(0,0,0,.2); }
+.gauge i { display: block; height: 100%; width: 0; background: currentColor; border-radius: 4px; transition: width .2s; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin-top: 14px; padding: 6px 16px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.row:last-child { border-bottom: 0; }
+.row .k { color: var(--muted); }
+.row .v { font-weight: 600; text-align: right; white-space: nowrap; }
+.row.strong .k { color: var(--ink); font-weight: 600; }
+.row .neg { color: var(--red); }
+.row .pos { color: var(--green); }
+.row input, .row select {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; text-align: right;
+}
+.row input:focus, .row select:focus { outline: 2px solid var(--focus); outline-offset: -1px; }
+.row.note .k { font-size: 12.5px; }
+.row .k { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; }
+.row .k .pct { margin-left: 4px; }
+.row .k .unit { margin-left: 0; }
+.row .k .chip { font-weight: 600; color: var(--ink); }
+.row.strong .v { font-size: 15px; }
+.row input.wide { width: 130px; }
+.row input.pct { width: 64px; }
+.row .unit { color: var(--muted); font-weight: 400; margin-left: 4px; }
+.row select { text-align: left; max-width: 170px; }
+
+/* ---------- sheet ---------- */
+.sheet-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+table.sheet { width: 100%; min-width: 600px; border-collapse: collapse; }
+.sheet th { text-align: right; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); }
+.sheet th:first-child { text-align: left; }
+.sheet td { padding: 0; border-bottom: 1px solid var(--line-soft); }
+.c-num { width: 150px; }
+.c-mar { width: 150px; }
+.c-act { width: 112px; }
+tr.cat td { background: var(--cat-bg); font-weight: 600; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+tr.cat td.n { text-align: right; font-weight: 600; }
+tr.cat .cat-name { display: flex; align-items: center; gap: 8px; }
+tr.cat .code { color: var(--muted); font-weight: 600; }
+.cat-in { font: inherit; font-weight: 600; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; width: 200px; }
+.cell {
+  width: 100%; font: inherit; color: var(--ink); background: transparent;
+  border: 0; border-radius: 0; padding: 9px 12px; text-align: right;
+}
+.cell.name { text-align: left; }
+.cell:hover:not(:disabled) { background: color-mix(in srgb, var(--focus) 7%, transparent); }
+.cell:focus { outline: 2px solid var(--focus); outline-offset: -2px; background: var(--surface); }
+.cell:disabled { color: var(--muted); }
+.td-name { padding-left: 0; }
+.td-mar { text-align: right; padding: 9px 12px !important; font-weight: 600; white-space: nowrap; }
+.td-mar small { font-weight: 400; opacity: .8; margin-left: 6px; }
+.td-act { text-align: center; white-space: nowrap; }
+.td-act input[type=checkbox] { accent-color: var(--blue); width: 16px; height: 16px; vertical-align: middle; cursor: pointer; }
+.x { font: inherit; background: transparent; border: 0; color: var(--muted); cursor: pointer; padding: 6px 8px; border-radius: 6px; font-size: 16px; line-height: 1; }
+.x:hover { color: var(--red); }
+.x:focus-visible { outline: 2px solid var(--focus); }
+
+tr.profit td { background: var(--green-tint); }
+tr.profit td:first-child { box-shadow: inset 3px 0 0 var(--green); }
+tr.profit .td-mar { color: var(--green); }
+tr.loss td { background: var(--red-tint); }
+tr.loss td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+tr.loss .td-mar { color: var(--red); }
+tr.empty .td-mar, tr.even .td-mar { color: var(--muted); font-weight: 400; }
+tr.off .cell, tr.off .td-mar { opacity: .4; }
+tr.off .cell.name { text-decoration: line-through; }
+
+.x.add-sub:hover { color: var(--blue); }
+.x.add-sub { font-weight: 600; font-size: 17px; }
+tr.subrow .cell.name { padding-left: 52px; }
+tr.parent .cell.name { font-weight: 600; }
+.ptable tr.parent td { font-weight: 600; }
+.cell.invalid { outline: 2px solid var(--red); outline-offset: -2px; }
+.addrow td { padding: 6px 12px; border-bottom: 1px solid var(--line); }
+.add { font: inherit; font-size: 13.5px; color: var(--blue); background: transparent; border: 0; cursor: pointer; padding: 4px 0; }
+.add:hover { text-decoration: underline; }
+.add:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.add-cat { margin-top: 14px; width: 100%; border: 1px dashed var(--line); border-radius: 10px; background: transparent; padding: 12px; font: inherit; color: var(--blue); cursor: pointer; }
+.add-cat:hover { border-color: var(--blue); }
+.add-cat:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- mini bar (mobile) ---------- */
+.mini {
+  display: none; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  margin: 0 -20px 14px; padding: 10px 20px; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--blue); color: var(--blue-ink); font-weight: 600;
+}
+.mini.no { background: var(--red); color: var(--red-ink); }
+.mini small { font-weight: 400; opacity: .9; display: block; font-size: 12px; }
+@media (max-width: 900px) { .mini.show { display: flex; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- tombol utama & preview ---------- */
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.head > .actions { position: relative; flex: 0 0 auto; }
+.head > .actions .sync { position: absolute; right: 0; top: 100%; margin-top: 6px; white-space: nowrap; }
+#reset { min-width: 222px; }
+.primary { font: inherit; font-weight: 600; font-size: 14px; color: var(--blue-ink); background: var(--blue); border: 0; border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+.primary:hover { filter: brightness(1.08); }
+.primary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.primary.block { display: block; width: 100%; margin-top: 12px; padding: 12px; }
+.toolbar { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.paper {
+  --bg: #ffffff; --surface: #ffffff; --ink: #131d27; --muted: #647282; --line: #dbe1e7; --line-soft: #eaeef2;
+  --blue: #1d5fd6; --blue-ink: #ffffff; --red: #c7352b; --red-ink: #ffffff; --green: #17824f;
+  --green-tint: #e7f5ed; --red-tint: #fbebe9; --cat-bg: #e4e9ee;
+  background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 32px;
+}
+.p-title { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+.p-meta { color: var(--ink); margin: 8px 0 20px; font-size: 14px; display: grid; gap: 3px; }
+.p-info { display: flex; gap: 10px; }
+.p-info-k { width: 124px; flex: none; white-space: nowrap; font-weight: 600; }
+.p-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
+@media (max-width: 760px) { .p-grid { grid-template-columns: minmax(0, 1fr); } .paper { padding: 20px 16px; } }
+.p-tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table.ptable { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ptable th { text-align: right; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.ptable th:first-child { text-align: left; }
+.ptable td { padding: 7px 12px; border-bottom: 1px solid var(--line-soft); text-align: right; }
+.ptable td:first-child { text-align: left; }
+.ptable tr.cat td { padding: 8px 12px; }
+.ptable tr.cat td:first-child { text-align: left; }
+.ptable .td-mar { padding: 7px 12px !important; }
+.paper .verdict { padding: 16px 18px 14px; }
+.paper .v-word { font-size: 28px; }
+.p-foot { margin-top: 20px; padding-bottom: 8px; line-height: 1.6; color: var(--muted); font-size: 12.5px; }
+
+/* tampilan "muat 1 halaman": dipakai saat mengukur & mencetak */
+.paper.fit { border: 0; border-radius: 0; padding: 0; transform-origin: 0 0; }
+.paper.fit .p-grid { grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; }
+.paper.fit .p-tablewrap { overflow: visible; }
+.paper.fit .ptable { font-size: 12px; }
+.paper.fit .ptable td { padding: 5px 10px; }
+.paper.fit .ptable tr.cat td { padding: 6px 10px; }
+.paper.fit .ptable .td-mar { padding: 5px 10px !important; }
+.paper.fit .row { font-size: 12.5px; padding: 6px 0; }
+.paper.fit .row .v { white-space: nowrap; }
+.paper.fit .row .k { padding-right: 8px; }
+.paper.fit .p-title { font-size: 22px; }
+.paper.fit .p-meta { margin-bottom: 14px; }
+
+@media print {
+  @page { size: A4 portrait; margin: 10mm; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { background: #fff !important; }
+  :root { padding: 0; }
+  .noprint, #view-edit { display: none !important; }
+  .wrap { max-width: none; padding: 0; }
+  .ptable tr, .card, .verdict { break-inside: avoid; }
+  .ptable thead { display: table-header-group; }
+}
+.xmsg { align-self: center; font-size: 13px; color: var(--muted); }
+/* ---------- daftar proyek ---------- */
+dialog#projects { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); padding: 18px 20px; width: min(660px, calc(100% - 32px)); max-height: 82vh; overflow: auto; font: inherit; }
+dialog#projects::backdrop { background: rgba(8, 14, 20, .5); }
+.pj-head { display: flex; justify-content: space-between; align-items: center; }
+.pj-head h2 { margin: 0; font-size: 18px; }
+.pj-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 8px; }
+.pj-msg { min-height: 20px; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.pj-list { list-style: none; margin: 0; padding: 0; }
+.pj-list li { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--line-soft); }
+.pj-list .nm { font-weight: 600; }
+.pj-list .sub { font-size: 12.5px; color: var(--muted); }
+.pj-list .st { font-size: 12.5px; font-weight: 600; margin-left: 8px; }
+.pj-list .st.ok { color: var(--blue); }
+.pj-list .st.no { color: var(--red); }
+.pj-list .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.pj-list .ghost { padding: 5px 10px; font-size: 13px; }
+.pj-list li.cur .nm::after { content: " · dibuka"; font-weight: 400; color: var(--muted); }
+.ghost:disabled { opacity: .45; cursor: default; }
+.pj-acct { font-size: 12.5px; color: var(--muted); margin: 12px 0 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pj-acct .ghost { padding: 3px 9px; font-size: 12.5px; }
+.sync { align-self: center; font-size: 12.5px; color: var(--muted); }
+.sync.ok { color: var(--green); }
+.sync.err { color: var(--red); }
+body.booting #view-edit { opacity: .55; pointer-events: none; }
+.pj-hint { flex-basis: 100%; font-size: 12.5px; color: var(--muted); }
+
+/* ---------- tampilan HP ---------- */
+@media (max-width: 600px) {
+  .wrap { padding: 16px 14px 48px; }
+  .top-title label, .title-in { font-size: 21px; }
+  .title-in { flex: 1 1 100%; max-width: none; }
+  .top-k { width: 100%; }
+  .top-in { flex: 1 1 100%; max-width: none; }
+  .dates { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; }
+  .top-in[type="date"] { flex: none; width: 100%; }
+  .actions { width: 100%; }
+  .head > .actions { flex: 1 1 100%; }
+  .head > .actions .sync { position: static; margin-top: 0; white-space: normal; flex-basis: 100%; min-height: 18px; }
+  #reset { min-width: 0; }
+  .actions .ghost, .actions .primary { flex: 1 1 auto; text-align: center; }
+  .mini { margin: 0 -14px 12px; padding: 10px 14px; }
+  .card { padding: 4px 14px; }
+  .row { font-size: 13.5px; gap: 8px; }
+  .row .k { min-width: 0; }
+  .paper { padding: 16px 12px; }
+  .p-title { font-size: 20px; }
+  .p-info-k { width: 108px; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar .actions { justify-content: stretch; }
+  .toolbar .xmsg { flex-basis: 100%; }
+  .toolbar .ghost, .toolbar .primary { flex: 1 1 auto; text-align: center; }
+  .ptable th, .ptable td, .ptable tr.cat td { padding-left: 8px; padding-right: 8px; }
+  .ptable .td-mar { padding-left: 8px !important; padding-right: 8px !important; }
+  .ptable .td-mar small { display: none; }
+  .cat-in { width: 140px; }
+  dialog#projects { padding: 14px; }
+  /* tabel item: kolom Margin disembunyikan di HP supaya Harga Jual & Modal muat tanpa geser (warna baris tetap menunjukkan untung/rugi) */
+  table.sheet { min-width: 0; }
+  .sheet th:nth-child(4), .sheet td:nth-child(4) { display: none; }
+  .sheet col:nth-child(4) { display: none; }
+  .c-num { width: 94px; }
+  .c-act { width: 72px; }
+  .sheet th { padding: 10px 8px; }
+  tr.cat td { padding: 9px 8px; }
+  .cell { padding: 10px 8px; font-size: 14px; }
+  .cell.name { text-overflow: ellipsis; }
+  tr.subrow .cell.name { padding-left: 30px; }
+  .td-act .x { padding: 6px 4px; }
+  tr.cat .cat-name { flex-wrap: wrap; gap: 2px 6px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="view-edit">
+
+  <div class="head">
+    <div class="top">
+      <div class="top-title">
+        <label for="p-nama">Budget Feasibility:</label>
+        <input class="title-in" id="p-nama" aria-label="Nama event (wajib diisi)" placeholder="Nama event (wajib diisi)" autocomplete="off">
+      </div>
+      <div class="top-row">
+        <span class="top-k">Tanggal Event:</span>
+        <div class="dates">
+          <input class="top-in" id="p-mulai" type="date" aria-label="Tanggal mulai event">
+          <span class="sd">sampai</span>
+          <input class="top-in" id="p-selesai" type="date" aria-label="Tanggal selesai event">
+        </div>
+      </div>
+      <div class="top-row">
+        <label class="top-k req" for="p-venue">Venue:</label>
+        <input class="top-in" id="p-venue" placeholder="Nama venue (wajib diisi)" autocomplete="off">
+      </div>
+      <p class="req-msg" id="req-msg" role="alert" hidden></p>
+    </div>
+    <div class="actions">
+      <span class="sync" id="sync" role="status"></span>
+      <button class="ghost" id="pj-open" type="button">Proyek</button>
+      <button class="ghost" id="reset" type="button">Kembalikan ke template</button>
+      <button class="primary go-prev" type="button">Next: Preview →</button>
+    </div>
+  </div>
+
+  <div class="mini" id="mini" aria-live="polite">
+    <div><span id="mini-word">Feasible</span><small id="mini-sub"></small></div>
+    <div id="mini-gap"></div>
+  </div>
+
+  <div class="layout">
+    <main>
+      <div class="sheet-wrap">
+        <table class="sheet" id="sheet">
+          <colgroup><col><col class="c-num"><col class="c-num"><col class="c-mar"><col class="c-act"></colgroup>
+          <thead>
+            <tr><th>Item</th><th>Harga Jual</th><th>Modal</th><th>Margin</th><th style="text-align:center">Ada</th></tr>
+          </thead>
+        </table>
+      </div>
+      <button class="add-cat" id="add-cat" type="button">+ Tambah kategori khusus untuk proyek ini</button>
+      <button class="primary block go-prev" type="button">Next: Preview →</button>
+    </main>
+
+    <aside>
+      <div class="verdict" id="verdict" aria-live="polite">
+        <div class="v-label">Status kelayakan</div>
+        <div class="v-word" id="v-word">Feasible</div>
+        <div class="v-reason" id="v-reason" hidden></div>
+        <div class="gauge"><i id="gauge"></i></div>
+        <div class="v-gap"><span id="v-pct-label">Plafon terpakai</span><strong id="v-pct"></strong></div>
+        <div class="v-gap"><span id="v-gap-label">Sisa plafon</span><strong id="v-gap"></strong></div>
+      </div>
+
+      <div class="card" aria-label="Plafon klien">
+        <div class="row"><span class="k">Plafon Klien <span class="unit">Before VAT</span></span><input class="wide" id="in-plafon" inputmode="decimal" aria-label="Plafon klien before VAT" placeholder="0"></div>
+      </div>
+
+      <div class="card" aria-label="Harga Jual">
+        <div class="row"><span class="k">Total Harga Jual Before EO Fee</span><span class="v" id="s-jual"></span></div>
+        <div class="row"><span class="k">EO Fee <input class="pct" id="in-eo" type="number" min="0" step="0.5" inputmode="decimal" aria-label="Persen EO Fee"><span class="unit">%</span></span><span class="v" id="s-eo"></span></div>
+        <div class="row strong"><span class="k">Total Before VAT</span><span class="v" id="s-before"></span></div>
+        <div class="row"><span class="k">VAT <input class="pct" id="in-vat" type="number" min="0" step="0.5" inputmode="decimal" aria-label="Persen VAT"><span class="unit">%</span></span><span class="v" id="s-vat"></span></div>
+        <div class="row strong"><span class="k">Total After VAT</span><span class="v" id="s-after"></span></div>
+      </div>
+
+      <div class="card" aria-label="Modal dan margin">
+        <div class="row"><span class="k">Total Modal</span><span class="v" id="s-modal"></span></div>
+        <div class="row"><span class="k">Marketing Fee</span><input class="wide" id="in-mkt" inputmode="decimal" aria-label="Marketing Fee" placeholder="0"></div>
+        <div class="row"><span class="k">Total Margin</span><span class="v" id="s-margin"></span></div>
+        <div class="row"><span class="k">Persentase Margin</span><span class="v" id="s-mpct"></span></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<dialog id="projects" aria-labelledby="pj-title">
+  <div class="pj-head"><h2 id="pj-title">Proyek tersimpan</h2><button class="x" id="pj-close" type="button" aria-label="Tutup">×</button></div>
+  <div class="pj-tools">
+    <button class="primary" id="pj-new" type="button">+ Proyek baru</button>
+  </div>
+  <div class="pj-msg" id="pj-msg" role="status"></div>
+  <ul class="pj-list" id="pj-list"></ul>
+  <div class="pj-acct" id="pj-acct"></div>
+</dialog>
+
+<div id="view-prev" hidden>
+  <div class="toolbar noprint">
+    <button class="ghost" id="back" type="button">← Kembali ke isian</button>
+    <div class="actions">
+      <span class="xmsg" id="x-msg" role="status"></span>
+      <button class="ghost" id="xlsx" type="button" hidden>Simpan Excel</button>
+      <button class="primary" id="print" type="button">Cetak / Simpan PDF</button>
+    </div>
+  </div>
+  <div class="paper" id="prev-body"></div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script>
+/* ===== template standar (tidak berubah dari dalam proyek) ===== */
+const TEMPLATE = [
+  ["Venue", [["Venue & F&B",10000,9000],["Electricity",11000,9000],["Permit",0,0]]],
+  ["Equipment", [["Decoration",10000,9000],["Lighting",10000,7000],["Soundsystem",10000,9000],["Rigging",10000,9000],["LED",10000,9000],["Live Camera",10000,9000]]],
+  ["Creative Content", [["Design & Multimedia Content",10000,9000]]],
+  ["Support Event", [["Registration System",10000,9000],["Laptop",10000,9000],["Internet",10000,9000],["ID Card",10000,9000],["Activity",10000,9000],["Customer Treatment",10000,9000],["Documentation",10000,9000],["Special Effect",10000,9000],["CCTV",10000,9000],["Ambulance",10000,9000]]],
+  ["Production Cost", [["Manpower",10000,9000],["Meals",10000,9000],["Accommodation",10000,9000],["Transport",10000,9000],["Survey",10000,9000],["ATK & Printing",10000,9000],["HT",10000,9000]]],
+  ["Talent", [["MC",10000,9000],["Performance",10000,9000]]]
+];
+const STORE_KEY = "anggaran-event-v1";
+let uid = 0;
+const nid = () => "i" + (++uid);
+
+function freshState() {   /* semua isian kosong; persen EO Fee & VAT tetap nilai awal */
+  return {
+    project: { nama: "", venue: "", mulai: "", selesai: "" },
+    plafon: 0, eoPct: 10, vatPct: 11, mkt: 0,
+    cats: TEMPLATE.map(([name, items]) => ({
+      id: nid(), name, custom: false,
+      items: items.map(([n]) => ({ id: nid(), name: n, jual: 0, modal: 0, off: false, custom: false, subs: [] }))
+    }))
+  };
+}
+let state = freshState();
+
+/* ===== penyimpanan proyek =====
+   Mode cloud : Firebase Anonymous Auth (otomatis, tanpa login) + Firestore. Semua proyek disimpan di satu "ruang bersama"
+               yang ditentukan FB_WORKSPACE: siapa pun yang membuka halaman ini melihat daftar proyek yang sama.
+   Mode lokal : localStorage di browser (cadangan otomatis bila cloud tidak tersedia). */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDkT8cS__aQXw5PToC9Jf8F7C2zwWbBxCw",
+  authDomain: "feasibilitymxm.firebaseapp.com",
+  projectId: "feasibilitymxm",
+  storageBucket: "feasibilitymxm.firebasestorage.app",
+  messagingSenderId: "737498733330",
+  appId: "1:737498733330:web:ac7c30d15483900fb771cb",
+  measurementId: "G-6540E6FS5J"
+};
+/* Isi dengan konfigurasi web app Firebase Anda, contoh:
+   { apiKey: "...", authDomain: "nama.firebaseapp.com", projectId: "nama", appId: "..." } */
+const FB_VER = "10.14.1";
+const FB_WORKSPACE = "eTnJNyzUEMfL4q4xDMM5JusiO7";   /* kode ruang bersama (huruf/angka/-/_ , 20+ karakter). Diisi: semua pembuka halaman berbagi proyek. Kosong: ruang pribadi per browser. */
+const PROJ_KEY = "anggaran-projects-v2", LAST_KEY = "anggaran-last-project", WS_KEY = "anggaran-ruang";
+let store = { current: null, items: {} };   /* items[id] = { updated, state } */
+let curId = null;
+let fb = null;                               /* terisi bila mode cloud aktif */
+let cloudNote = "";                          /* alasan bila cloud tidak dipakai */
+const newPid = () => "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const validState = o => !!(o && typeof o === "object" && o.project && Array.isArray(o.cats));
+const byNewest = (a, b) => store.items[b].updated - store.items[a].updated;
+function fixUid(st) {   /* pastikan id baru tidak bentrok dengan id yang sudah tersimpan */
+  let m = uid;
+  JSON.stringify(st).replace(/"id":"[a-z]+(\d+)"/g, (_, n) => { m = Math.max(m, +n); return ""; });
+  uid = m;
+  /* proyek lama: kategori "Marketing Fee" kini kolom tersendiri di panel (st.mkt); nilainya diambil dari kolom Modal */
+  if (st && Array.isArray(st.cats)) {
+    const mf = st.cats.filter(c => (c.name || "").trim().toLowerCase() === "marketing fee");
+    if (mf.length) {
+      if (st.mkt === undefined) { let v = 0; mf.forEach(c => c.items.forEach(it => { if (!it.off) v += effv(it).m; })); st.mkt = round2(v); }
+      st.cats = st.cats.filter(c => !mf.includes(c));
+    }
+  }
+}
+function setSync(t, cls) { const el = $("sync"); if (el) { el.textContent = t || ""; el.className = "sync " + (cls || ""); } }
+const cloudOn = () => !!(fb && fb.user);
+
+/* --- lokal --- */
+function localWrite() {
+  try { localStorage.setItem(PROJ_KEY, JSON.stringify(store)); setSync("Tersimpan di browser" + (cloudNote ? " · " + cloudNote : ""), cloudNote ? "" : "ok"); }
+  catch (e) { setSync("Gagal menyimpan (penyimpanan browser diblokir/penuh)", "err"); }
+}
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(PROJ_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s && s.items) {
+        Object.keys(s.items).forEach(id => { if (!s.items[id] || !validState(s.items[id].state)) delete s.items[id]; });
+        const ids = Object.keys(s.items);
+        if (ids.length) {
+          store = { current: null, items: s.items };
+          curId = s.items[s.current] ? s.current : ids[0];
+          state = s.items[curId].state; fixUid(state);
+          return;
+        }
+      }
+    }
+    const old = localStorage.getItem(STORE_KEY);   /* migrasi dari versi satu-proyek */
+    if (old) { const o = JSON.parse(old); if (validState(o)) { state = o; fixUid(o); } }
+  } catch (e) {}
+  curId = newPid();
+}
+
+/* --- cloud (Firestore) --- */
+const saveTimers = {};
+let wsKey = null;
+function randomKey() {
+  const a = new Uint8Array(16); crypto.getRandomValues(a);
+  return btoa(String.fromCharCode(...a)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function getWorkspace() {
+  if (FB_WORKSPACE) return FB_WORKSPACE;      /* ruang bersama: sama untuk semua pembuka halaman */
+  let key = null;                             /* tanpa kode tetap: ruang pribadi, terikat ke browser ini */
+  try { key = localStorage.getItem(WS_KEY); } catch (e) {}
+  if (!key) { key = randomKey(); try { localStorage.setItem(WS_KEY, key); } catch (e) {} }
+  return key;
+}
+function cloudCol() {
+  return fb.fsM.collection(fb.db, "ruang", wsKey, "projects");
+}
+function cloudData(id) {
+  const it = store.items[id], st = it.state;
+  let ok = false; try { ok = calc(st).ok; } catch (e) {}
+  return { nama: st.project.nama || "", venue: st.project.venue || "", ok, updated: it.updated, owner: fb.user.uid, state: JSON.stringify(st) };
+}
+function queueCloud(id, now) {
+  clearTimeout(saveTimers[id]);
+  setSync("Menyimpan…", "");
+  const run = () => {
+    delete saveTimers[id];
+    if (!store.items[id]) return;
+    fb.fsM.setDoc(fb.fsM.doc(cloudCol(), id), cloudData(id))
+      .then(() => { if (!Object.keys(saveTimers).length) setSync("Tersimpan di cloud", "ok"); })
+      .catch(e => setSync("Gagal menyimpan (" + ((e && e.code) || "error") + ")", "err"));
+    if (!navigator.onLine) setSync("Offline: akan tersimpan saat tersambung", "");
+  };
+  if (now) run(); else saveTimers[id] = setTimeout(run, 700);
+}
+function flushCloud() { Object.keys(saveTimers).forEach(id => queueCloud(id, true)); }
+window.addEventListener("pagehide", () => { if (cloudOn()) flushCloud(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && cloudOn()) flushCloud(); });
+
+/* quiet = true: hanya mendaftarkan proyek aktif (tanpa mengubah waktu "diubah" bila sudah ada) */
+function save(quiet) {
+  if (!curId) return;
+  const ex = store.items[curId];
+  store.current = curId;
+  try { localStorage.setItem(LAST_KEY, curId); } catch (e) {}
+  if (quiet && ex) { ex.state = state; return; }
+  pendingRemote = false;   /* perubahan sendiri didahulukan */
+  store.items[curId] = { updated: Date.now(), state };
+  if (cloudOn()) queueCloud(curId); else localWrite();
+}
+function commitProject(id) { if (cloudOn()) queueCloud(id, true); else localWrite(); }
+function removeProject(id) {
+  delete store.items[id];
+  if (cloudOn()) {
+    clearTimeout(saveTimers[id]); delete saveTimers[id];
+    fb.fsM.deleteDoc(fb.fsM.doc(cloudCol(), id)).catch(e => setSync("Gagal menghapus (" + ((e && e.code) || "error") + ")", "err"));
+  } else localWrite();
+}
+
+async function initCloud() {
+  if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) { cloudNote = "Firebase belum diatur"; return false; }
+  try {
+    const base = "https://www.gstatic.com/firebasejs/" + FB_VER + "/";
+    const [appM, authM, fsM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
+    const app = appM.initializeApp(FIREBASE_CONFIG);
+    const auth = authM.getAuth(app);
+    let db;
+    try { db = fsM.initializeFirestore(app, { localCache: fsM.persistentLocalCache() }); }
+    catch (e) { db = fsM.getFirestore(app); }
+    fb = { appM, authM, fsM, auth, db, user: null };
+    return true;
+  } catch (e) { cloudNote = "Firebase tidak bisa dimuat (periksa koneksi)"; return false; }
+}
+function waitAuth() {
+  return new Promise(res => {
+    let done = false, off = null;
+    off = fb.authM.onAuthStateChanged(fb.auth, u => { if (done) return; done = true; if (off) off(); res(u); });
+  });
+}
+let unsubCloud = null, bootAborted = false;
+let pendingRemote = false;
+function remoteApplyIfIdle() {   /* terapkan perubahan dari perangkat lain bila Anda tidak sedang mengetik */
+  if (!pendingRemote || !store.items[curId] || saveTimers[curId]) return;
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+  pendingRemote = false;
+  state = store.items[curId].state; fixUid(state);
+  showCurrent();
+}
+document.addEventListener("focusout", () => setTimeout(remoteApplyIfIdle, 0));
+function startCloud(user) {
+  fb.user = user;
+  wsKey = getWorkspace();
+  return new Promise(resolve => {
+    let first = true;
+    unsubCloud = fb.fsM.onSnapshot(cloudCol(), snap => {
+      if (bootAborted) return;
+      if (snap.metadata && snap.metadata.fromCache) setSync("Menunggu sambungan ke cloud…", "");
+      else if (!first && !Object.keys(saveTimers).length) setSync("Tersimpan di cloud" + (FB_WORKSPACE ? " (ruang bersama)" : ""), "ok");
+      snap.docChanges().forEach(ch => {
+        const id = ch.doc.id;
+        if (ch.type === "removed") { if (id !== curId) delete store.items[id]; return; }
+        let d, st;
+        try { d = ch.doc.data(); st = JSON.parse(d.state); } catch (e) { return; }
+        if (!validState(st)) return;
+        const upd = d.updated || 0;
+        if (id === curId) {
+          const mine = store.items[id];
+          if (!mine || upd <= mine.updated) return;   /* gema dari tulisan sendiri atau data lebih lama */
+          fixUid(st); mine.state = st; mine.updated = upd;
+          pendingRemote = true; remoteApplyIfIdle();
+          return;
+        }
+        fixUid(st); store.items[id] = { updated: upd, state: st };
+      });
+      if (first) { first = false; resolve(); }
+      else if ($("projects").open) renderProjects();
+    }, err => {
+      setSync("Gagal membaca cloud (" + ((err && err.code) || "error") + ")", "err");
+      if (first) { first = false; resolve(); }
+    });
+  });
+}
+function openInitialCloud() {
+  const ids = Object.keys(store.items).sort(byNewest);
+  let last = null; try { last = localStorage.getItem(LAST_KEY); } catch (e) {}
+  const id = store.items[last] ? last : ids[0];
+  if (id) { curId = id; state = store.items[id].state; fixUid(state); }
+  else { curId = newPid(); state = freshState(true); }
+}
+async function bootStorage() {
+  if (await initCloud()) {
+    let user = await waitAuth();
+    if (bootAborted) return;
+    if (!user) {   /* belum pernah dibuka di browser ini: buat identitas anonim otomatis */
+      try { user = (await fb.authM.signInAnonymously(fb.auth)).user; if (bootAborted) return; }
+      catch (e) {
+        const c = (e && e.code) || "";
+        fb = null;
+        cloudNote = c === "auth/operation-not-allowed"
+          ? "aktifkan Anonymous di Firebase (Authentication → Sign-in method)"
+          : "gagal masuk otomatis (" + (c || "error") + ")";
+        loadLocal(); setSync("Tersimpan di browser · " + cloudNote, ""); return;
+      }
+    }
+    await startCloud(user);
+    if (bootAborted) return;
+    openInitialCloud();
+    setSync("Tersimpan di cloud" + (FB_WORKSPACE ? " (ruang bersama)" : ""), "ok");
+    return;
+  }
+  loadLocal();
+  setSync(cloudNote ? "Tersimpan di browser · " + cloudNote : "Tersimpan di browser", cloudNote ? "" : "ok");
+}
+
+/* ===== util ===== */
+const nf = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
+const round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+const fmt = n => nf.format(round2(n));
+const rp = n => (n < 0 ? "−Rp " : "Rp ") + fmt(Math.abs(n));
+const $ = id => document.getElementById(id);
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    if (k === "class") el.className = attrs[k];
+    else if (k === "text") el.textContent = attrs[k];
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), attrs[k]);
+    else el.setAttribute(k, attrs[k]);
+  }
+  kids.forEach(k => k != null && el.append(k));
+  return el;
+}
+const letter = i => String.fromCharCode(65 + (i % 26)) + (i >= 26 ? Math.floor(i / 26) : "");
+
+/* kalkulator rumus: + - * / ( ) dengan prioritas; tanpa eval */
+function evalExpr(src) {
+  const s = src.replace(/\s+/g, "").replace(/,/g, ".");
+  if (!s || !/^[0-9+\-*/().]+$/.test(s)) return null;
+  let i = 0;
+  function expr() { let v = term(); while (s[i] === "+" || s[i] === "-") { const o = s[i++]; const r = term(); v = o === "+" ? v + r : v - r; } return v; }
+  function term() { let v = unary(); while (s[i] === "*" || s[i] === "/") { const o = s[i++]; const r = unary(); if (o === "/") { if (r === 0) throw 0; v /= r; } else v *= r; } return v; }
+  function unary() { if (s[i] === "-") { i++; return -unary(); } if (s[i] === "+") { i++; return unary(); } return prim(); }
+  function prim() {
+    if (s[i] === "(") { i++; const v = expr(); if (s[i] !== ")") throw 0; i++; return v; }
+    const m = /^(\d+\.?\d*|\.\d+)/.exec(s.slice(i)); if (!m) throw 0;
+    i += m[0].length; return parseFloat(m[0]);
+  }
+  try { const v = expr(); return i === s.length && isFinite(v) ? v : null; } catch (e) { return null; }
+}
+
+function bindNum(inp, getVal, setVal, fxo, fxk) {
+  /* fxo.fx[fxk] menyimpan teks rumus terakhir yang valid, supaya bisa ditinjau lagi saat sel diklik */
+  const fo = () => (typeof fxo === "function" ? fxo() : fxo);
+  const fxGet = () => { const o = fo(); return (o && o.fx && o.fx[fxk]) || ""; };
+  const fxSet = f => {
+    const o = fo();
+    if (o) { if (f) (o.fx = o.fx || {})[fxk] = f; else if (o.fx) delete o.fx[fxk]; }
+    inp.title = f || "";
+  };
+  const fxValid = f => { const r = evalExpr(f.slice(1)); return r !== null && round2(r) === getVal(); };
+  inp.value = getVal() ? fmt(getVal()) : "";
+  { const f = fxGet(); if (f) { if (fxValid(f)) inp.title = f; else fxSet(""); } }
+  inp.addEventListener("focus", () => {
+    const f = fxGet();
+    if (f) { if (fxValid(f)) inp.value = f; else fxSet(""); }
+    inp.select();
+  });
+  inp.addEventListener("input", () => {
+    inp.classList.remove("invalid");
+    if (inp.value.trim().startsWith("=")) return;   /* mode rumus: ketik bebas, dihitung saat Enter / pindah sel */
+    if (fxGet()) fxSet("");
+    const pos = inp.selectionStart || 0;
+    const before = inp.value.slice(0, pos).replace(/[^\d,]/g, "").length;
+    const raw = inp.value.replace(/[^\d,]/g, "");
+    const ci = raw.indexOf(",");
+    const ip = (ci < 0 ? raw : raw.slice(0, ci)).replace(/^0+(?=\d)/, "").slice(0, 13);
+    const dp = ci < 0 ? null : raw.slice(ci + 1).replace(/,/g, "").slice(0, 2);
+    const n = parseFloat((ip || "0") + (dp ? "." + dp : ""));
+    inp.value = (ip ? nf.format(parseInt(ip, 10)) : (dp !== null ? "0" : "")) + (dp !== null ? "," + dp : "");
+    let c = 0, seen = 0;
+    while (c < inp.value.length && seen < before) { if (/[\d,]/.test(inp.value[c])) seen++; c++; }
+    try { inp.setSelectionRange(c, c); } catch (e) {}
+    setVal(n); update(); save();
+  });
+  const commit = () => {
+    const v = inp.value.trim();
+    if (!v.startsWith("=")) return;
+    const r = evalExpr(v.slice(1));
+    const n = r === null ? null : round2(r);
+    if (n === null || n < 0 || n > 9999999999999) {
+      inp.value = getVal() ? fmt(getVal()) : "";
+      inp.classList.add("invalid");
+      setTimeout(() => inp.classList.remove("invalid"), 1800);
+      return;
+    }
+    const same = n === getVal() && fxGet() === v;
+    inp.value = n ? fmt(n) : "";
+    if (same) return;   /* hanya dilihat, tidak diubah: tidak perlu menyimpan ulang */
+    fxSet(v); setVal(n); update(); save();
+  };
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Enter") commit();
+    else if (e.key === "." && !e.ctrlKey && !e.metaKey && !e.altKey && !inp.value.trim().startsWith("=")) {   /* titik = koma desimal */
+      e.preventDefault(); inp.setRangeText(",", inp.selectionStart, inp.selectionEnd, "end"); inp.dispatchEvent(new Event("input"));
+    }
+  });
+  inp.addEventListener("blur", () => {
+    if (inp.value.trim().startsWith("=")) commit();
+    else inp.value = getVal() ? fmt(getVal()) : "";   /* rapikan, mis. "12," menjadi "12" */
+  });
+}
+
+/* ===== navigasi sel ala Excel =====
+   Atas/bawah/Enter: pindah baris. Kiri/kanan: pindah kolom, tetapi hanya bila seluruh angka
+   sedang terpilih (baru masuk sel) atau kursor SUDAH berada di ujung angka. Selain itu kursor
+   bergerak di dalam angka seperti biasa, jadi nilai masih bisa disunting digit per digit. */
+function moveCell(inp, dr, dc) {
+  const cols = ["name", "jual", "modal"];
+  const ok = (tr, col) => { const a = tr.querySelector('input[data-col="' + col + '"]'); return a && !a.disabled && !a.readOnly ? a : null; };
+  const rows = [...document.querySelectorAll("#sheet tbody tr")].filter(tr => cols.some(c => ok(tr, c)));
+  const ri = rows.indexOf(inp.closest("tr")), ci = cols.indexOf(inp.dataset.col);
+  if (ri < 0 || ci < 0) return false;
+  let tgt = null;
+  if (dc) { for (let c = ci + dc; c >= 0 && c < cols.length && !tgt; c += dc) tgt = ok(rows[ri], cols[c]); }
+  else { for (let r = ri + dr; r >= 0 && r < rows.length && !tgt; r += dr) tgt = ok(rows[r], cols[ci]); }
+  if (!tgt) return false;
+  tgt.focus();
+  try { tgt.select(); } catch (e) {}
+  return true;
+}
+function gridNav(e) {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  const inp = e.currentTarget, k = e.key;
+  if (k === "Enter") { e.preventDefault(); moveCell(inp, e.shiftKey ? -1 : 1, 0); return; }
+  if (e.shiftKey) return;
+  const len = inp.value.length, s0 = inp.selectionStart, s1 = inp.selectionEnd;
+  const full = len > 0 && s0 === 0 && s1 === len;
+  const atStart = s0 === s1 && s0 === 0, atEnd = s0 === s1 && s0 === len;
+  let moved = false;
+  if (k === "ArrowUp") moved = moveCell(inp, -1, 0);
+  else if (k === "ArrowDown") moved = moveCell(inp, 1, 0);
+  else if (k === "ArrowLeft" && (full || atStart)) moved = moveCell(inp, 0, -1);
+  else if (k === "ArrowRight" && (full || atEnd)) moved = moveCell(inp, 0, 1);
+  if (moved) e.preventDefault();
+}
+
+/* ===== render struktur tabel ===== */
+const refs = { items: {}, cats: {}, catInp: {} };
+
+function render() {
+  refs.items = {}; refs.cats = {}; refs.catInp = {};
+  const table = $("sheet");
+  table.querySelectorAll("tbody").forEach(t => t.remove());
+
+  state.cats.forEach((cat, ci) => {
+    const tb = h("tbody");
+    const jualT = h("td", { class: "n" }), modalT = h("td", { class: "n" }), marT = h("td", { class: "n" });
+    let nameCell;
+    if (cat.custom) {
+      const inp = h("input", { class: "cat-in", value: cat.name, "aria-label": "Nama kategori" });
+      inp.addEventListener("input", () => { cat.name = inp.value; save(); });
+      nameCell = h("div", { class: "cat-name" }, h("span", { class: "code", text: letter(ci) + "." }), inp);
+      refs.catInp[cat.id] = inp;
+    } else {
+      nameCell = h("div", { class: "cat-name" }, h("span", { class: "code", text: letter(ci) + "." }), h("span", { text: cat.name }));
+    }
+    const actCell = h("td", { class: "td-act" });
+    if (cat.custom) {
+      actCell.append(h("button", { class: "x", type: "button", title: "Hapus kategori", "aria-label": "Hapus kategori", text: "×",
+        onclick: () => { state.cats = state.cats.filter(c => c.id !== cat.id); render(); update(); save(); } }));
+    }
+    tb.append(h("tr", { class: "cat" }, h("td", {}, nameCell), jualT, modalT, marT, actCell));
+    refs.cats[cat.id] = { jualT, modalT, marT };
+
+    cat.items.forEach(it => { tb.append(itemRow(cat, it)); (it.subs || []).forEach(sb => tb.append(subRow(cat, it, sb))); });
+
+    const addBtn = h("button", { class: "add", type: "button", text: "+ Tambah item",
+      onclick: () => {
+        const it = { id: nid(), name: "", jual: 0, modal: 0, off: false, custom: true };
+        cat.items.push(it); render(); update(); save();
+        const r = refs.items[it.id]; if (r) r.nameInp.focus();
+      } });
+    tb.append(h("tr", { class: "addrow" }, h("td", { colspan: "5" }, addBtn)));
+    table.append(tb);
+  });
+}
+
+function itemRow(cat, it) {
+  const nameInp = h("input", { class: "cell name", value: it.name, "aria-label": "Nama item", placeholder: "Nama item" });
+  if (!it.custom) nameInp.readOnly = true, nameInp.tabIndex = -1;
+  else {
+    nameInp.addEventListener("input", () => { it.name = nameInp.value; save(); });
+    nameInp.setAttribute("data-col", "name"); nameInp.addEventListener("keydown", gridNav);
+  }
+
+  const jual = h("input", { class: "cell", inputmode: "decimal", "aria-label": it.name + " Harga Jual", placeholder: "0", "data-col": "jual" });
+  const modal = h("input", { class: "cell", inputmode: "decimal", "aria-label": it.name + " modal", placeholder: "0", "data-col": "modal" });
+  bindNum(jual, () => it.jual, v => it.jual = v, it, "jual");
+  bindNum(modal, () => it.modal, v => it.modal = v, it, "modal");
+  [jual, modal].forEach(inp => inp.addEventListener("keydown", gridNav));
+
+  const mar = h("td", { class: "td-mar" });
+  const ada = h("input", { type: "checkbox", "aria-label": "Item ada" });
+  ada.checked = !it.off;
+  ada.addEventListener("change", () => { it.off = !ada.checked; update(); save(); });
+
+  const act = h("td", { class: "td-act" }, ada);
+  act.append(h("button", { class: "x add-sub", type: "button", title: "Tambah sub item", "aria-label": "Tambah sub item", text: "+",
+    onclick: () => {
+      const sb = { id: nid(), name: "", jual: 0, modal: 0, off: false };
+      if (!(it.subs && it.subs.length)) { it.jual = 0; it.modal = 0; }
+      (it.subs = it.subs || []).push(sb); render(); update(); save();
+      const r = refs.items[sb.id]; if (r) r.nameInp.focus();
+    } }));
+  if (it.custom) {
+    act.append(h("button", { class: "x", type: "button", title: "Hapus item", "aria-label": "Hapus item", text: "×",
+      onclick: () => { cat.items = cat.items.filter(x => x.id !== it.id); render(); update(); save(); } }));
+  }
+  const tr = h("tr", {}, h("td", { class: "td-name" }, nameInp), h("td", {}, jual), h("td", {}, modal), mar, act);
+  refs.items[it.id] = { tr, mar, jual, modal, ada, nameInp };
+  return tr;
+}
+
+function subRow(cat, it, sb) {
+  const nameInp = h("input", { class: "cell name", value: sb.name, "aria-label": "Nama sub item", placeholder: "Sub item", "data-col": "name" });
+  nameInp.addEventListener("input", () => { sb.name = nameInp.value; save(); });
+  nameInp.addEventListener("keydown", gridNav);
+  const jual = h("input", { class: "cell", inputmode: "decimal", "aria-label": "Sub item Harga Jual", placeholder: "0", "data-col": "jual" });
+  const modal = h("input", { class: "cell", inputmode: "decimal", "aria-label": "Sub item modal", placeholder: "0", "data-col": "modal" });
+  bindNum(jual, () => sb.jual, v => sb.jual = v, sb, "jual");
+  bindNum(modal, () => sb.modal, v => sb.modal = v, sb, "modal");
+  [jual, modal].forEach(inp => inp.addEventListener("keydown", gridNav));
+  const mar = h("td", { class: "td-mar" });
+  const ada = h("input", { type: "checkbox", "aria-label": "Sub item ada" });
+  ada.checked = !sb.off;
+  ada.addEventListener("change", () => { sb.off = !ada.checked; update(); save(); });
+  const act = h("td", { class: "td-act" }, ada,
+    h("button", { class: "x", type: "button", title: "Hapus sub item", "aria-label": "Hapus sub item", text: "×",
+      onclick: () => { it.subs = it.subs.filter(x => x.id !== sb.id); render(); update(); save(); } }));
+  const tr = h("tr", { class: "subrow" }, h("td", { class: "td-name" }, nameInp), h("td", {}, jual), h("td", {}, modal), mar, act);
+  refs.items[sb.id] = { tr, mar, jual, modal, ada, nameInp, sub: true };
+  return tr;
+}
+
+/* nilai efektif item: bila punya sub item, jumlah sub item yang aktif */
+function effv(it) {
+  const subs = it.subs || [];
+  if (!subs.length) return { j: it.jual, m: it.modal };
+  let j = 0, m = 0;
+  subs.forEach(sb => { if (!sb.off) { j = round2(j + sb.jual); m = round2(m + sb.modal); } });
+  return { j, m };
+}
+
+function paintRow(r, o, dead) {
+  const margin = round2(o.jual - o.modal);
+  let cls;
+  if (dead) cls = "off";
+  else if (o.jual === 0 && o.modal === 0) cls = "empty";
+  else if (margin > 0) cls = "profit";
+  else if (margin < 0) cls = "loss";
+  else cls = "even";
+  r.tr.className = cls + (r.sub ? " subrow" : "");
+  r.jual.disabled = r.modal.disabled = dead;
+  r.ada.checked = !o.off;
+  if (cls === "empty" || cls === "off") r.mar.textContent = "–";
+  else {
+    const sign = margin > 0 ? "+" : margin < 0 ? "−" : "";
+    r.mar.textContent = sign + fmt(Math.abs(margin));
+    if (o.jual > 0) r.mar.append(h("small", { text: Math.round(margin / o.jual * 100) + "%" }));
+  }
+}
+
+/* ===== hitung ulang (live) ===== */
+function update() {
+  let T = 0, M = 0, lossN = 0;
+  state.cats.forEach(cat => {
+    let cj = 0, cm = 0;
+    cat.items.forEach(it => {
+      const r = refs.items[it.id]; if (!r) return;
+      const subs = it.subs || [];
+      if (subs.length) {
+        let ij = 0, im = 0;
+        subs.forEach(sb => {
+          const sr = refs.items[sb.id], dead = it.off || sb.off;
+          if (sr) paintRow(sr, sb, dead);
+          if (!dead) { ij = round2(ij + sb.jual); im = round2(im + sb.modal); if (sb.jual - sb.modal < 0) lossN++; }
+        });
+        const pm = round2(ij - im);
+        r.tr.className = (it.off ? "off" : (ij === 0 && im === 0) ? "empty" : pm > 0 ? "profit" : pm < 0 ? "loss" : "even") + " parent";
+        r.jual.disabled = r.modal.disabled = true;
+        r.jual.value = r.modal.value = ""; r.jual.placeholder = r.modal.placeholder = "";
+        r.mar.textContent = "–"; r.ada.checked = !it.off;
+        if (!it.off) { cj = round2(cj + ij); cm = round2(cm + im); }
+      } else {
+        paintRow(r, it, it.off);
+        if (!it.off) { cj = round2(cj + it.jual); cm = round2(cm + it.modal); if (it.jual - it.modal < 0) lossN++; }
+      }
+    });
+    const cr = refs.cats[cat.id];
+    if (cr) {
+      cr.jualT.textContent = fmt(cj); cr.modalT.textContent = fmt(cm);
+      const m = round2(cj - cm);
+      cr.marT.textContent = (m > 0 ? "+" : m < 0 ? "−" : "") + fmt(Math.abs(m));
+    }
+    T = round2(T + cj); M = round2(M + cm);
+  });
+  const eo = round2(T * state.eoPct / 100);
+  const before = round2(T + eo);
+  const vat = round2(before * state.vatPct / 100);
+  const after = round2(before + vat);
+  const margin = round2(before - (M + round2(state.mkt || 0)));   /* Total Before VAT − (Total Modal + Marketing Fee) */
+  const basisTotal = before;
+  const gap = round2(state.plafon - basisTotal);
+  const reasons = statusReasons(gap, margin);
+  const ok = reasons.length === 0;
+  const divisor = 1 + state.eoPct / 100;
+  const maxT = state.plafon / divisor;
+
+  $("s-jual").textContent = rp(T);
+  $("s-modal").textContent = rp(M);
+  const sm = $("s-margin");
+  sm.textContent = (margin < 0 ? "−Rp " : "Rp ") + fmt(Math.abs(margin));
+  sm.className = "v " + (margin < 0 ? "neg" : margin > 0 ? "pos" : "");
+  $("s-eo").textContent = rp(eo);
+  $("s-before").textContent = rp(before);
+  $("s-vat").textContent = rp(vat);
+  $("s-after").textContent = rp(after);
+  $("s-mpct").textContent = T > 0 ? (margin / T * 100).toFixed(1).replace(".", ",") + "%" : "–";
+
+  const usage = state.plafon > 0 ? basisTotal / state.plafon : (basisTotal > 0 ? Infinity : 0);
+  const v = $("verdict");
+  v.className = "verdict" + (ok ? "" : " no");
+  $("v-word").textContent = ok ? "Feasible" : "Tidak feasible";
+  const vr = $("v-reason");
+  vr.hidden = ok;
+  vr.textContent = ok ? "" : reasons.join(" · ");
+  $("v-pct").textContent = pctText(usage, gap);
+  $("v-pct-label").textContent = isFinite(usage) ? "Plafon terpakai" : "Plafon belum diisi";
+  $("v-gap-label").textContent = gap < 0 ? "Melebihi plafon" : "Sisa plafon";
+  $("v-gap").textContent = rp(Math.abs(gap));
+  $("gauge").style.width = Math.min(usage, 1) * 100 + "%";
+
+  const mini = $("mini");
+  mini.classList.toggle("no", !ok);
+  $("mini-word").textContent = ok ? "Feasible" : "Tidak feasible";
+  $("mini-sub").textContent = ok ? pctText(usage, gap) + " dari plafon" : reasons.join(" · ");
+  $("mini-gap").textContent = (gap < 0 ? "Lebih " : "Sisa ") + rp(Math.abs(gap));
+}
+
+/* ===== kontrol di luar tabel ===== */
+function bindStatic() {   /* dipasang sekali */
+  [["p-nama", "nama"], ["p-venue", "venue"], ["p-mulai", "mulai"], ["p-selesai", "selesai"]].forEach(([id, key]) => {
+    const el = $(id);
+    el.oninput = () => {
+      const p = state.project;
+      p[key] = el.value;
+      el.classList.remove("invalid");
+      if (!$("p-nama").classList.contains("invalid") && !$("p-venue").classList.contains("invalid")) $("req-msg").hidden = true;
+      if (key === "mulai") {
+        $("p-selesai").min = p.mulai || "";
+        if (p.mulai && p.selesai && p.selesai < p.mulai) { p.selesai = p.mulai; $("p-selesai").value = p.selesai; }
+      }
+      save();
+    };
+  });
+  bindNum($("in-plafon"), () => state.plafon, v => state.plafon = v, () => state, "plafon");
+  bindNum($("in-mkt"), () => state.mkt || 0, v => state.mkt = v, () => state, "mkt");
+  [["in-eo", "eoPct"], ["in-vat", "vatPct"]].forEach(([id, key]) => {
+    const el = $(id);
+    el.oninput = () => { const n = parseFloat(el.value); state[key] = isFinite(n) && n >= 0 ? n : 0; update(); save(); };
+  });
+}
+function syncStatic() {   /* isi ulang kolom dari proyek yang sedang dibuka */
+  const p = state.project;
+  [["p-nama", "nama"], ["p-venue", "venue"], ["p-mulai", "mulai"], ["p-selesai", "selesai"]].forEach(([id, key]) => { $(id).value = p[key] || ""; $(id).classList.remove("invalid"); });
+  $("p-selesai").min = p.mulai || "";
+  $("req-msg").hidden = true;
+  $("in-plafon").value = state.plafon ? fmt(state.plafon) : "";
+  $("in-mkt").value = state.mkt ? fmt(state.mkt) : "";
+  $("in-plafon").title = (state.fx && state.fx.plafon) || ""; $("in-mkt").title = (state.fx && state.fx.mkt) || "";
+  $("in-eo").value = state.eoPct; $("in-vat").value = state.vatPct;
+}
+
+$("add-cat").addEventListener("click", () => {
+  const cat = { id: nid(), name: "Kategori baru", custom: true, items: [{ id: nid(), name: "", jual: 0, modal: 0, off: false, custom: true }] };
+  state.cats.push(cat); render(); update(); save();
+  const ci = refs.catInp[cat.id]; if (ci) { ci.focus(); ci.select(); }
+});
+
+let resetTimer = null;
+$("reset").addEventListener("click", () => {
+  const btn = $("reset");
+  if (!resetTimer) {
+    btn.textContent = "Yakin? Klik lagi untuk reset";
+    resetTimer = setTimeout(() => { btn.textContent = "Kembalikan ke template"; resetTimer = null; }, 3000);
+    return;
+  }
+  clearTimeout(resetTimer); resetTimer = null;
+  btn.textContent = "Kembalikan ke template";
+  const keep = state.project; state = freshState(); state.project = keep;
+  syncStatic(); render(); update(); save();
+});
+
+/* mini bar muncul hanya saat panel status di luar layar (mobile) */
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(es => $("mini").classList.toggle("show", !es[0].isIntersecting)).observe($("verdict"));
+}
+
+
+/* ===== preview (Next) ===== */
+function rowClass(it) {
+  if (it.off) return "off";
+  if (it.jual === 0 && it.modal === 0) return "empty";
+  const m = round2(it.jual - it.modal);
+  return m > 0 ? "profit" : m < 0 ? "loss" : "even";
+}
+/* feasible = muat di plafon DAN margin total tidak negatif */
+function statusReasons(gap, margin) {
+  const r = [];
+  if (gap < 0) r.push("Melebihi plafon");
+  if (margin < 0) r.push("Margin negatif");
+  return r;
+}
+/* persen plafon terpakai; kalau melebihi plafon, tidak pernah tampil 100% atau kurang */
+function pctText(usage, gap) {
+  if (!isFinite(usage)) return "–";
+  const p = Math.round(usage * 100);
+  return (gap < 0 ? Math.max(p, 101) : p) + "%";
+}
+function sgn(n) { n = round2(n); return (n > 0 ? "+" : n < 0 ? "−" : "") + fmt(Math.abs(n)); }
+function calc(st = state) {
+  let T = 0, M = 0, lossN = 0;
+  st.cats.forEach(c => c.items.forEach(it => {
+    if (it.off) return;
+    const subs = it.subs || [];
+    const rows = subs.length ? subs.filter(sb => !sb.off) : [it];
+    rows.forEach(o => { T = round2(T + o.jual); M = round2(M + o.modal); if (o.jual - o.modal < 0) lossN++; });
+  }));
+  const eo = round2(T * st.eoPct / 100);
+  const before = round2(T + eo);
+  const vat = round2(before * st.vatPct / 100);
+  const mk = round2(st.mkt || 0), mg = round2(before - (M + mk));
+  const gap = round2(st.plafon - before);
+  const usage = st.plafon > 0 ? before / st.plafon : (before > 0 ? Infinity : 0);
+  return { T, M, margin: mg, mkt: mk, eo, before, vat, after: round2(before + vat), gap, ok: gap >= 0 && mg >= 0, usage, maxT: st.plafon / (1 + st.eoPct / 100), lossN };
+}
+function longDate(v) {
+  if (!v) return "";
+  const [y, m, d] = v.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
+function buildPreview() {
+  const c = calc(), p = state.project, root = $("prev-body");
+  root.textContent = "";
+
+  const dl = [longDate(p.mulai), longDate(p.selesai)].filter(Boolean);
+  const dates = dl.length === 2 && dl[0] !== dl[1] ? dl[0] + " – " + dl[1] : (dl[0] || "–");
+  const info = (k, v) => h("div", { class: "p-info" }, h("span", { class: "p-info-k", text: k }), h("span", { text: v || "–" }));
+  root.append(
+    h("h1", { class: "p-title", text: "Budget Feasibility: " + (p.nama || "–") }),
+    h("div", { class: "p-meta" }, info("Tanggal Event:", dates), info("Venue:", p.venue)));
+
+  /* kiri: tabel per kategori */
+  const table = h("table", { class: "ptable" },
+    h("thead", {}, h("tr", {}, h("th", { text: "Item" }), h("th", { text: "Harga Jual" }), h("th", { text: "Modal" }), h("th", { text: "Margin" }))));
+  const shown = visibleCats();
+  shown.forEach(({ cat, items }, ci) => {
+    let cj = 0, cm = 0;
+    items.forEach(it => { const e = effv(it); cj = round2(cj + e.j); cm = round2(cm + e.m); });
+    const tb = h("tbody");
+    tb.append(h("tr", { class: "cat" },
+      h("td", { text: letter(ci) + ".  " + (cat.name || "(tanpa nama)") }),
+      h("td", { text: fmt(cj) }), h("td", { text: fmt(cm) }), h("td", { text: sgn(cj - cm) })));
+    const line = (nm, o, indent) => {
+      const cls = rowClass(o), m = round2(o.jual - o.modal);
+      const mar = h("td", { class: "td-mar" });
+      if (cls === "empty") mar.textContent = "–";
+      else {
+        mar.textContent = sgn(m);
+        if (o.jual > 0) mar.append(h("small", { text: Math.round(m / o.jual * 100) + "%" }));
+      }
+      return h("tr", { class: cls },
+        h("td", indent ? { text: nm, style: "padding-left:48px" } : { text: nm }),
+        h("td", { text: fmt(o.jual) }), h("td", { text: fmt(o.modal) }), mar);
+    };
+    items.forEach(it => {
+      if ((it.subs || []).length) {
+        const pe = effv(it);
+        tb.append(h("tr", { class: rowClass({ jual: pe.j, modal: pe.m, off: false }) + " parent" }, h("td", { text: it.name || "(tanpa nama)" }), h("td"), h("td"), h("td")));
+        it.subs.filter(sb => !sb.off).forEach(sb => tb.append(line(sb.name || "(tanpa nama)", sb, true)));
+      } else tb.append(line(it.name || "(tanpa nama)", it, false));
+    });
+    table.append(tb);
+  });
+
+  /* kanan: status + ringkasan (sama seperti panel di menu isian) */
+  const row = (k, v, cls, vcls) => h("div", { class: "row" + (cls ? " " + cls : "") },
+    h("span", { class: "k", text: k }), v == null ? null : h("span", { class: "v" + (vcls ? " " + vcls : ""), text: v }));
+  const verdict = h("div", { class: "verdict" + (c.ok ? "" : " no") },
+    h("div", { class: "v-label", text: "Status kelayakan" }),
+    h("div", { class: "v-word", text: c.ok ? "Feasible" : "Tidak feasible" }),
+    c.ok ? null : h("div", { class: "v-reason", text: statusReasons(c.gap, c.margin).join(" · ") }),
+    h("div", { class: "gauge" }, h("i", { style: "width:" + Math.min(c.usage, 1) * 100 + "%" })),
+    h("div", { class: "v-gap" }, h("span", { text: isFinite(c.usage) ? "Plafon terpakai" : "Plafon belum diisi" }), h("strong", { text: pctText(c.usage, c.gap) })),
+    h("div", { class: "v-gap" }, h("span", { text: c.gap < 0 ? "Melebihi plafon" : "Sisa plafon" }), h("strong", { text: rp(Math.abs(c.gap)) })));
+  const rowN = (kKids, v, cls, vcls) => h("div", { class: "row" + (cls ? " " + cls : "") },
+    h("span", { class: "k" }, ...kKids), v == null ? null : h("span", { class: "v" + (vcls ? " " + vcls : ""), text: v }));
+  const chip = t => h("span", { class: "chip", text: t });
+  const aside = h("div", {}, verdict,
+    h("div", { class: "card" },
+      row("Plafon Klien Before VAT", rp(state.plafon))),
+    h("div", { class: "card" },
+      row("Total Harga Jual Before EO Fee", rp(c.T)),
+      rowN(["EO Fee", chip(state.eoPct + "%")], rp(c.eo)),
+      row("Total Before VAT", rp(c.before), "strong"),
+      rowN(["VAT", chip(state.vatPct + "%")], rp(c.vat)),
+      row("Total After VAT", rp(c.after), "strong")),
+    h("div", { class: "card" },
+      row("Total Modal", rp(c.M)),
+      row("Marketing Fee", rp(c.mkt)),
+      row("Total Margin", rp(c.margin), "", c.margin < 0 ? "neg" : c.margin > 0 ? "pos" : ""),
+      row("Persentase Margin", c.T > 0 ? (c.margin / c.T * 100).toFixed(1).replace(".", ",") + "%" : "–")));
+
+  root.append(h("div", { class: "p-grid" }, h("div", { class: "p-tablewrap" }, table), aside));
+  root.append(h("div", { class: "p-foot", text: "Dibuat " + new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) }));
+}
+function showView(name) {
+  const prev = name === "prev";
+  $("view-edit").hidden = prev;
+  $("view-prev").hidden = !prev;
+  if (prev) buildPreview();
+  window.scrollTo(0, 0);
+}
+function checkRequired() {
+  const need = [["p-nama", "nama event"], ["p-venue", "venue"]].filter(([id]) => !$(id).value.trim());
+  ["p-nama", "p-venue"].forEach(id => $(id).classList.toggle("invalid", need.some(n => n[0] === id)));
+  const msg = $("req-msg");
+  if (!need.length) { msg.hidden = true; return true; }
+  msg.textContent = "Isi " + need.map(n => n[1]).join(" dan ") + " dulu sebelum lanjut ke Preview.";
+  msg.hidden = false;
+  window.scrollTo(0, 0);
+  $(need[0][0]).focus();
+  return false;
+}
+document.querySelectorAll(".go-prev").forEach(b => b.addEventListener("click", () => { if (checkRequired()) showView("prev"); }));
+$("back").addEventListener("click", () => showView("edit"));
+/* muat 1 halaman A4 portrait: perlebar area susun lalu kecilkan (scale) sampai tinggi pas */
+const PAGE_W = 718, PAGE_H = 1040, PAD = 48;   /* PAD: ruang cadangan di bawah agar baris terakhir tidak terpotong */   /* area cetak A4 dengan margin 10mm, dalam px CSS */
+function unfitPrint() {
+  const paper = $("prev-body"), view = $("view-prev");
+  paper.classList.remove("fit");
+  paper.style.width = ""; paper.style.transform = "";
+  view.style.height = ""; view.style.width = ""; view.style.overflow = "";
+}
+function fitPrint() {
+  const paper = $("prev-body"), view = $("view-prev");
+  if (view.hidden) return;
+  unfitPrint();
+  paper.classList.add("fit");
+  let z = 1;
+  for (; z > 0.35; z -= 0.01) {
+    paper.style.width = (PAGE_W / z) + "px";
+    if (paper.offsetHeight * z + PAD <= PAGE_H) break;
+  }
+  paper.style.transform = "scale(" + z + ")";
+  view.style.width = PAGE_W + "px";
+  view.style.height = (Math.ceil(paper.offsetHeight * z) + PAD) + "px";
+  view.style.overflow = "hidden";
+}
+window.addEventListener("beforeprint", fitPrint);
+window.addEventListener("afterprint", unfitPrint);
+$("print").addEventListener("click", () => {
+  const old = document.title;
+  document.title = (state.project.nama || "Anggaran") + " - Anggaran";
+  window.addEventListener("afterprint", () => { document.title = old; }, { once: true });
+  try { fitPrint(); window.print(); } catch (e) { document.title = old; }
+});
+
+
+/* ===== ekspor Excel (format template Mahakreasi) ===== */
+const LOGO_B64 = "";   /* TEMPEL string base64 logo asli Anda di antara tanda kutip ini */
+function visibleCats() {
+  return state.cats
+    .map(cat => ({ cat, items: cat.items.filter(it => !it.off) }))
+    .filter(v => v.items.length);
+}
+
+function buildWorkbook() {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Cost");
+  const widths = { A: 4.7, B: 5.3, C: 27.7, D: 44.3, E: 8.1, F: 13, G: 13, H: 13, I: 14.8, J: 16.1, K: 18.7, L: 24, M: 16.7, N: 15.8, O: 13 };
+  Object.keys(widths).forEach(k => { ws.getColumn(k).width = widths[k]; });
+
+  const thin = { style: "thin", color: { argb: "FF000000" } };
+  const GRID = { left: thin, right: thin, top: thin, bottom: thin };
+  const F = { name: "Calibri", size: 10 }, FB = { name: "Calibri", size: 10, bold: true };
+  const cc = calc();
+  const hasDec = [cc.T, cc.M, cc.eo, cc.vat, state.mkt || 0].some(v => !Number.isInteger(v)) || state.cats.some(c => c.items.some(it => [it.jual, it.modal].concat((it.subs || []).reduce((a, x) => a.concat([x.jual, x.modal]), [])).some(v => !Number.isInteger(v))));
+  const D = hasDec ? ".00" : "";
+  const ACC = '_(* #,##0' + D + '_);_(* \\(#,##0' + D + '\\);_(* "-"??_);_(@_)';
+  const ACC2 = '_-* #,##0' + D + '_-;\\-* #,##0' + D + '_-;_-* "-"_-;_-@_-';
+  const CENTER = { horizontal: "center", vertical: "middle" }, RIGHT = { horizontal: "right" };
+  const solid = argb => ({ type: "pattern", pattern: "solid", fgColor: { argb } });
+  const GREY = "FFCCCCCC", YEL = "FFFFFF00";
+  const put = (addr, v, o = {}) => {
+    const c = ws.getCell(addr);
+    if (v !== undefined) c.value = v;
+    c.font = o.font || F;
+    if (o.fmt) c.numFmt = o.fmt;
+    if (o.align) c.alignment = o.align;
+    if (o.border) c.border = o.border;
+    if (o.fill) c.fill = solid(o.fill);
+  };
+  const MAIN = "BCDEFGHIJK".split(""), INTERNAL = ["M", "N"];
+  const grid = (r, internal) => (internal ? MAIN.concat(INTERNAL) : MAIN).forEach(col => put(col + r, undefined, { border: GRID }));
+
+  /* bingkai & header proyek */
+  for (let r = 1; r <= 14; r++) {
+    ws.getCell("B" + r).border = { left: thin, top: r === 1 ? thin : undefined };
+    ws.getCell("K" + r).border = { right: thin, top: r === 1 ? thin : undefined };
+    if (r === 1) "CDEFGHIJ".split("").forEach(col => { ws.getCell(col + r).border = { top: thin }; });
+  }
+  const dfmt = v => {
+    if (!v) return "";
+    const [y, m, d] = v.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  };
+  const p = state.project;
+  const dates = [dfmt(p.mulai), dfmt(p.selesai)].filter(Boolean);
+  const dateText = dates.length === 2 && dates[0] !== dates[1] ? dates[0] + " – " + dates[1] : (dates[0] || "");
+  [["PROJECT", p.nama], ["DATE", dateText], ["VENUE", p.venue]].forEach(([lab, val], i) => {
+    put("C" + (10 + i), lab, { font: FB });
+    put("D" + (10 + i), ": " + (val || ""), { font: FB });
+  });
+  if (LOGO_B64) {
+    const logoId = wb.addImage({ base64: LOGO_B64, extension: "png" });
+    ws.addImage(logoId, { tl: { col: 2, row: 2 }, ext: { width: 383, height: 121 } });   /* mulai tepat di tepi kiri kolom C, baris 3 */
+  }
+
+  /* judul kolom */
+  grid(15, true);
+  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "MODAL"], ["N", "MARGIN"]]
+    .forEach(([col, t]) => put(col + 15, t, { font: FB, align: CENTER, border: GRID }));
+  ["E15:F15", "G15:H15", "I15:J15"].forEach(rg => ws.mergeCells(rg));
+
+  /* kategori & item (7 baris per item, item "tidak ada" tidak ditulis) */
+  const PER = 7;
+  const mktFee = round2(state.mkt || 0);   /* Marketing Fee tidak masuk tabel, hanya ke blok L:M */
+  let r = 16, sumJual = 0, sumMargin = 0, sumModal = 0;
+  const catRows = [];
+  visibleCats().forEach(({ cat, items }) => {
+    const catR = r;
+    grid(catR, false);
+    ws.mergeCells(`B${catR}:C${catR}`);
+    put("B" + catR, cat.name || "(tanpa nama)", { font: FB, border: GRID });
+    r++;
+    const first = r;
+    let catSum = 0;
+    items.forEach((it, i) => {
+      const hasSub = (it.subs || []).length > 0, subs = (it.subs || []).filter(sb => !sb.off);
+      const n = 2 + subs.length;   /* 1 baris item + 1 baris per sub item + 1 baris kosong pemisah */
+      for (let k = 0; k < n; k++) grid(r + k, true);
+      put("B" + r, i + 1, { fmt: "###0;###0", align: CENTER, border: GRID });
+      put("C" + r, it.name || "(tanpa nama)", { border: GRID });
+      const val = (rr, o, nm) => {
+        if (nm !== undefined) put("D" + rr, nm, { border: GRID });
+        put("J" + rr, o.jual, { fmt: ACC, border: GRID });
+        put("M" + rr, o.modal, { fmt: ACC, border: GRID });
+        put("N" + rr, { formula: `J${rr}-M${rr}`, result: round2(o.jual - o.modal) }, { fmt: ACC2, border: GRID });
+        catSum = round2(catSum + o.jual); sumMargin = round2(sumMargin + o.jual - o.modal); sumModal = round2(sumModal + o.modal);
+      };
+      if (hasSub) subs.forEach((sb, k) => val(r + 1 + k, sb, sb.name || "(tanpa nama)"));
+      else val(r, it);
+      r += n;
+    });
+    put("K" + catR, { formula: `SUM(J${first}:J${r - 1})`, result: catSum }, { font: FB, fmt: ACC2, align: RIGHT, border: GRID });
+    sumJual = round2(sumJual + catSum);
+    catRows.push(catR);
+  });
+  const bodyEnd = r - 1;
+
+  /* blok total */
+  const costR = r, agencyR = r + 1, beforeR = r + 2, vatR = r + 3, afterR = r + 4;
+  const eoV = round2(sumJual * state.eoPct / 100), before = round2(sumJual + eoV), vatV = round2(before * state.vatPct / 100);
+  const labels = [[costR, "COST"], [agencyR, "Agency Fee"], [beforeR, "Total Before VAT"], [vatR, "VAT"], [afterR, "TOTAL After VAT"]];
+  labels.forEach(([rr, lab]) => {
+    MAIN.forEach(col => put(col + rr, undefined, { font: FB, border: GRID, fill: rr === beforeR ? GREY : undefined }));
+    ws.mergeCells(`B${rr}:C${rr}`);
+    put("B" + rr, lab, { font: FB, border: GRID, fill: rr === beforeR ? GREY : undefined });
+  });
+  const pf = v => Number.isInteger(v) ? "0%" : "0.0%";
+  put("E" + agencyR, state.eoPct / 100, { font: FB, fmt: pf(state.eoPct), align: CENTER, border: GRID });
+  put("E" + vatR, state.vatPct / 100, { font: FB, fmt: pf(state.vatPct), align: CENTER, border: GRID });
+  const kv = (rr, formula, result, fill) => put("K" + rr, { formula, result }, { font: FB, fmt: ACC2, align: RIGHT, border: GRID, fill });
+  kv(costR, `SUM(K16:K${bodyEnd})`, sumJual);
+  kv(agencyR, `ROUND(K${costR}*E${agencyR},2)`, eoV);
+  kv(beforeR, `SUM(K${costR}:K${agencyR})`, before, GREY);
+  kv(vatR, `ROUND(K${beforeR}*E${vatR},2)`, vatV);
+  kv(afterR, `SUM(K${beforeR}:K${vatR})`, round2(before + vatV));
+
+  /* blok internal L:M (tidak ikut area cetak): Modal, Marketing Fee, Total Cost, Tagihan, Margin */
+  const FN = { name: "Calibri", size: 11 }, ACC11 = ACC;
+  const lab = (rr, t) => put("L" + rr, t, { font: FN, align: RIGHT });
+  const num = (rr, v) => put("M" + rr, v, { font: FN, fmt: ACC11 });
+  const b0 = agencyR, modalAll = round2(sumModal), totalCost = round2(modalAll + mktFee), tagihan = before;
+  lab(b0 + 1, "Modal");      num(b0 + 1, { formula: `SUM(M16:M${b0})`, result: modalAll });
+  lab(b0 + 2, "Marketing Fee"); num(b0 + 2, mktFee);
+  lab(b0 + 3, "Total Cost Before VAT"); num(b0 + 3, { formula: `M${b0 + 1}+M${b0 + 2}`, result: totalCost });
+  lab(b0 + 5, "Tagihan Before VAT"); num(b0 + 5, { formula: `K${beforeR}`, result: tagihan });
+  lab(b0 + 6, "Margin");     num(b0 + 6, { formula: `M${b0 + 5}-M${b0 + 3}`, result: round2(tagihan - totalCost) });
+  put("N" + (b0 + 6), { formula: `IF(K${costR}=0,0,M${b0 + 6}/K${costR})`, result: sumJual ? round2(tagihan - totalCost) / sumJual : 0 }, { font: FN, fmt: "0%" });
+
+  /* syarat & ketentuan */
+  const tc = afterR + 2;
+  put("B" + tc, "Term & Conditions :", { font: FB });
+  const terms = [
+    ["1.", "Term Of Payment :"],
+    [null, "DP 50% after budget approval & full payment one week after event"],
+    ["2.", "Costs that have not been listed in the budget above will be charged as additional cost"],
+    ["3.", "Approval budget must be done in H-7 event, and additional cost must be approved before event"],
+    ["4.", "The price listed is the package price, can not be changed or substituted"],
+    ["5.", "Taxes and other fees on events will be charged to client"],
+    ["6.", "Any changes / revisions lead to price changes"],
+    ["7.", "Demand for budget reduction will directly affect the specification of the item"],
+    ["8.", "Budget is an estimate, the price is not fixed and still can change upon request"],
+    ["9.", "The price and availability are correct at the moment it is created"]
+  ];
+  let t = tc + 1;
+  terms.forEach(([n, txt]) => { if (n) put("B" + t, n); put("C" + t, txt); t++; });
+  put("J" + (tc + 2), "Approved", { font: FB, align: CENTER });
+  put("J" + (tc + 9), "PT Maha Kreasi Indonesia", { font: FB, align: CENTER });
+  const endR = t;
+  for (let rr = afterR + 1; rr <= endR; rr++) {
+    const bottom = rr === endR ? thin : undefined;
+    ws.getCell("B" + rr).border = { left: thin, bottom };
+    "CDEFGHIJ".split("").forEach(col => { if (bottom) ws.getCell(col + rr).border = { bottom }; });
+    ws.getCell("K" + rr).border = { right: thin, bottom };
+  }
+
+  for (let rr = 15; rr <= endR; rr++) ws.getRow(rr).height = 15;
+  ws.pageSetup = { orientation: "landscape", paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0, printArea: `B1:K${endR}` };
+  return wb;
+}
+
+let dlCap = null, directMode = false;   /* directMode: dibuka sebagai file HTML biasa (tanpa claude.ai) */
+async function exportExcel() {
+  const btn = $("xlsx"), msg = $("x-msg");
+  if (typeof ExcelJS === "undefined") { msg.textContent = "Pustaka Excel gagal dimuat."; return; }
+  btn.disabled = true; msg.textContent = "";
+  try {
+    const buf = await buildWorkbook().xlsx.writeBuffer();
+    const name = ((state.project.nama || "Anggaran").replace(/[\\/:*?"<>|]/g, "").trim() || "Anggaran") + " - Anggaran.xlsx";
+    if (dlCap) await dlCap.save({ filename: name, data: buf });
+    else {
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+    msg.textContent = (dlCap || directMode) ? "Tersimpan" : "Jika file tidak terunduh, buka file HTML ini langsung di browser (klik dua kali)";
+    setTimeout(() => { msg.textContent = ""; }, (dlCap || directMode) ? 2500 : 9000);
+  } catch (e) {
+    msg.textContent = e && e.code === "declined" ? "" : "Gagal menyimpan (" + ((e && e.code) || "error") + ")";
+  } finally { btn.disabled = false; }
+}
+$("xlsx").addEventListener("click", exportExcel);
+(async () => {
+  try {
+    if (window.claude && window.claude.use) dlCap = await window.claude.use("downloads");
+    else if (!window.claude) directMode = true;
+  } catch (e) {}
+  $("xlsx").hidden = false;   /* selalu tampil; unduhan langsung dicoba bila tidak ada kemampuan downloads */
+})();
+
+/* ===== daftar proyek ===== */
+const dlg = $("projects");
+const pjMsg = t => { $("pj-msg").textContent = t || ""; };
+function showCurrent() {
+  syncStatic(); render(); update();
+  if (!$("view-prev").hidden) showView("edit");
+}
+function openProject(id) {
+  if (!store.items[id]) return;
+  save(true);
+  curId = id; state = store.items[id].state; fixUid(state);
+  showCurrent(); save(true);
+  dlg.close();
+}
+function addProject(st, label) {
+  save(true);
+  curId = newPid(); state = st; fixUid(st);
+  showCurrent(); save();
+  if (cloudOn()) queueCloud(curId, true);   /* proyek baru langsung ditulis, tanpa jeda */
+  renderProjects(); pjMsg(label || "");
+}
+function renderAccount() {
+  const box = $("pj-acct"); box.textContent = "";
+  if (!cloudOn()) { box.append(h("span", { text: "Tersimpan di browser ini" + (cloudNote ? " · " + cloudNote : "") })); return; }
+  if (FB_WORKSPACE) {
+    box.append(h("span", { text: "Cloud · ruang bersama: semua yang membuka halaman ini melihat proyek yang sama." }));
+    box.append(h("div", { class: "pj-hint", text: "Siapa pun yang membuka halaman ini bisa melihat, mengubah, dan menghapus semua proyek." }));
+  } else {
+    box.append(h("span", { text: "Cloud · ruang pribadi (terikat ke browser ini)." }));
+    box.append(h("div", { class: "pj-hint", text: "Isi FB_WORKSPACE di kode agar proyek dibagikan ke semua yang membuka halaman." }));
+  }
+}
+function renderProjects() {
+  renderAccount();
+  const ul = $("pj-list"); ul.textContent = "";
+  Object.keys(store.items).sort(byNewest).forEach(id => {
+    const it = store.items[id], st = it.state;
+    let c; try { c = calc(st); } catch (e) { return; }
+    const when = it.updated ? new Date(it.updated).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+    const sub = st.project.venue || "";
+    const info = h("div", {},
+      h("div", {}, h("span", { class: "nm", text: st.project.nama || "(tanpa nama)" }), h("span", { class: "st " + (c.ok ? "ok" : "no"), text: c.ok ? "Feasible" : "Tidak feasible" })),
+      h("div", { class: "sub", text: (sub ? sub + " · " : "") + "diubah " + when }));
+    const open = h("button", { class: "ghost", type: "button", text: "Buka" });
+    if (id === curId) open.disabled = true; else open.addEventListener("click", () => openProject(id));
+    const dup = h("button", { class: "ghost", type: "button", text: "Duplikat", onclick: () => {
+      const copy = JSON.parse(JSON.stringify(st));
+      copy.project.nama = (copy.project.nama || "Proyek") + " (salinan)";
+      const nid2 = newPid(); fixUid(copy);
+      store.items[nid2] = { updated: Date.now(), state: copy };
+      commitProject(nid2);
+      renderProjects(); pjMsg("Disalin sebagai “" + copy.project.nama + "”.");
+    } });
+    let t = null;
+    const del = h("button", { class: "ghost", type: "button", text: "Hapus" });
+    del.addEventListener("click", () => {
+      if (!t) { del.textContent = "Yakin?"; t = setTimeout(() => { del.textContent = "Hapus"; t = null; }, 3000); return; }
+      clearTimeout(t);
+      const wasCur = id === curId;
+      if (wasCur) {   /* pindah dulu ke proyek lain, baru hapus (kabar "terhapus" dari Firestore memicu penyegaran daftar) */
+        const rest = Object.keys(store.items).filter(k => k !== id).sort(byNewest);
+        if (rest.length) { curId = rest[0]; state = store.items[curId].state; fixUid(state); }
+        else { curId = newPid(); state = freshState(true); }
+      }
+      removeProject(id);
+      if (wasCur) { showCurrent(); save(true); }
+      renderProjects(); pjMsg("Proyek dihapus.");
+    });
+    ul.append(h("li", { class: id === curId ? "cur" : "" }, info, h("div", { class: "btns" }, open, dup, del)));
+  });
+}
+$("pj-open").addEventListener("click", () => { pjMsg(""); renderProjects(); dlg.showModal(); });
+$("pj-close").addEventListener("click", () => dlg.close());
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+$("pj-new").addEventListener("click", () => addProject(freshState(true), "Proyek baru dibuat dan sedang dibuka."));
+
+const BOOT_TIMEOUT = 12000;   /* batas tunggu cloud (ms); lewat itu aplikasi memakai penyimpanan browser */
+function bootWithTimeout() {
+  return new Promise(res => {
+    let done = false;
+    const fin = v => { if (!done) { done = true; clearTimeout(timer); res(v); } };
+    const timer = setTimeout(() => { bootAborted = true; fin("timeout"); }, BOOT_TIMEOUT);
+    bootStorage().then(() => fin("ok")).catch(e => { bootAborted = true; fin(e || new Error("error")); });
+  });
+}
+(async function main() {
+  bindStatic();
+  const useCloud = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey);
+  if (useCloud) {   /* tampilkan kerangka dulu agar halaman tidak kosong selagi menghubungkan */
+    state = freshState(true); syncStatic(); render(); update();
+    document.body.classList.add("booting");
+    setSync("Menghubungkan ke cloud…", "");
+  }
+  const r = await bootWithTimeout();
+  if (r !== "ok") {   /* cloud lambat / galat: jatuh ke penyimpanan browser dan sebutkan alasannya */
+    try { if (unsubCloud) unsubCloud(); } catch (e) {}
+    fb = null; store = { current: null, items: {} }; curId = null; state = freshState();
+    cloudNote = r === "timeout"
+      ? "cloud tidak menjawab (cek koneksi, aturan Firestore, atau pemblokir iklan)"
+      : "cloud bermasalah: " + ((r && (r.code || r.message)) || "error");
+    loadLocal();
+    setSync("Tersimpan di browser · " + cloudNote, "err");
+  }
+  syncStatic(); render(); update(); save(true);
+  if (!store.items[curId]) save();
+  document.body.classList.remove("booting");
+})();
+</script>
+<script src="js/homebtn.js"></script>
+</body>
+</html>

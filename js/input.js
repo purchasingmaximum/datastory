@@ -20,6 +20,7 @@
   // (bukan membuat baris baru) lewat report.isEdit = true di submitEvent().
   const urlParams = new URLSearchParams(window.location.search);
   const editEventId = urlParams.get("edit");
+  const copyEventId = urlParams.get("copy");   // "Duplikat" dari Daftar Event: isi form dari event lain, simpan sebagai event baru
   let editOriginalEvent = null;
 
   const pageEyebrow = document.getElementById("page-eyebrow");
@@ -34,7 +35,7 @@
     pageDesc.textContent = "Perbaiki data yang salah, atau ubah status pembayaran (mis. DP → Lunas), lalu simpan perubahan.";
     backToList.hidden = false;
     editModeNote.hidden = false;
-    submitBtn.textContent = "Update Report";
+    submitBtn.textContent = "Next: Preview →";
   }
 
   let itemSeq = 0;
@@ -52,7 +53,7 @@
   MaximumLoader.show(editEventId ? "Memuat Data Event" : "Memuat Data Master");
   Promise.all([
     loadDictionaries(),
-    editEventId ? loadEventById(editEventId, (attempt, attempts) => {
+    (editEventId || copyEventId) ? loadEventById(editEventId || copyEventId, (attempt, attempts) => {
       MaximumLoader.setLabel(`Masih memuat data event, mencoba lagi… (${attempt}/${attempts})`);
     }) : Promise.resolve(null),
   ]).then(([dicts, ev]) => {
@@ -63,10 +64,11 @@
     mergeIntoDictionary(readLocalCustomItems());
     loadCustomItems().then(mergeIntoDictionary);
 
-    if (editEventId) {
+    if (editEventId || copyEventId) {
       if (!ev) throw new Error("Event tidak ditemukan.");
-      editOriginalEvent = ev;
+      if (editEventId) editOriginalEvent = ev;
       populateFormForEdit(ev);
+      if (copyEventId) form.event.value = (form.event.value || "") + " (salinan)";
     } else {
       addItemBlock();
     }
@@ -216,10 +218,14 @@
   function attachVendorCombo(block) {
     const vendorInput = block.querySelector('[data-name="vendor"]');
     initCombobox(vendorInput, {
-      getOptions: (query) => filterByQuery(vendorDictionary, query, "namaVendor", "vendorId"),
-      renderLabel: (opt) => opt.namaVendor,
+      // vendor yang menjual barang ini (menurut database harga) tampil dulu beserta harganya
+      getOptions: (query) => {
+        const base = filterByQuery(vendorDictionary, query, "namaVendor", "vendorId");
+        return window.InputPrice ? window.InputPrice.vendorOptions(block, query, base) : base;
+      },
+      renderLabel: (opt) => opt.label || opt.namaVendor,
       getValue: (opt) => opt.namaVendor,
-      onSelect: () => setError(vendorInput.closest(".field"), ""),
+      onSelect: () => { setError(vendorInput.closest(".field"), ""); if (window.InputPrice) window.InputPrice.vendorChosen(block); },
     });
   }
 
@@ -227,14 +233,42 @@
      Rupiah-formatted number inputs: store the raw digits, display with
      thousands separators as the user types.
      --------------------------------------------------------------------- */
+  // Mendukung rumus ala Excel: awali dengan "=" lalu pakai + - x (atau *) / ( ).
+  // Dihitung saat Enter / pindah sel; tekan lagi sel itu untuk melihat rumusnya.
+  const evalFx = (src) => (window.SheetCalc ? window.SheetCalc.evalExpr(src) : null);
   function attachRupiahFormatting(input) {
+    const fmtN = (n) => (n ? Math.round(n).toLocaleString("id-ID") : "");
+    const plain = () => Number(input.value.replace(/\D/g, "")) || 0;
+    input.addEventListener("focus", () => {
+      if (input._fx && !input.value.trim().startsWith("=") && input._fx.v === plain()) { input.value = input._fx.f; input.select(); }
+    });
     input.addEventListener("input", () => {
+      if (input.value.trim().startsWith("=")) return;   // mode rumus: ketik bebas
+      input._fx = null; input.title = "";
       const digits = input.value.replace(/\D/g, "");
       input.value = digits ? Number(digits).toLocaleString("id-ID") : "";
     });
+    const commit = () => {
+      const v = input.value.trim();
+      if (!v.startsWith("=")) return;
+      const r = evalFx(v.slice(1));
+      if (r === null || r < 0 || r > 9999999999999) {
+        input.value = input._fx ? fmtN(input._fx.v) : "";
+        input.classList.add("fx-invalid"); setTimeout(() => input.classList.remove("fx-invalid"), 1800);
+        return;
+      }
+      const n = Math.round(r);
+      input._fx = { f: v, v: n }; input.title = v;
+      input.value = fmtN(n);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") commit(); });
+    input.addEventListener("blur", commit);
   }
   function rupiahValue(input) {
-    const digits = input.value.replace(/\D/g, "");
+    const v = input.value.trim();
+    if (v.startsWith("=")) { const r = evalFx(v.slice(1)); return r === null || r < 0 ? NaN : Math.round(r); }
+    const digits = v.replace(/\D/g, "");
     return digits ? Number(digits) : NaN;
   }
 
@@ -471,6 +505,8 @@
     fieldEl.classList.toggle("has-error", !!message);
     const msgEl = fieldEl.querySelector(".error-msg");
     if (msgEl) msgEl.textContent = message || "";
+    // di tabel barang pesan error disembunyikan (gaya sheet): tampil sebagai tooltip pada sel
+    if (fieldEl.closest(".items-table")) { const c = fieldEl.querySelector("input,select,textarea"); if (c && (message || c.dataset.errTip)) { c.title = message || ""; c.dataset.errTip = message ? "1" : ""; } }
   }
 
   function validateTopLevel() {
@@ -801,7 +837,7 @@
     previewEditBtn.disabled = true;
     if (editEventId) {
       // Pengiriman dilanjutkan otomatis oleh halaman Daftar Event.
-      window.location.href = "events.html";
+      window.location.href = "input.html?list=1";
       return;
     }
     showSuccess();
@@ -829,7 +865,7 @@
       await submitEvent(report);
       if (editEventId) {
         MaximumLoader.setLabel("Tersimpan — Kembali ke Daftar Event");
-        setTimeout(() => { window.location.href = "events.html"; }, 700);
+        setTimeout(() => { window.location.href = "input.html?list=1"; }, 700);
         return; // biarkan loader tampil sampai redirect
       }
       showSuccess();
