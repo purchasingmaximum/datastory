@@ -943,7 +943,12 @@ function filterEventsByDateRange(events, fromISO, toISO) {
   });
 }
 
-function _toISODate(d) { return d.toISOString().slice(0, 10); }
+// Tanggal LOKAL (bukan UTC): toISOString() menggeser hari di zona waktu seperti WIB,
+// sehingga "Hari Ini" menunjukkan kemarin dan awal bulan mundur ke bulan lalu.
+function _toISODate(d) {
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
 
 // Preset cepat, dihitung relatif terhadap tanggal hari ini (device/server).
 function presetRange(key) {

@@ -566,7 +566,7 @@
       // saat pertama kali dihitung (lihat computedEventDays()).
       const end = new Date(ev.eventDate + "T00:00:00");
       end.setDate(end.getDate() + (Number(ev.eventDays) - 1));
-      dateEndInput.value = end.toISOString().slice(0, 10);
+      dateEndInput.value = end.getFullYear() + "-" + String(end.getMonth() + 1).padStart(2, "0") + "-" + String(end.getDate()).padStart(2, "0");   // tanggal lokal (toISOString menggeser sehari di WIB)
     }
     recomputeEventDays();
 

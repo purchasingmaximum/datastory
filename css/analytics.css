@@ -506,10 +506,12 @@ section#section-month .chart-wrap { max-width: 720px; }
 /* Filter Event: tombol + popover pilih satu / beberapa / semua event */
 .event-filter { position: relative; }
 .btn-event-filter {
-  border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink);
-  border-radius: 8px; padding: 7px 12px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--line); background: var(--paper-raised); color: var(--muted);
+  border-radius: 999px; padding: 6px 14px; font-size: 0.78rem; font-weight: 500; cursor: pointer;
   font-family: var(--font-sans); max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
+.btn-event-filter:hover { color: var(--ink); border-color: var(--muted); }
 .btn-event-filter.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .event-pop {
   position: absolute; left: 0; top: calc(100% + 8px); z-index: 50;
@@ -546,3 +548,4 @@ section#section-month .chart-wrap { max-width: 720px; }
 .event-pop-list li:hover .event-pop-only, .event-pop-only:focus-visible { opacity: 1; }
 .event-pop-only:hover { color: var(--ink); border-color: var(--muted); }
 @media (hover: none) { .event-pop-only { opacity: 1; } }
+.event-pop input[type="search"]:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ink) 18%, transparent); }
