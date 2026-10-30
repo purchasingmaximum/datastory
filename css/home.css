@@ -30,7 +30,7 @@ body.home-page{
 .home-page .tiles{
   position:relative;overflow:hidden;isolation:isolate;
   flex:1 1 auto;max-height:760px;
-  display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:minmax(82px,1fr);gap:10px;
+  display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:minmax(83px,1fr);gap:10px;
   padding:14px;border:1px solid var(--line);border-radius:16px;
   background:linear-gradient(180deg,var(--panel),transparent 70%);
 }
@@ -39,7 +39,7 @@ body.home-page{
 .home-page .tile{--tc:var(--tcl)}
 :root[data-theme="dark"] .home-page .tile{--tc:var(--tcd)}
 .home-page .tile{
-  position:relative;z-index:1;overflow:hidden;min-height:82px;
+  position:relative;z-index:1;overflow:hidden;min-height:83px;
   display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"ic t" "ic d";
   column-gap:20px;row-gap:3px;align-content:center;align-items:center;
   padding:14px 24px;
@@ -67,11 +67,11 @@ body.home-page{
 
 /* hiasan piksel di sisi kanan baris: tiap baris punya pola acak sendiri, makin penuh ke kanan */
 .home-page .tile-t,.home-page .tile-d{position:relative;z-index:1}
-.tile-px{position:absolute;top:50%;right:22px;transform:translateY(-50%);width:250px;color:var(--ink);opacity:.2;pointer-events:none;transition:opacity .25s ease}
+.tile-px{position:absolute;top:50%;right:22px;transform:translateY(-50%);width:305px;color:var(--ink);opacity:.2;pointer-events:none;transition:opacity .25s ease}
 .home-page .tile:hover .tile-px,.home-page .tile:focus-visible .tile-px{opacity:.95}
 
-@media (max-width:1000px){.tile-px{width:150px}}
-@media (max-width:760px){.tile-px{width:96px}}
+@media (max-width:1000px){.tile-px{width:190px}}
+@media (max-width:760px){.tile-px{width:120px}}
 @media (max-width:560px){
   .home-page .home{padding-top:24px}
   .home-page .tiles{padding:10px;gap:10px;border-radius:14px;grid-auto-rows:minmax(88px,auto)}
