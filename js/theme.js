@@ -26,4 +26,16 @@
     apply(root.dataset.theme === "dark" ? "light" : "dark");
   });
   window.MaximumTheme = { apply };
+
+  // Menu melayang pindah-fitur: dimuat otomatis di halaman fitur (bukan login/menu utama).
+  (function () {
+    var f = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+    if (f === "login.html" || f === "index.html" || window.__mxAssistive) return;
+    if (document.querySelector('script[src*="assistive.js"]')) return;
+    var cur = document.currentScript, v = "";
+    if (cur && cur.src.indexOf("?") > -1) v = cur.src.slice(cur.src.indexOf("?"));
+    var sc = document.createElement("script");
+    sc.src = (cur ? cur.src.replace(/theme\.js.*$/, "") : "js/") + "assistive.js" + v;
+    document.body.appendChild(sc);
+  })();
 })();

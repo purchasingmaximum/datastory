@@ -5,7 +5,7 @@
 (function () {
   if (window.__mxAssistive) return; window.__mxAssistive = true;
 
-  var POS_KEY = "maximum-assistive-pos";
+  var POS_KEY = "maximum-assistive-pos2";
   var MARGIN = 12, SIZE = 52;
 
   // matriks 3x3 per ikon (kecerahan tiap kotak, baris atas dulu) — sama dengan Menu utama
@@ -82,8 +82,8 @@
   root.appendChild(btn); root.appendChild(panel); document.body.appendChild(root);
 
   // ---- posisi ----
-  var pos = { side: "r", y: 0.55 };           // y = rasio tinggi layar
-  try { var s = JSON.parse(localStorage.getItem(POS_KEY) || "null"); if (s && (s.side === "l" || s.side === "r")) pos = { side: s.side, y: +s.y || 0.55 }; } catch (_) {}
+  var pos = { side: "r", y: 0.74 };           // y = rasio tinggi layar
+  try { var s = JSON.parse(localStorage.getItem(POS_KEY) || "null"); if (s && (s.side === "l" || s.side === "r")) pos = { side: s.side, y: +s.y || 0.74 }; } catch (_) {}
   function vw() { return document.documentElement.clientWidth; }
   function vh() { return window.innerHeight; }
   function clampY(y) { return Math.max(MARGIN + 56, Math.min(vh() - SIZE - MARGIN - 8, y)); }
