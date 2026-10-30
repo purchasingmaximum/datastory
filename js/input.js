@@ -21,6 +21,7 @@
   const urlParams = new URLSearchParams(window.location.search);
   const editEventId = urlParams.get("edit");
   const copyEventId = urlParams.get("copy");   // "Duplikat" dari Daftar Event: isi form dari event lain, simpan sebagai event baru
+  const viewEventId = urlParams.get("view");   // "Buka" dari Daftar Event: tampilan laporan (baca saja) + ekspor
   let editOriginalEvent = null;
 
   const titleLabel = document.getElementById("title-label");
@@ -46,13 +47,16 @@
   let itemDictionary = [];
   let vendorDictionary = [];
 
-  MaximumLoader.show(editEventId ? "Memuat Data Event" : "Memuat Data Master");
+  MaximumLoader.show((editEventId || viewEventId) ? "Memuat Data Event" : "Memuat Data Master");
   Promise.all([
     loadDictionaries(),
-    (editEventId || copyEventId) ? loadEventById(editEventId || copyEventId, (attempt, attempts) => {
-      MaximumLoader.setLabel(`Masih memuat data event, mencoba lagi… (${attempt}/${attempts})`);
-    }) : Promise.resolve(null),
+    (editEventId || copyEventId || viewEventId) ? loadEventById(editEventId || copyEventId || viewEventId) : Promise.resolve(null),
   ]).then(([dicts, ev]) => {
+    if (viewEventId) {
+      if (!ev) throw new Error("Event tidak ditemukan.");
+      showReadOnly(ev);
+      return;
+    }
     itemDictionary = dicts.items.slice();
     vendorDictionary = dicts.vendors;
     // Barang baru yang pernah disubmit: cache lokal langsung, sheet
@@ -70,6 +74,10 @@
     }
   }).catch((err) => {
     console.error("Failed to load data master / event to edit", err);
+    if (viewEventId) {
+      formLevelError.textContent = (err && err.message) || "Event tidak ditemukan.";
+      backToList.hidden = false;
+    }
     if (editEventId) {
       formLevelError.textContent = (err && err.message) || "Gagal memuat data event untuk diedit.";
       submitBtn.disabled = true;
@@ -94,21 +102,21 @@
   function writeLocalCustomItems(list) {
     try { localStorage.setItem(CUSTOM_ITEMS_KEY, JSON.stringify(list)); } catch (_) {}
   }
+  // Barang yang pernah dipakai di event mana pun (dari penyimpanan bersama) ikut jadi saran,
+  // jadi nama barang baru dari orang lain langsung muncul tanpa spreadsheet dictionary.
   async function loadCustomItems() {
-    let remote = [];
-    if (typeof CONFIG !== "undefined" && CONFIG.API_URL) {
-      try {
-        const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 4000);
-        const res = await fetch(`${CONFIG.API_URL}?action=getDictionaries`, { signal: ctrl.signal });
-        clearTimeout(timer);
-        const payload = await res.json();
-        if (payload && Array.isArray(payload.items)) remote = payload.items; // baca ulang sheet (segar), termasuk barang baru dari orang lain
-      } catch (err) {
-        console.warn("getDictionaries (refresh) gagal, memakai cache lokal saja.", err);
-      }
-    }
-    return remote.concat(readLocalCustomItems());
+    let fromEvents = [];
+    try {
+      await window.EventStore.ready;
+      const seen = new Set();
+      window.EventStore.all().forEach((ev) => (ev.items || []).forEach((it) => {
+        const k = normName(it.itemName);
+        if (!k || seen.has(k)) return;
+        seen.add(k);
+        fromEvents.push({ itemId: it.itemCode || "", kategori: it.category || "", namaItemStandar: it.itemName, satuanStandar: "item" });
+      }));
+    } catch (err) { console.warn("Gagal membaca barang dari event tersimpan.", err); }
+    return fromEvents.concat(readLocalCustomItems());
   }
   function mergeIntoDictionary(list) {
     const known = new Set(itemDictionary.map((e) => normName(e.namaItemStandar)));
@@ -683,7 +691,116 @@
     return row;
   }
 
-  function showPreview(report) {
+  /* ---------------------------------------------------------------------
+     Analisis terintegrasi: dihitung langsung dari seluruh event yang
+     tersimpan (js/event-analysis.js) — tampil di pratinjau, di halaman
+     "Buka", dan ikut masuk ke sheet "Analisis" saat diekspor ke Excel.
+     --------------------------------------------------------------------- */
+  let lastAnalysis = null;
+
+  function barList(title, rows) {
+    const card = previewEl("div", "pv-card pv-bars");
+    card.appendChild(previewEl("div", "pv-bars-t", title));
+    if (!rows.length) card.appendChild(previewEl("div", "pv-bar-empty", "—"));
+    rows.slice(0, 6).forEach((r) => {
+      const row = previewEl("div", "pv-bar");
+      const lab = previewEl("div", "pv-bar-l");
+      lab.appendChild(previewEl("span", "", r.name));
+      lab.appendChild(previewEl("strong", "", `${r.pct.toFixed(0)}% · ${formatRupiah(r.total)}`));
+      const track = previewEl("div", "pv-bar-t");
+      const fill = document.createElement("i");
+      fill.style.width = Math.max(2, Math.min(100, r.pct)) + "%";
+      track.appendChild(fill);
+      row.append(lab, track);
+      card.appendChild(row);
+    });
+    if (rows.length > 6) card.appendChild(previewEl("div", "pv-bar-more", `+ ${rows.length - 6} lainnya (lihat file Excel)`));
+    return card;
+  }
+
+  function renderAnalysis(report) {
+    const an = window.EventAnalysis.analyze(report, window.EventStore.all());
+    lastAnalysis = an;
+    const box = previewEl("section", "pv-analysis");
+    box.appendChild(previewEl("h3", "pv-h", "Analisis"));
+    if (an.notes.length) {
+      const ul = previewEl("ul", "pv-notes");
+      an.notes.forEach((n) => ul.appendChild(previewEl("li", "", n)));
+      box.appendChild(ul);
+    }
+    const grid = previewEl("div", "pv-an-grid");
+    grid.appendChild(barList("Biaya per kategori", an.byCategory));
+    grid.appendChild(barList("Biaya per vendor", an.byVendor));
+    box.appendChild(grid);
+
+    if (an.itemChecks.length) {
+      box.appendChild(previewEl("h4", "pv-h2", "Harga per barang vs event lain (per hari)"));
+      const wrap = previewEl("div", "items-table-wrap");
+      const table = previewEl("table", "items-table preview-table pv-an-table");
+      const head = previewEl("tr");
+      ["Nama Barang", "Harga / hari", "Median / hari", "Selisih", "Penilaian"].forEach((h) => head.appendChild(previewEl("th", "", h)));
+      table.appendChild(previewEl("thead")).appendChild(head);
+      const tb = previewEl("tbody");
+      an.itemChecks.forEach((c) => {
+        const tr = previewEl("tr", "preview-item-row");
+        const td = (t, cls, label) => { const e = previewEl("td", cls || "", t); e.dataset.label = label || ""; return e; };
+        tr.appendChild(td(c.itemName || "—", "col-name", "Nama Barang"));
+        tr.appendChild(td(formatRupiah(Math.round(c.perDay)), "num", "Harga / hari"));
+        tr.appendChild(td(c.median == null ? "—" : formatRupiah(Math.round(c.median)), "num", "Median / hari"));
+        tr.appendChild(td(c.diffPct == null ? "—" : (c.diffPct > 0 ? "+" : "") + c.diffPct.toFixed(0) + "%", "num", "Selisih"));
+        const v = c.verdict === "Lebih mahal" ? "v-mahal" : c.verdict === "Lebih murah" ? "v-murah" : "";
+        tr.appendChild(td(c.verdict + (c.samples ? ` (n=${c.samples})` : ""), "pv-verdict-cell " + v, "Penilaian"));
+        tb.appendChild(tr);
+      });
+      table.appendChild(tb);
+      wrap.appendChild(table);
+      box.appendChild(wrap);
+      box.appendChild(previewEl("p", "pv-an-foot", "Pembanding memakai harga per hari (Day + GR) dari barang yang sama di event lain; ≥ 2 data diperlukan. Selisih di atas ±25% ditandai."));
+    }
+    return box;
+  }
+
+  // Tampilan baca-saja untuk "Buka" dari Daftar Event.
+  function showReadOnly(ev) {
+    titleLabel.textContent = "Laporan:";
+    showPreview(ev, { readOnly: true });
+  }
+
+  // Tombol ekspor & aksi pada pratinjau / tampilan "Buka".
+  (function bindPreviewActions() {
+    const msgEl = () => document.getElementById("pv-msg");
+    document.getElementById("pv-xlsx").addEventListener("click", async (e) => {
+      const btn = e.currentTarget;
+      if (!pendingReport) return;
+      btn.disabled = true; msgEl().textContent = "Menyiapkan Excel…";
+      try {
+        await window.EventExport.downloadExcel(pendingReport, lastAnalysis);
+        msgEl().textContent = "Excel diunduh.";
+      } catch (err) { msgEl().textContent = (err && err.message) || "Gagal membuat Excel."; }
+      btn.disabled = false;
+      setTimeout(() => { msgEl().textContent = ""; }, 5000);
+    });
+    document.getElementById("pv-pdf").addEventListener("click", () => {
+      if (pendingReport) window.EventExport.printPdf(pendingReport);
+    });
+    document.getElementById("vw-dup").addEventListener("click", () => {
+      try {
+        const r = window.EventStore.duplicate(pendingReport.eventId);
+        window.location.href = "input.html?edit=" + encodeURIComponent(r.eventId);
+      } catch (err) { msgEl().textContent = (err && err.message) || "Gagal menyalin."; }
+    });
+    const delBtn = document.getElementById("vw-del");
+    let t = null;
+    delBtn.addEventListener("click", () => {
+      if (!t) { delBtn.textContent = "Yakin hapus?"; t = setTimeout(() => { delBtn.textContent = "Hapus"; t = null; }, 3000); return; }
+      clearTimeout(t);
+      window.EventStore.remove(pendingReport.eventId).catch(() => {});
+      window.location.href = "input.html?list=1";
+    });
+  })();
+
+  function showPreview(report, opts) {
+    const readOnly = !!(opts && opts.readOnly);
     pendingReport = report;
     previewError.textContent = "";
     previewBody.innerHTML = "";
@@ -705,7 +822,7 @@
     const paidPct = sumTotal > 0 ? Math.min(100, Math.round((sumDP / sumTotal) * 100)) : 0;
 
     // Judul + info singkat (gaya Feasibility).
-    previewBody.appendChild(previewEl("h2", "pv-title", `${editEventId ? "Edit Report" : "Input Report"}: ${report.event || "—"}`));
+    previewBody.appendChild(previewEl("h2", "pv-title", `${editEventId && !readOnly ? "Edit Report" : "Input Report"}: ${report.event || "—"}`));
     const meta = previewEl("div", "pv-meta");
     meta.appendChild(previewInfo("Client:", report.client));
     const sameDay = report.eventDate === report.eventDateEnd;
@@ -714,6 +831,7 @@
       : `${formatDateId(report.eventDate)} sampai ${formatDateId(report.eventDateEnd)}`) + " (di luar GR)"));
     meta.appendChild(previewInfo("Lokasi:", [report.city, report.country].filter(Boolean).join(", ")));
     meta.appendChild(previewInfo("Pengisi Laporan:", report.user));
+    if (readOnly && report.eventId) meta.appendChild(previewInfo("ID Event:", report.eventId));
     previewBody.appendChild(meta);
 
     // Tiga kotak ringkasan: total biaya (biru), barang, durasi.
@@ -811,9 +929,20 @@
       previewBody.appendChild(wrap);
     }
 
+    previewBody.appendChild(renderAnalysis(report));
+
     const submitLabel = editEventId ? "Update Report" : "Submit Report";
     previewSubmitBtn.textContent = submitLabel;
     previewSubmitBtn2.textContent = submitLabel;
+
+    // Mode "Buka" (baca saja): tombol simpan diganti Edit / Duplikat / Hapus.
+    previewEditBtn.hidden = readOnly;
+    previewSubmitBtn.hidden = readOnly;
+    previewSubmitBtn2.hidden = readOnly;
+    backToList.hidden = readOnly || !editEventId;
+    ["vw-list", "vw-edit", "vw-dup", "vw-del"].forEach((id) => { document.getElementById(id).hidden = !readOnly; });
+    if (readOnly && report.eventId) document.getElementById("vw-edit").href = "input.html?edit=" + encodeURIComponent(report.eventId);
+    document.getElementById("pv-msg").textContent = "";
 
     form.hidden = true;
     previewSection.hidden = false;
@@ -836,79 +965,27 @@
   });
   previewSubmitBtn2.addEventListener("click", () => previewSubmitBtn.click());
 
-  // Submit TANPA layar loading: laporan disimpan ke antrean lokal (instan) lalu
-  // dikirim di latar belakang oleh js/outbox.js lewat submitEvent() yang sama.
-  // Data boleh telat muncul di Analytics/spreadsheet; kalau pengiriman gagal,
-  // data tetap aman di antrean dan dicoba lagi otomatis.
-  function confirmSubmit(report) {
-    rememberNewItems(report.items);
-    const outbox = window.MaximumOutbox;
-    const queued = outbox ? outbox.enqueue({ ...report, submittedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }) : null;
-    if (!queued) {
-      // Penyimpanan lokal tidak tersedia -> pakai jalur lama (menunggu server).
-      return confirmSubmitBlocking(report);
-    }
-    previewSubmitBtn.disabled = true;
-    previewEditBtn.disabled = true;
-    if (editEventId) {
-      // Pengiriman dilanjutkan otomatis oleh halaman Daftar Event.
-      window.location.href = "input.html?list=1";
-      return;
-    }
-    showSuccess();
-    resetForm();
-    hidePreview();
-    previewSubmitBtn.disabled = false;
-    previewEditBtn.disabled = false;
-    outbox.flush({ quiet: true });
-  }
-
-  // Jalur lama (menunggu server + layar loading). Dipakai hanya sebagai cadangan.
-  async function confirmSubmitBlocking(report) {
-    rememberNewItems(report.items);
-    // Timestamp dicatat saat benar-benar dikirim (bukan saat pratinjau dibuka).
-    report.submittedAt = new Date().toISOString();
-    report.updatedAt = report.submittedAt;
+  // Simpan langsung ke penyimpanan bersama (Firestore; lihat js/event-store.js).
+  // Data masuk ke daftar & Analytics seketika; bila sedang offline, perubahan
+  // disimpan di perangkat dan dikirim otomatis begitu tersambung.
+  async function confirmSubmit(report) {
     previewError.textContent = "";
     previewSubmitBtn.disabled = true;
     previewEditBtn.disabled = true;
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = editEventId ? "Menyimpan Perubahan…" : "Menyimpan…";
-    MaximumLoader.show("Menyimpan Laporan");
     try {
-      await submitEvent(report);
-      if (editEventId) {
-        MaximumLoader.setLabel("Tersimpan — Kembali ke Daftar Event");
-        setTimeout(() => { window.location.href = "input.html?list=1"; }, 700);
-        return; // biarkan loader tampil sampai redirect
-      }
+      rememberNewItems(report.items);
+      await window.EventStore.ready;           // supaya ID event tidak bentrok dengan data yang belum termuat
+      const r = window.EventStore.save(report);
+      if (editEventId) { window.location.href = "input.html?view=" + encodeURIComponent(r.eventId); return; }
       showSuccess();
       resetForm();
       hidePreview();
     } catch (err) {
       console.error(err);
-      formLevelError.textContent = editEventId
-        ? "Gagal menyimpan perubahan. Silakan coba lagi."
-        : "Gagal menyimpan laporan. Silakan coba lagi.";
-      previewError.textContent = formLevelError.textContent;
-      // Pengguna tetap di halaman pratinjau dan bisa mencoba lagi / kembali edit.
-      previewSubmitBtn.disabled = false;
-      previewEditBtn.disabled = false;
-      if (editEventId) {
-        MaximumLoader.hide();
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Update Report";
-      }
-    } finally {
-      if (!editEventId) {
-        MaximumLoader.hide();
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Submit Report";
-        previewSubmitBtn.disabled = false;
-        previewEditBtn.disabled = false;
-      }
+      previewError.textContent = "Gagal menyimpan laporan. Silakan coba lagi.";
     }
+    previewSubmitBtn.disabled = false;
+    previewEditBtn.disabled = false;
   }
 
   function showSuccess() {

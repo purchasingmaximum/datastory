@@ -218,3 +218,53 @@ dialog#projects::backdrop{background:rgba(8,14,20,.5)}
 .pj-list .ghost{font:inherit;font-size:13px;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;text-decoration:none}
 .pj-list .ghost:hover{color:var(--ink);border-color:var(--muted)}
 .pj-list li.cur .nm::after{content:" · dibuka";font-weight:400;color:var(--muted)}
+
+/* ---------- status sinkron, aksi baru ---------- */
+.sync-note,.pj-sync{display:block;font-size:12.5px;color:var(--muted);margin:4px 0 0}
+.sync-note:empty,.pj-sync:empty{display:none}
+.sync-note::before,.pj-sync::before{content:"●";margin-right:6px;font-size:10px;vertical-align:1px}
+.sync-note.ok::before,.pj-sync.ok::before{color:#2e9d6a}
+.sync-note.wait::before,.pj-sync.wait::before{color:#d49a1c}
+.sync-note.err::before,.pj-sync.err::before{color:var(--f-red)}
+.input-page .ghost.danger:hover,.pj-list .ghost.danger:hover{color:var(--f-red);border-color:var(--f-red)}
+.input-page .ghost[hidden],.input-page .primary[hidden],.pj-list [hidden]{display:none!important}
+.pv-msg{min-height:18px;font-size:13px;color:var(--muted);margin:-6px 0 10px;text-align:right}
+.pj-list .btns{flex-wrap:wrap}
+.pj-foot{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--f-line-soft)}
+.pj-foot .ghost{font:inherit;font-size:13px;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+.pj-foot .ghost:hover{color:var(--ink);border-color:var(--muted)}
+.pj-foot .ghost[hidden]{display:none}
+
+/* ---------- Analisis di pratinjau ---------- */
+.pv-analysis{margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}
+.pv-notes{margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.55}
+.pv-notes li{margin:3px 0}
+.pv-an-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:18px;align-items:start}
+.pv-bars{padding:12px 16px 14px}
+.pv-bars-t{font-weight:600;font-size:14px;margin-bottom:8px}
+.pv-bar{margin:9px 0}
+.pv-bar-l{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.pv-bar-l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pv-bar-l strong{font-weight:600;white-space:nowrap}
+.pv-bar-t{height:6px;border-radius:3px;background:var(--f-line-soft);margin-top:4px;overflow:hidden}
+.pv-bar-t i{display:block;height:100%;background:var(--f-blue);border-radius:3px}
+.pv-bar-empty,.pv-bar-more{font-size:12.5px;color:var(--muted);margin-top:6px}
+.pv-h2{font-size:.95rem;font-weight:700;margin:6px 0 8px}
+.pv-an-table td.num{text-align:right;white-space:nowrap}
+.pv-verdict-cell.v-mahal{color:var(--f-red);font-weight:600}
+.pv-verdict-cell.v-murah{color:#2e9d6a;font-weight:600}
+.pv-an-foot{font-size:12px;color:var(--muted);margin:8px 0 0}
+@media (max-width:720px){.pv-an-grid{grid-template-columns:minmax(0,1fr)}.pv-msg{text-align:left}}
+
+/* ---------- Cetak / simpan PDF: hanya area laporan ---------- */
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{background:#fff!important;color:#000!important}
+  .topnav,.pv-toolbar,.pv-msg,#report-form,#preview-submit-2,.success-toast,dialog#projects,.sync-note,.edit-mode-note{display:none!important}
+  .input-page{padding:0!important;margin:0!important;max-width:none!important}
+  .report-preview .pv-paper{border:0!important;border-radius:0!important;padding:0!important;background:#fff!important}
+  .pv-analysis,.pv-boxes,.items-table tr{break-inside:avoid}
+  .pv-h{break-after:avoid}
+  .items-table-wrap{overflow:visible!important}
+}

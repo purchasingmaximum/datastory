@@ -4,7 +4,12 @@ Aplikasi web untuk (1) mencatat laporan event secara terstruktur dan (2)
 membaca data event tersebut sebagai visual essay interaktif — bukan
 dashboard korporat biasa.
 
-> **Revisi terbaru** (fitur Edit Laporan, status pembayaran Lunas/DP yang
+> **Terbaru:** data event kini disimpan di Firestore (bukan spreadsheet) dengan
+> Daftar Event lengkap (Buka/Edit/Duplikat/Hapus), ekspor Excel/PDF, dan analisis
+> terintegrasi. Lihat **`PENYIMPANAN_EVENT.md`** — bagian Google Sheets/Apps Script
+> di bawah hanya relevan untuk mengimpor data lama.
+
+> **Revisi sebelumnya** (fitur Edit Laporan, status pembayaran Lunas/DP yang
 > benar-benar tersimpan, perbaikan bug login, dan percepatan loading):
 > lihat **`SETUP_FIX.md`** bagian "REVISI: Fitur Edit Laporan + Perbaikan
 > Login/Performa" untuk langkah setup yang WAJIB dilakukan (kolom baru di

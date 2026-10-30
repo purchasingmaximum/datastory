@@ -4,10 +4,6 @@
 <script src="js/auth-guard.js"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="preconnect" href="https://script.google.com" crossorigin />
-<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin />
-<link rel="dns-prefetch" href="https://script.google.com" />
-<link rel="dns-prefetch" href="https://script.googleusercontent.com" />
 <title>Input Laporan Event — MAXIMUM THE ULTIMATE</title>
 <link rel="stylesheet" href="css/style.css" />
 <link rel="stylesheet" href="css/loader.css" />
@@ -38,6 +34,7 @@
           </div>
         </div>
         <span class="edit-mode-note" id="edit-mode-note" hidden>Mengedit event yang sudah ada: item lama diganti dengan isi form ini.</span>
+        <span class="sync-note" id="sync-note" role="status" aria-live="polite"></span>
 
         <div class="info-grid">
           <div class="info-col">
@@ -149,12 +146,19 @@
     <section class="report-preview" id="report-preview" hidden aria-live="polite">
       <div class="pv-toolbar">
         <button type="button" class="ghost" id="preview-edit">← Edit</button>
+        <a href="input.html?list=1" class="ghost" id="vw-list" hidden>← Daftar Event</a>
         <div class="actions">
           <a href="input.html?list=1" class="ghost" id="back-to-list" hidden>Kembali ke Daftar Event tanpa menyimpan</a>
           <span class="form-level-error" id="preview-error" role="alert"></span>
+          <button type="button" class="ghost" id="pv-xlsx" title="Unduh .xlsx dengan format yang sama seperti isian">Excel</button>
+          <button type="button" class="ghost" id="pv-pdf" title="Cetak atau simpan sebagai PDF">PDF</button>
+          <a class="ghost" id="vw-edit" href="#" hidden>Edit</a>
+          <button type="button" class="ghost" id="vw-dup" hidden>Duplikat</button>
+          <button type="button" class="ghost danger" id="vw-del" hidden>Hapus</button>
           <button type="button" class="primary" id="preview-submit">Submit Report</button>
         </div>
       </div>
+      <div class="pv-msg" id="pv-msg" role="status"></div>
       <div class="pv-paper" id="preview-body"></div>
       <button type="button" class="primary block" id="preview-submit-2">Submit Report</button>
     </section>
@@ -169,11 +173,15 @@
     </div>
     <div class="pj-msg" id="pj-msg" role="status"></div>
     <ul class="pj-list" id="pj-list"></ul>
+    <div class="pj-foot">
+      <span class="pj-sync" id="pj-sync"></span>
+      <button type="button" class="ghost" id="pj-import" hidden title="Menyalin event dari Google Sheets lama ke penyimpanan baru (event yang sudah ada tidak ditimpa)">Impor data dari spreadsheet lama</button>
+    </div>
   </dialog>
 
   <div class="success-toast" id="success-toast" role="status" aria-live="polite">
     <div><span class="check">✓</span><strong>REPORT SAVED</strong></div>
-    <p>Your event has been added to the dataset.</p>
+    <p>Tersimpan dan langsung masuk ke Analytics.</p>
   </div>
 
   <template id="item-block-template">
@@ -257,8 +265,10 @@
   <script src="js/loader.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/data.js"></script>
-  <script src="js/firebase-data.js"></script>
-  <script src="js/outbox.js"></script>
+  <script src="js/event-store.js"></script>
+  <script src="js/event-analysis.js"></script>
+  <script src="js/event-export.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" defer></script>
   <script src="js/combobox.js"></script>
   <script src="js/input-sheet.js"></script>
   <script src="js/input.js"></script>

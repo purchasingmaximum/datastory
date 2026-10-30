@@ -230,48 +230,81 @@
     if (moved) e.preventDefault();
   });
 
-  /* ---------- Daftar Event (dialog) ---------- */
+  /* ---------- status sinkron (judul halaman + dialog) ---------- */
+  function paintSync() {
+    const st = window.EventStore && window.EventStore.status();
+    const txt = st ? st.text : "";
+    const cls = !st ? "" : st.mode === "local" ? "err" : (st.pending || /Menunggu|Menghubungkan/.test(txt)) ? "wait" : "ok";
+    ["sync-note", "pj-sync"].forEach((id) => { const el = $(id); if (el) { el.textContent = txt; el.className = (id === "sync-note" ? "sync-note " : "pj-sync ") + cls; } });
+  }
+  if (window.EventStore) { window.EventStore.subscribe(paintSync); paintSync(); }
+
+  /* ---------- Daftar Event (dialog): Buka · Edit · Duplikat · Hapus ---------- */
   const dlg = $("projects");
-  if (dlg) {
-    let all = null, loading = false;
-    const list = $("pj-list"), msg = $("pj-msg"), search = $("pj-search"), sort = $("pj-sort");
+  if (dlg && window.EventStore) {
+    const ES = window.EventStore;
+    const list = $("pj-list"), msg = $("pj-msg"), search = $("pj-search"), sort = $("pj-sort"), imp = $("pj-import");
     const params = new URLSearchParams(location.search);
-    const curId = params.get("edit");
+    const curId = params.get("edit") || params.get("view");
     const rp = (n) => "Rp " + nf.format(n || 0);
-    const when = (ev) => { const t = typeof getEventUpdatedAt === "function" ? getEventUpdatedAt(ev) : new Date(ev.submittedAt || 0).getTime(); return t ? new Date(t).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"; };
     const ts = (ev) => (typeof getEventUpdatedAt === "function" ? getEventUpdatedAt(ev) : new Date(ev.submittedAt || 0).getTime()) || 0;
+    const when = (ev) => { const t = ts(ev); return t ? new Date(t).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"; };
+    let note = "";
+    const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
     function render() {
-      if (!all) return;
+      const all = ES.all().map(ES.summary);
       const q = search.value.trim().toLowerCase();
-      let rows = all.filter((ev) => !q || [ev.event, ev.client, ev.city, ev.country].some((f) => String(f || "").toLowerCase().includes(q)));
+      const rows = all.filter((ev) => !q || [ev.event, ev.client, ev.city, ev.country].some((f) => String(f || "").toLowerCase().includes(q)));
       const m = sort.value;
       rows.sort((a, b) => m === "name" ? String(a.event || "~").localeCompare(String(b.event || "~"), "id", { numeric: true }) : m === "old" ? ts(a) - ts(b) : ts(b) - ts(a));
       list.textContent = "";
-      msg.textContent = rows.length === all.length ? all.length + " event" : rows.length + " dari " + all.length + " event";
+      msg.textContent = note || (!all.length ? "Belum ada event." : rows.length === all.length ? all.length + " event" : rows.length + " dari " + all.length + " event");
+      imp.hidden = !ES.hasLegacy;
       rows.forEach((ev) => {
-        const li = document.createElement("li"); if (String(ev.eventId) === String(curId)) li.className = "cur";
-        const info = document.createElement("div");
-        const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = ev.event || "(Tanpa nama event)";
-        const sub = document.createElement("div"); sub.className = "sub";
-        sub.textContent = [ev.client, [ev.city, ev.country].filter(Boolean).join(", "), (ev.itemCount || 0) + " barang", rp(ev.eventPrice), "diubah " + when(ev)].filter(Boolean).join(" · ");
-        info.append(nm, sub);
-        const btns = document.createElement("div"); btns.className = "btns";
-        const open = document.createElement("a"); open.className = "ghost"; open.textContent = "Buka"; open.href = "input.html?edit=" + encodeURIComponent(ev.eventId);
-        const dup = document.createElement("a"); dup.className = "ghost"; dup.textContent = "Duplikat"; dup.href = "input.html?copy=" + encodeURIComponent(ev.eventId);
-        btns.append(open, dup); li.append(info, btns); list.append(li);
+        const li = mk("li", String(ev.eventId) === String(curId) ? "cur" : "");
+        const info = mk("div");
+        info.append(mk("span", "nm", ev.event || "(Tanpa nama event)"),
+          mk("div", "sub", [ev.client, [ev.city, ev.country].filter(Boolean).join(", "), (ev.itemCount || 0) + " barang", rp(ev.eventPrice), "diubah " + when(ev)].filter(Boolean).join(" · ")));
+        const btns = mk("div", "btns");
+        const open = mk("a", "ghost", "Buka"); open.href = "input.html?view=" + encodeURIComponent(ev.eventId);
+        const edit = mk("a", "ghost", "Edit"); edit.href = "input.html?edit=" + encodeURIComponent(ev.eventId);
+        const dup = mk("button", "ghost", "Duplikat"); dup.type = "button";
+        dup.addEventListener("click", () => {
+          try { const r = ES.duplicate(ev.eventId); note = "Disalin sebagai “" + r.event.event + "”."; }
+          catch (e) { note = "Gagal menyalin: " + (e && e.message || "error"); }
+          render();
+        });
+        const del = mk("button", "ghost danger", "Hapus"); del.type = "button";
+        let t = null;
+        del.addEventListener("click", () => {
+          if (!t) { del.textContent = "Yakin?"; t = setTimeout(() => { del.textContent = "Hapus"; t = null; }, 3000); return; }
+          clearTimeout(t);
+          ES.remove(ev.eventId).catch(() => {});
+          note = "Event dihapus."; render();
+        });
+        btns.append(open, edit, dup, del); li.append(info, btns); list.append(li);
       });
     }
-    async function load() {
-      if (all || loading) return; loading = true; msg.textContent = "Memuat daftar event…";
-      try { all = await loadEventsList(); render(); }
-      catch (e) { console.error(e); msg.textContent = "Gagal memuat daftar event. Periksa koneksi."; }
-      loading = false;
+    async function openDlg() {
+      note = ""; if (!dlg.open) dlg.showModal();
+      msg.textContent = "Memuat daftar event…";
+      try { await ES.ready; } catch (_) {}
+      render();
     }
-    function openDlg() { if (!dlg.open) dlg.showModal(); load(); }
+    ES.subscribe(() => { if (dlg.open) render(); });
     $("pj-open").addEventListener("click", openDlg);
     $("pj-close").addEventListener("click", () => dlg.close());
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
     search.addEventListener("input", render); sort.addEventListener("change", render);
+
+    imp.addEventListener("click", async () => {
+      if (!confirm("Salin semua event dari spreadsheet lama ke penyimpanan baru? Event yang sudah ada tidak akan ditimpa.")) return;
+      imp.disabled = true; note = "Mengimpor dari spreadsheet lama…"; render();
+      try { const r = await ES.importLegacy(); note = r.added + " event diimpor" + (r.skipped ? ", " + r.skipped + " sudah ada" : "") + "."; }
+      catch (e) { note = "Impor gagal: " + (e && e.message || "error"); }
+      imp.disabled = false; render();
+    });
     if (params.get("list") === "1") openDlg();
   }
 })();

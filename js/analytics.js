@@ -27,7 +27,7 @@
     }));
   } catch (err) {
     console.error(err);
-    loadingState.innerHTML = "<p>Gagal memuat data. Periksa koneksi atau konfigurasi API_URL di js/data.js.</p>";
+    loadingState.innerHTML = "<p>Gagal memuat data. Periksa koneksi internet lalu muat ulang halaman.</p>";
     return;
   }
 
@@ -492,4 +492,35 @@
   document.addEventListener("maximum-theme-change", () => {
     everRendered.forEach((id) => runSectionRenderer(id));
   });
+
+  /* -----------------------------------------------------------------------
+     Sinkron langsung dengan Input Report: event yang baru disimpan, diedit,
+     atau dihapus (di tab/perangkat mana pun) langsung masuk ke seluruh
+     angka & grafik di sini tanpa muat ulang halaman dan tanpa spreadsheet.
+     ----------------------------------------------------------------------- */
+  if (window.EventStore) {
+    const signature = (list) => list.map((e) => e.eventId + "|" + (e.updatedAt || e.submittedAt || "")).sort().join(";");
+    let lastSig = signature(rawEvents);
+    let liveTimer = null;
+    window.EventStore.subscribe(() => {
+      clearTimeout(liveTimer);
+      liveTimer = setTimeout(() => {
+        const next = ensurePaymentFields(window.EventStore.all());
+        const sig = signature(next);
+        if (sig === lastSig) return;
+        lastSig = sig;
+        rawEvents = next;
+        const lu = getLastUpdated(rawEvents);
+        if (lu) {
+          const { date, time } = formatDateTimeID(lu);
+          document.getElementById("last-updated-value").textContent = `${date}, ${time}`;
+        }
+        const keepVendor = paymentVendorSelect.value, keepEvent = paymentEventSelect.value;
+        populatePaymentFilterOptions(rawEvents);
+        if ([...paymentVendorSelect.options].some((o) => o.value === keepVendor)) paymentVendorSelect.value = keepVendor;
+        if ([...paymentEventSelect.options].some((o) => o.value === keepEvent)) paymentEventSelect.value = keepEvent;
+        withScrollPreserved(applyFilter);
+      }, 400);
+    });
+  }
 })();
