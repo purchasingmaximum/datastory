@@ -56,10 +56,8 @@
       : "";
     var days = num(report.eventDays);
     var info = [
-      ["Client", report.client],
       ["Pengisi Laporan", report.user],
       ["Kota", report.city],
-      ["Negara", report.country],
       ["Tanggal Event", tgl],
       ["Jumlah Day", days || ""],
       ["Jumlah GR", num(report.gr)],

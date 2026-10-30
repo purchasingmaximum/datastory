@@ -362,7 +362,7 @@ fieldset.form-section { min-width: 0; }
 
 .items-table {
   width: 100%;
-  min-width: 1309px;
+  min-width: 0;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
@@ -594,3 +594,13 @@ fieldset.form-section { min-width: 0; }
   color: var(--muted, #8a8880);
 }
 .ghost-new-badge.show { display: block; }
+
+
+/* Dropdown pencarian barang: nama + kategori, bagian yang cocok ditebalkan. */
+.combo-option { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.combo-option .combo-main { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.combo-option .combo-main mark { background: transparent; color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.combo-option .combo-sub { flex: none; color: var(--muted); font-size: 0.74rem; }
+.combo-option.combo-custom { border-top: 1px dashed var(--line); font-style: italic; }
+.items-table .combo-wrapper.combo-notoggle .combo-input { padding-right: 10px !important; }
+.combo-option:hover .combo-sub, .combo-option.active .combo-sub { color: inherit; opacity: .8; }

@@ -14,7 +14,8 @@
 
   /* ---------- kalkulator rumus (tanpa eval) ---------- */
   function evalExpr(src) {
-    const s = String(src).replace(/\s+/g, "").replace(/[x×]/gi, "*").replace(/,/g, ".");
+    // titik ribuan (5.000.000) dibuang dulu; koma = desimal
+    const s = String(src).replace(/\s+/g, "").replace(/[x×]/gi, "*").replace(/\d{1,3}(?:\.\d{3})+(?!\d)/g, (m) => m.replace(/\./g, "")).replace(/,/g, ".");
     if (!s || !/^[0-9+\-*/().]+$/.test(s)) return null;
     let i = 0;
     function expr() { let v = term(); while (s[i] === "+" || s[i] === "-") { const o = s[i++]; const r = term(); v = o === "+" ? v + r : v - r; } return v; }
@@ -31,7 +32,7 @@
   function valueOf(inp) {   /* angka dari sel Rupiah: rumus bila diawali "=", selain itu digit saja */
     if (!inp) return 0;
     const v = inp.value.trim();
-    if (v.startsWith("=")) { const r = evalExpr(v.slice(1)); return r === null || r < 0 ? 0 : r0(r); }
+    if (/[=+*\/x×()\-]/i.test(v)) { const r = evalExpr(v.replace(/^=/, "")); return r === null || r < 0 ? 0 : r0(r); }
     const d = v.replace(/\D/g, ""); return d ? Number(d) : 0;
   }
 
@@ -255,7 +256,7 @@
     function render() {
       const all = ES.all().map(ES.summary);
       const q = search.value.trim().toLowerCase();
-      const rows = all.filter((ev) => !q || [ev.event, ev.client, ev.city, ev.country].some((f) => String(f || "").toLowerCase().includes(q)));
+      const rows = all.filter((ev) => !q || [ev.event, ev.city].some((f) => String(f || "").toLowerCase().includes(q)));
       const m = sort.value;
       rows.sort((a, b) => m === "name" ? String(a.event || "~").localeCompare(String(b.event || "~"), "id", { numeric: true }) : m === "old" ? ts(a) - ts(b) : ts(b) - ts(a));
       list.textContent = "";
@@ -264,7 +265,7 @@
         const li = mk("li", String(ev.eventId) === String(curId) ? "cur" : "");
         const info = mk("div");
         info.append(mk("span", "nm", ev.event || "(Tanpa nama event)"),
-          mk("div", "sub", [ev.client, [ev.city, ev.country].filter(Boolean).join(", "), (ev.itemCount || 0) + " barang", rp(ev.eventPrice), "diubah " + when(ev), ev.draft ? "DRAFT" : ""].filter(Boolean).join(" · ")));
+          mk("div", "sub", [ev.city, (ev.itemCount || 0) + " barang", rp(ev.eventPrice), "diubah " + when(ev), ev.draft ? "DRAFT" : ""].filter(Boolean).join(" · ")));
         const btns = mk("div", "btns");
         const open = mk("a", "ghost", "Buka"); open.href = "input.html?view=" + encodeURIComponent(ev.eventId);
         const edit = mk("a", "ghost", "Edit"); edit.href = "input.html?edit=" + encodeURIComponent(ev.eventId);

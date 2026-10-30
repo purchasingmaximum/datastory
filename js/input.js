@@ -208,18 +208,82 @@
     setError(categorySelect.closest(".field"), "");
   }
 
+  // Pencarian barang: tidak harus dari awal kata. Tanda baca & spasi diabaikan,
+  // jadi "P.3" / "p3" / "led p3" semuanya menemukan "LED P3.9".
+  const squash = (x) => String(x || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  function searchItems(query) {
+    const raw = String(query || "").trim();
+    if (!raw) return [];
+    const q = squash(raw);
+    const toks = raw.toLowerCase().split(/\s+/).map(squash).filter(Boolean);
+    if (!q) return [];
+    const scored = [];
+    itemDictionary.forEach((e) => {
+      const name = String(e.namaItemStandar || "");
+      if (!name || name.indexOf("\n") !== -1) return;
+      const n = squash(name);
+      let score = -1;
+      if (n === q) score = 0;
+      else if (n.startsWith(q)) score = 1;
+      else if (name.toLowerCase().split(/[^a-z0-9]+/).some((w) => w && w.startsWith(q))) score = 2;
+      else if (n.includes(q)) score = 3;
+      else if (toks.length > 1 && toks.every((t) => n.includes(t))) score = 4;
+      else if (squash(e.kategori).includes(q)) score = 6;
+      if (score >= 0) scored.push({ e, score, len: name.length, at: n.indexOf(q) < 0 ? 999 : n.indexOf(q) });
+    });
+    scored.sort((a, b) => a.score - b.score || a.at - b.at || a.len - b.len);
+    return scored.slice(0, 50).map((x) => x.e);
+  }
+  const exactItem = (v) => {
+    const q = normName(v);
+    return q ? itemDictionary.find((e) => normName(e.namaItemStandar) === q) || null : null;
+  };
+  function renderItemRow(li, opt, query) {
+    const name = String(opt.namaItemStandar || "");
+    const q = String(query || "").trim();
+    const i = q ? name.toLowerCase().indexOf(q.toLowerCase()) : -1;
+    const main = document.createElement("span");
+    main.className = "combo-main";
+    if (i >= 0) {
+      main.append(name.slice(0, i));
+      const b = document.createElement("mark");
+      b.textContent = name.slice(i, i + q.length);
+      main.append(b, name.slice(i + q.length));
+    } else main.textContent = name;
+    li.textContent = "";
+    li.appendChild(main);
+    if (opt.kategori) {
+      const c = document.createElement("small");
+      c.className = "combo-sub";
+      c.textContent = opt.kategori;
+      li.appendChild(c);
+    }
+  }
+
   function attachItemDictionaryCombo(block) {
     const nameInput = block.querySelector('[data-name="itemName"]');
     const categorySelect = block.querySelector('[data-name="category"]');
     populateCategorySelect(categorySelect);
 
-    initGhostAutocomplete(nameInput, {
-      getEntries: () => itemDictionary,
-      getName: (entry) => entry.namaItemStandar,
-      onResolve: (entry, { commit }) => {
-        if (entry) applyItemSelection(entry, block, { commit });
-        else nameInput.dataset.itemId = ""; // barang baru -> tidak punya kode
-      },
+    initCombobox(nameInput, {
+      getOptions: (query) => searchItems(query),
+      renderLabel: (opt) => opt.namaItemStandar,
+      renderRow: renderItemRow,
+      getValue: (opt) => opt.namaItemStandar,
+      onSelect: (opt) => applyItemSelection(opt, block, { commit: true }),
+      toggle: false,
+      openOnFocus: false,
+    });
+    // Teks bebas tetap sah: cocok persis dengan dictionary -> kode barang terisi,
+    // selain itu dianggap barang baru (tanpa kode).
+    nameInput.addEventListener("input", () => {
+      const hit = exactItem(nameInput.value);
+      if (hit) applyItemSelection(hit, block, { commit: false });
+      else nameInput.dataset.itemId = "";
+    });
+    nameInput.addEventListener("blur", () => {
+      const hit = exactItem(nameInput.value);
+      if (hit) applyItemSelection(hit, block, { commit: true });
     });
   }
 
@@ -229,37 +293,55 @@
       // vendor yang menjual barang ini (menurut database harga) tampil dulu beserta harganya
       getOptions: (query) => {
         const base = filterByQuery(vendorDictionary, query, "namaVendor", "vendorId");
-        return window.InputPrice ? window.InputPrice.vendorOptions(block, query, base) : base;
+        const list = window.InputPrice ? window.InputPrice.vendorOptions(block, query, base) : base;
+        // Selalu ada pilihan "Lainnya": vendor yang belum ada di daftar bisa diisi sendiri.
+        const typed = String(query || "").trim();
+        const exists = typed && list.some((o) => canonName(o.namaVendor) === canonName(typed));
+        if (exists) return list;
+        return list.concat([typed
+          ? { namaVendor: typed, label: "Lainnya: pakai “" + typed + "” (isi sendiri)", custom: true }
+          : { namaVendor: "", label: "Lainnya (isi sendiri)…", custom: true }]);
       },
       renderLabel: (opt) => opt.label || opt.namaVendor,
       getValue: (opt) => opt.namaVendor,
-      onSelect: () => { setError(vendorInput.closest(".field"), ""); if (window.InputPrice) window.InputPrice.vendorChosen(block); },
+      onSelect: (opt) => {
+        setError(vendorInput.closest(".field"), "");
+        if (opt && opt.custom) {
+          if (!opt.namaVendor) { vendorInput.value = ""; vendorInput.placeholder = "Ketik nama vendor…"; vendorInput.focus(); }
+          return;
+        }
+        if (window.InputPrice) window.InputPrice.vendorChosen(block);
+      },
     });
   }
+  const canonName = (x) => String(x || "").trim().replace(/\s+/g, " ").toLowerCase();
 
   /* ---------------------------------------------------------------------
      Rupiah-formatted number inputs: store the raw digits, display with
      thousands separators as the user types.
      --------------------------------------------------------------------- */
-  // Mendukung rumus ala Excel: awali dengan "=" lalu pakai + - x (atau *) / ( ).
-  // Dihitung saat Enter / pindah sel; tekan lagi sel itu untuk melihat rumusnya.
+  // Rumus ala Excel (seperti Budget & Feasibility): + - x (atau *) / ( ).
+  // Boleh diawali "=" atau langsung diketik, mis. 2x3.500.000 atau =(5000000+250000)/2.
+  // Dihitung saat Enter / pindah sel; klik sel itu lagi untuk melihat rumusnya.
   const evalFx = (src) => (window.SheetCalc ? window.SheetCalc.evalExpr(src) : null);
+  const isFx = (v) => /[=+*\/x×()\-]/i.test(String(v || ""));
+  const fxBody = (v) => String(v).trim().replace(/^=/, "");
   function attachRupiahFormatting(input) {
     const fmtN = (n) => (n ? Math.round(n).toLocaleString("id-ID") : "");
     const plain = () => Number(input.value.replace(/\D/g, "")) || 0;
     input.addEventListener("focus", () => {
-      if (input._fx && !input.value.trim().startsWith("=") && input._fx.v === plain()) { input.value = input._fx.f; input.select(); }
+      if (input._fx && !isFx(input.value) && input._fx.v === plain()) { input.value = input._fx.f; input.select(); }
     });
     input.addEventListener("input", () => {
-      if (input.value.trim().startsWith("=")) return;   // mode rumus: ketik bebas
+      if (isFx(input.value)) return;   // mode rumus: ketik bebas
       input._fx = null; input.title = "";
       const digits = input.value.replace(/\D/g, "");
       input.value = digits ? Number(digits).toLocaleString("id-ID") : "";
     });
     const commit = () => {
       const v = input.value.trim();
-      if (!v.startsWith("=")) return;
-      const r = evalFx(v.slice(1));
+      if (!isFx(v)) return;
+      const r = evalFx(fxBody(v));
       if (r === null || r < 0 || r > 9999999999999) {
         input.value = input._fx ? fmtN(input._fx.v) : "";
         input.classList.add("fx-invalid"); setTimeout(() => input.classList.remove("fx-invalid"), 1800);
@@ -275,7 +357,7 @@
   }
   function rupiahValue(input) {
     const v = input.value.trim();
-    if (v.startsWith("=")) { const r = evalFx(v.slice(1)); return r === null || r < 0 ? NaN : Math.round(r); }
+    if (isFx(v)) { const r = evalFx(fxBody(v)); return r === null || r < 0 ? NaN : Math.round(r); }
     const digits = v.replace(/\D/g, "");
     return digits ? Number(digits) : NaN;
   }
@@ -437,9 +519,7 @@
   function populateFormForEdit(ev) {
     form.user.value = ev.user || "";
     form.event.value = ev.event || "";
-    form.client.value = ev.client || "";
     form.city.value = ev.city || "";
-    form.country.value = ev.country || "Indonesia";
     grInputEl.value = Number.isFinite(ev.gr) ? ev.gr : 0;
 
     dateStartInput.value = ev.eventDate || "";
@@ -519,7 +599,7 @@
 
   function validateTopLevel() {
     let ok = true;
-    const requiredText = ["user", "event", "client", "city", "country"];
+    const requiredText = ["user", "event", "city"];
     for (const name of requiredText) {
       const input = form.querySelector(`[name="${name}"]`);
       const fieldEl = input.closest(".field");
@@ -619,14 +699,12 @@
       isEdit: !!editEventId,
       user: form.user.value.trim(),
       event: form.event.value.trim(),
-      client: form.client.value.trim(),
       eventPrice: computeTotalEventPrice(),
       eventDate: dateStartInput.value,
       eventDateEnd: dateEndInput.value,
       eventDays: computedEventDays(),
       gr: Number(grInputEl.value),
       city: form.city.value.trim(),
-      country: form.country.value.trim(),
       items,
       submittedAt: new Date().toISOString(),
       // Diisi ulang di setiap simpan (submit baru DAN edit) — dipakai label
@@ -834,12 +912,11 @@
     // Judul + info singkat (gaya Feasibility).
     previewBody.appendChild(previewEl("h2", "pv-title", `${editEventId && !readOnly ? "Edit Report" : "Input Report"}: ${report.event || "—"}`));
     const meta = previewEl("div", "pv-meta");
-    meta.appendChild(previewInfo("Client:", report.client));
     const sameDay = report.eventDate === report.eventDateEnd;
     meta.appendChild(previewInfo("Tanggal Event:", (sameDay
       ? formatDateId(report.eventDate)
       : `${formatDateId(report.eventDate)} sampai ${formatDateId(report.eventDateEnd)}`) + " (di luar GR)"));
-    meta.appendChild(previewInfo("Lokasi:", [report.city, report.country].filter(Boolean).join(", ")));
+    meta.appendChild(previewInfo("Kota:", report.city));
     meta.appendChild(previewInfo("Pengisi Laporan:", report.user));
     if (readOnly && report.eventId) meta.appendChild(previewInfo("ID Event:", report.eventId));
     previewBody.appendChild(meta);
@@ -1014,7 +1091,6 @@
 
   function resetForm() {
     form.reset();
-    document.getElementById("f-country").value = "Indonesia";
     itemsContainer.innerHTML = "";
     renumberItems();
     recomputeEventDays();

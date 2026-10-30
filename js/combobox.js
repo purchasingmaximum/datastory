@@ -19,7 +19,7 @@
      });
    ========================================================================= */
 
-function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect }) {
+function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, renderRow, toggle = true, openOnFocus = true, emptyText }) {
   const wrapper = document.createElement("div");
   wrapper.className = "combo-wrapper";
   inputEl.parentNode.insertBefore(wrapper, inputEl);
@@ -36,7 +36,8 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect }) 
   toggleBtn.className = "combo-toggle";
   toggleBtn.setAttribute("aria-label", "Tampilkan daftar");
   toggleBtn.tabIndex = -1;
-  wrapper.appendChild(toggleBtn);
+  if (toggle) wrapper.appendChild(toggleBtn);
+  else wrapper.classList.add("combo-notoggle");
 
   const list = document.createElement("ul");
   list.className = "combo-list";
@@ -65,14 +66,16 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect }) 
     if (options.length === 0) {
       const li = document.createElement("li");
       li.className = "combo-option combo-empty";
-      li.textContent = "Tidak ditemukan — data akan disimpan sebagai teks bebas.";
+      li.textContent = emptyText || "Tidak ditemukan — data akan disimpan sebagai teks bebas.";
       list.appendChild(li);
       return;
     }
     options.forEach((opt, i) => {
       const li = document.createElement("li");
       li.className = "combo-option" + (i === activeIndex ? " active" : "");
-      li.textContent = renderLabel(opt);
+      if (typeof renderRow === "function") renderRow(li, opt, inputEl.value);
+      else li.textContent = renderLabel(opt);
+      if (opt && opt.custom) li.classList.add("combo-custom");
       li.addEventListener("mousedown", (e) => {
         e.preventDefault(); // keep focus on input, avoid blur-before-click
         pick(opt);
@@ -89,7 +92,7 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect }) 
   }
 
   inputEl.addEventListener("input", () => open(false));
-  inputEl.addEventListener("focus", () => open(inputEl.value === ""));
+  inputEl.addEventListener("focus", () => { if (openOnFocus) open(inputEl.value === ""); });
   inputEl.addEventListener("blur", () => setTimeout(close, 120));
   toggleBtn.addEventListener("click", () => {
     if (list.hidden) {

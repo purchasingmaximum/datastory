@@ -4,7 +4,7 @@
 :root{--f-line-soft:#eaeef2;--f-green:#17824f;--f-green-tint:#e7f5ed;--f-amber:#a8700f;--f-k-w:142px}
 :root[data-theme="dark"]{--f-line-soft:#222e3a;--f-green:#4cc790;--f-green-tint:#16281f;--f-amber:#e0aa4a}
 
-.input-page{max-width:1240px;margin:0 auto;padding:22px clamp(14px,3vw,28px) 40px}
+.input-page{max-width:1560px;margin:0 auto;padding:22px clamp(14px,3vw,28px) 40px}
 .input-page [hidden]{display:none!important}
 
 /* ---------- kepala ---------- */
@@ -67,24 +67,25 @@
 
 /* tabel: gaya sheet Feasibility (hanya layar lebar; HP memakai kartu per barang dari input.css) */
 @media (min-width:901px){
+  .input-page #report-form .items-table-wrap{overflow:clip}
   .input-page .items-table-wrap{width:100%;margin:0;max-height:none;overflow-x:auto;background:var(--paper-raised);border:1px solid var(--line);border-radius:10px}
-  .input-page .items-table{width:100%;min-width:1240px;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:.9rem}
+  .input-page .items-table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:.9rem}
   .input-page .items-table th,.input-page .items-table td{border-right:0;border-bottom:1px solid var(--f-line-soft);text-align:left;vertical-align:middle}
   .input-page .items-table tbody tr:last-child td{border-bottom:0}
   .input-page .items-table thead th{position:sticky;top:0;z-index:3;background:var(--paper-raised);color:var(--muted);font-size:.78rem;font-weight:600;text-transform:none;letter-spacing:0;padding:10px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
   .input-page .items-table thead .optional{font-weight:400}
-  .input-page .items-table th.col-no,.input-page .items-table td.col-no{width:48px;text-align:center}
-  .input-page .items-table th.col-name,.input-page .items-table td.col-name{width:200px}
-  .input-page .items-table th.col-cat,.input-page .items-table td.col-cat{width:130px}
-  .input-page .items-table th.col-vendor,.input-page .items-table td.col-vendor{width:160px}
-  .input-page .items-table th.col-status,.input-page .items-table td.col-status{width:156px}
-  .input-page .items-table th.col-price,.input-page .items-table td.col-price{width:130px;text-align:right}
-  .input-page .items-table th.col-dp,.input-page .items-table td.col-dp{width:140px;text-align:right}
-  .input-page .items-table th.col-sisa,.input-page .items-table td.col-sisa{width:130px;text-align:right}
+  .input-page .items-table th.col-no,.input-page .items-table td.col-no{width:3.5%;text-align:center}
+  .input-page .items-table th.col-name,.input-page .items-table td.col-name{width:19%}
+  .input-page .items-table th.col-cat,.input-page .items-table td.col-cat{width:11%}
+  .input-page .items-table th.col-vendor,.input-page .items-table td.col-vendor{width:14%}
+  .input-page .items-table th.col-status,.input-page .items-table td.col-status{width:9%}
+  .input-page .items-table th.col-price,.input-page .items-table td.col-price{width:11%;text-align:right}
+  .input-page .items-table th.col-dp,.input-page .items-table td.col-dp{width:11%;text-align:right}
+  .input-page .items-table th.col-sisa,.input-page .items-table td.col-sisa{width:10%;text-align:right}
   .input-page .items-table th.col-desc,.input-page .items-table td.col-desc{width:auto}
-  .input-page .items-table th.col-act,.input-page .items-table td.col-act{width:56px;text-align:center}
+  .input-page .items-table th.col-act,.input-page .items-table td.col-act{width:5%;text-align:center}
   .input-page .items-table .col-name{left:48px}
-  .input-page .items-table tbody td.col-no,.input-page .items-table tbody td.col-name{position:sticky}
+  .input-page .items-table tbody td.col-no,.input-page .items-table tbody td.col-name{position:static}
   .input-page .items-table tbody td.col-price{position:relative}
   .input-page .items-table tbody td{padding:0;background:var(--paper-raised)}
   .input-page .items-table tbody tr:hover td{background:color-mix(in srgb,var(--f-blue) 5%,var(--paper-raised))}

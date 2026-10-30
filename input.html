@@ -39,13 +39,6 @@
         <div class="info-grid">
           <div class="info-col">
           <div class="top-row">
-            <div class="field" data-field="client">
-              <label class="top-k req" for="f-client">Client:</label>
-              <input class="top-in" id="f-client" name="client" type="text" placeholder="Nama perusahaan / client" autocomplete="organization" required />
-              <div class="error-msg" role="alert"></div>
-            </div>
-          </div>
-          <div class="top-row">
             <div class="field" data-field="user">
               <label class="top-k req" for="f-user">Pengisi Laporan:</label>
               <input class="top-in" id="f-user" name="user" type="text" placeholder="Nama pengisi laporan" autocomplete="name" required />
@@ -56,13 +49,6 @@
             <div class="field" data-field="city">
               <label class="top-k req" for="f-city">Kota:</label>
               <input class="top-in" id="f-city" name="city" type="text" placeholder="Kota" required />
-              <div class="error-msg" role="alert"></div>
-            </div>
-          </div>
-          <div class="top-row">
-            <div class="field" data-field="country">
-              <label class="top-k req" for="f-country">Negara:</label>
-              <input class="top-in" id="f-country" name="country" type="text" value="Indonesia" required />
               <div class="error-msg" role="alert"></div>
             </div>
           </div>
@@ -113,7 +99,7 @@
             <thead>
               <tr>
                 <th class="col-no">No</th>
-                <th class="col-name" title="Ketik nama barang — saran dari dictionary muncul sebagai teks abu-abu. Tekan Tab / → (atau ketuk saran) untuk menerima.">Nama Barang</th>
+                <th class="col-name" title="Ketik sebagian nama barang (di bagian mana pun) — daftar saran muncul di bawah. Pilih dengan klik atau ↑ ↓ + Enter.">Nama Barang</th>
                 <th class="col-cat">Kategori</th>
                 <th class="col-vendor">Nama Vendor</th>
                 <th class="col-status">Status Pembayaran</th>
@@ -168,7 +154,7 @@
   <dialog id="projects" aria-labelledby="pj-title">
     <div class="pj-head"><h2 id="pj-title">Daftar Event</h2><button class="x" id="pj-close" type="button" aria-label="Tutup">×</button></div>
     <div class="pj-tools">
-      <input class="pj-search" id="pj-search" type="search" placeholder="Cari nama event, client, kota…" aria-label="Cari event" autocomplete="off" />
+      <input class="pj-search" id="pj-search" type="search" placeholder="Cari nama event, kota…" aria-label="Cari event" autocomplete="off" />
       <select id="pj-sort" aria-label="Urutkan"><option value="new">Terbaru diubah</option><option value="old">Terlama diubah</option><option value="name">Nama A–Z</option></select>
     </div>
     <div class="pj-msg" id="pj-msg" role="status"></div>
@@ -188,7 +174,7 @@
       <td class="col-no" data-label="No"><span data-item-number>1</span></td>
       <td class="col-name" data-label="Nama Barang">
         <div class="field" data-field="itemName">
-          <input type="text" data-name="itemName" aria-label="Nama Barang" placeholder="Ketik nama barang…" required />
+          <input type="text" data-name="itemName" aria-label="Nama Barang" placeholder="Cari barang, mis. P3.9" required />
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
@@ -222,7 +208,7 @@
       </td>
       <td class="col-vendor" data-label="Nama vendor">
         <div class="field" data-field="vendor">
-          <input type="text" data-name="vendor" aria-label="Nama vendor" placeholder="Cari / pilih vendor" required />
+          <input type="text" data-name="vendor" aria-label="Nama vendor" placeholder="Cari / pilih / isi sendiri" required />
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
@@ -238,13 +224,13 @@
       </td>
       <td class="col-price" data-label="Harga total (Rp)">
         <div class="field" data-field="totalPrice">
-          <input type="text" inputmode="numeric" placeholder="cth. 5.000.000" data-name="totalPrice" aria-label="Harga total (Rp)" required />
+          <input type="text" inputmode="numeric" placeholder="5.000.000 atau 2x2.500.000" data-name="totalPrice" aria-label="Harga total (Rp)" required />
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
       <td class="col-dp" data-label="Nominal DP (Rp)">
         <div class="field" data-field="nominalDP">
-          <input type="text" inputmode="numeric" placeholder="cth. 2.000.000" data-name="nominalDP" aria-label="Nominal DP (Rp)" disabled />
+          <input type="text" inputmode="numeric" placeholder="2.000.000 atau =4000000/2" data-name="nominalDP" aria-label="Nominal DP (Rp)" disabled />
           <span class="hint" data-sisa-dp-display></span>
           <div class="error-msg" role="alert"></div>
         </div>
