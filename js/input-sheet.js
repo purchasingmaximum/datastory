@@ -112,13 +112,19 @@
   function setSrc(b, src, note) {
     b.dataset.psrc = src || "";
     const tag = b.querySelector("[data-psrc]"); if (!tag) return;
-    tag.textContent = src === "db" ? "DB" : src === "perday" ? "/hari" : src === "manual" ? "manual" : "";
+    tag.textContent = src === "db" || src === "pick" ? "DB" : src === "perday" ? "/hari" : src === "manual" ? "manual" : "";
     tag.dataset.src = src || "";
     const p = blockParts(b).price; if (p) p.title = note || (src === "manual" ? "Diisi manual. Kosongkan sel untuk kembali ke harga database." : "");
   }
   function applyPrice(b, force) {
     if (!DB.ready) return;
     if (b.dataset.psrc === "manual" && !force) return;
+    /* harga yang dipilih dari flyout vendor dipertahankan selama barang & vendornya tidak berubah */
+    if (b.dataset.psrc === "pick" && !force) {
+      const pk = b._pick, bp = blockParts(b);
+      if (pk && canon(bp.vendor.value) === canon(pk.vendor) && canon(bp.name.value) === canon(pk.item)) return;
+      setSrc(b, "");
+    }
     const { vendor, price } = blockParts(b);
     const offers = offersFor(b).filter((o) => canon(o.vendor) === canon(vendor.value));
     const { e, g } = dayInfo();
@@ -152,6 +158,50 @@
       return db.concat((fallback || []).filter((x) => !seen.has(canon(x.namaVendor)))).slice(0, 50);
     },
     vendorChosen(block) { applyPrice(block, true); },
+
+    /* isi flyout vendor: semua opsi harga vendor ini untuk barang di baris tsb (tiap penawaran x tiap kombinasi Day + GR) */
+    vendorChoices(block, vendorName) {
+      const { e, g } = dayInfo();
+      const offers = offersFor(block).filter((o) => canon(o.vendor) === canon(vendorName) && Object.keys(o.combos).length);
+      const out = [];
+      offers.forEach((o, i) => {
+        if (offers.length > 1) {
+          const bits = [o.spec, o.qty > 1 ? "harga untuk " + o.qty + (o.unit ? " " + o.unit : " unit") : ""].filter(Boolean);
+          out.push({ header: true, label: bits.join(" · ") || "Penawaran " + (i + 1) });
+        }
+        const rows = [];
+        const exactKey = e !== null && g !== null ? e + "_" + g : null;
+        if (exactKey && o.combos[exactKey] === undefined) {      /* kombinasi persis tidak ada: tawarkan hitungan per hari */
+          const p = priceOf(o, e, g);
+          if (p) rows.push({ label: "Hitung per hari", sub: e + " Day + " + g + " GR = " + (e + g) + " hari", right: "Rp " + nf.format(p.price), match: true, data: { value: p.price, src: "perday", note: p.note } });
+        }
+        Object.keys(o.combos).sort((a, b) => {
+          const A = DB.combos[a], B = DB.combos[b]; return A && B ? A.e - B.e || A.g - B.g : 0;
+        }).forEach((k) => {
+          const m = DB.combos[k]; if (!m) return;
+          const v = r0(o.combos[k]);
+          rows.push({
+            label: m.e + " Day + " + m.g + " GR", right: "Rp " + nf.format(v), match: m.e === e && m.g === g,
+            data: { value: v, src: "db", note: "Dipilih dari database: " + m.e + " Day + " + m.g + " GR. Kosongkan sel untuk kembali ke harga otomatis." },
+          });
+        });
+        rows.sort((a, b) => (b.match ? 1 : 0) - (a.match ? 1 : 0));   /* yang sesuai isian saat ini di atas; sisanya tetap urut Day/GR */
+        out.push(...rows);
+      });
+      return out;
+    },
+    /* satu opsi di flyout diklik: isi vendor + harga persis seperti yang dipilih */
+    pickChoice(block, vendorName, choice) {
+      const { vendor, price, name } = blockParts(block);
+      vendor.value = vendorName;
+      block._pick = { vendor: vendorName, item: name.value };
+      block._auto = true;
+      price.value = nf.format(choice.data.value);
+      price.dispatchEvent(new Event("input", { bubbles: true }));
+      block._auto = false;
+      setSrc(block, choice.data.src === "perday" ? "perday" : "pick", choice.data.note);
+      if (choice.data.src === "perday") block._pick = null;     /* hitungan per hari mengikuti perubahan tanggal / GR seperti biasa */
+    },
   };
 
   /* ---------- sel baru: lencana sumber harga ---------- */

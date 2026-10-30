@@ -1,0 +1,45 @@
+/* Flyout pilihan harga per vendor (Input Report & Budget). Token warna punya
+   cadangan agar cocok dengan kedua halaman. */
+.vfly {
+  position: fixed; z-index: 90; margin: 0; padding: 4px; list-style: none;
+  min-width: 260px; max-width: min(430px, calc(100vw - 16px)); max-height: min(340px, 60vh);
+  overflow-y: auto; overscroll-behavior: contain;
+  background: var(--paper-raised, var(--surface, #fff)); color: var(--ink, #1b1b1f);
+  border: 1.5px solid var(--line, #ddd8ce); border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+  font-size: 14px; font-weight: 400; white-space: normal;
+}
+.vfly[hidden] { display: none; }
+.vfly-head {
+  padding: 8px 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .03em;
+  text-transform: uppercase; color: var(--muted, #6f6d66);
+}
+.vfly-head:not(:first-child) { margin-top: 4px; border-top: 1px dashed var(--line, #ddd8ce); }
+.vfly-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 18px;
+  padding: 8px 10px; border-radius: 6px; cursor: pointer;
+}
+.vfly-row:hover, .vfly-row.kb { background: color-mix(in srgb, var(--ink, #1b1b1f) 9%, transparent); }
+.vfly-row.match { box-shadow: inset 3px 0 0 var(--f-blue, var(--blue, #1d5fd6)); }
+.vfly-main { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.vfly-main em {
+  font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--f-blue, var(--blue, #1d5fd6));
+}
+.vfly-main small { flex-basis: 100%; font-size: 12px; color: var(--muted, #6f6d66); }
+.vfly-row b { flex: none; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--f-blue, var(--blue, #1d5fd6)); }
+
+/* tanda "›" di baris vendor */
+.has-fly { position: relative; }
+.vfly-chev {
+  flex: none; margin-left: auto; padding: 0 4px 0 12px; font-size: 18px; line-height: 1;
+  color: var(--muted, #6f6d66); cursor: pointer;
+}
+.combo-option.has-fly { display: flex; align-items: center; }
+.v-list .has-fly.vfly-open { background: color-mix(in srgb, var(--ink, #1b1b1f) 9%, transparent); }
+/* baris yang flyout-nya terbuka tetap tampil seperti saat di-hover (sama dengan gaya .combo-option:hover) */
+.combo-option.has-fly.vfly-open { background: var(--c-itemvendor); color: var(--paper); }
+.has-fly:hover .vfly-chev, .has-fly.vfly-open .vfly-chev { color: inherit; }
+/* di layar sentuh "›" dibuat lebih mudah diketuk */
+@media (pointer: coarse) { .vfly-chev { padding: 6px 8px 6px 18px; font-size: 22px; } }
+@media print { .vfly { display: none !important; } }

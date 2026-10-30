@@ -16,10 +16,12 @@
        renderLabel: (option) => "string",  // text shown in the dropdown row
        getValue: (option) => "string",     // text written into the input on pick
        onSelect: (option, inputEl) => {},  // optional side-effect, e.g. autofill
+       getFlyout: (option) => [...],       // optional: pilihan di flyout samping baris (lihat vendor-flyout.js)
+       onFlyoutPick: (option, choice, inputEl) => {},  // dipanggil saat salah satu pilihan flyout diklik
      });
    ========================================================================= */
 
-function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, renderRow, toggle = true, openOnFocus = true, emptyText }) {
+function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, renderRow, toggle = true, openOnFocus = true, emptyText, getFlyout, onFlyoutPick }) {
   const wrapper = document.createElement("div");
   wrapper.className = "combo-wrapper";
   inputEl.parentNode.insertBefore(wrapper, inputEl);
@@ -56,12 +58,14 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, re
   }
 
   function close() {
+    if (window.VendorFlyout) window.VendorFlyout.close();
     list.hidden = true;
     inputEl.setAttribute("aria-expanded", "false");
     activeIndex = -1;
   }
 
   function renderList() {
+    if (window.VendorFlyout) window.VendorFlyout.close();
     list.innerHTML = "";
     if (options.length === 0) {
       const li = document.createElement("li");
@@ -76,6 +80,9 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, re
       if (typeof renderRow === "function") renderRow(li, opt, inputEl.value);
       else li.textContent = renderLabel(opt);
       if (opt && opt.custom) li.classList.add("combo-custom");
+      if (typeof getFlyout === "function" && window.VendorFlyout && opt && !opt.custom) {
+        window.VendorFlyout.bind(li, { choices: () => getFlyout(opt), onPick: (choice) => pickFlyout(opt, choice) });
+      }
       li.addEventListener("mousedown", (e) => {
         e.preventDefault(); // keep focus on input, avoid blur-before-click
         pick(opt);
@@ -87,6 +94,14 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, re
   function pick(opt) {
     inputEl.value = getValue(opt);
     if (typeof onSelect === "function") onSelect(opt, inputEl);
+    close();
+    inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  // pilihan dari flyout: isi vendor + biarkan halaman mengisi harga sesuai pilihan itu
+  function pickFlyout(opt, choice) {
+    inputEl.value = getValue(opt);
+    if (typeof onFlyoutPick === "function") onFlyoutPick(opt, choice, inputEl);
     close();
     inputEl.dispatchEvent(new Event("change", { bubbles: true }));
   }
@@ -104,6 +119,13 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, re
   });
 
   inputEl.addEventListener("keydown", (e) => {
+    // flyout yang dibuka dengan papan ketik memakai tombol panah / Enter lebih dulu
+    if (window.VendorFlyout && window.VendorFlyout.handleKey(e)) { e.preventDefault(); e.stopPropagation(); return; }
+    // → pada baris vendor yang punya flyout membuka flyout-nya
+    if (e.key === "ArrowRight" && !list.hidden && activeIndex >= 0) {
+      const li = list.children[activeIndex];
+      if (li && li._vfly) { e.preventDefault(); e.stopPropagation(); li._vfly.open(); return; }
+    }
     if (list.hidden && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
       open(true);
       return;

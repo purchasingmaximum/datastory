@@ -104,7 +104,7 @@
   .input-page .items-table .field .hint{display:block;white-space:nowrap;padding:0 10px 5px;margin:-4px 0 0;font-size:.68rem;text-align:right;color:var(--muted)}
   .input-page .items-table .field .hint:empty{display:none}
   .input-page .items-table .psrc{position:absolute;left:10px;top:3px;font-size:.58rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;pointer-events:none;color:var(--muted)}
-  .input-page .items-table .psrc[data-src="db"]{color:var(--f-blue)}
+  .input-page .items-table .psrc[data-src="db"],.input-page .items-table .psrc[data-src="pick"]{color:var(--f-blue)}
   .input-page .items-table .psrc[data-src="perday"]{color:var(--f-amber)}
   .input-page .items-table .psrc:empty{display:none}
   .input-page .items-table td.col-act{padding:0}

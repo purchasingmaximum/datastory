@@ -11,7 +11,7 @@
 (function () {
   const SS = { id: "1X03xTnUsCz-QOWNeIXfTKhdMO1eaVDNmqBuIClHnAWk", key: "AIzaSyAGQc7xZgCkRqsE_WtPwZSR2_2xGemYaGQ" };
   const COMBO = /^(\d+)\s*day\s*\+\s*(\d+)\s*gr$/;
-  const CACHE_KEY = "mx_db_dict_v1";
+  const CACHE_KEY = "mx_db_dict_v2";   /* v2: baris database kini menyertakan spesifikasi, qty, satuan */
   const CACHE_TTL = 10 * 60 * 1000; // 10 menit: cukup segar, form tetap cepat dibuka
   const canon = (s) => String(s || "").trim().replace(/\s+/g, " ").toLowerCase();
   const cleanSheetName = (n) => (String(n).replace(/^[^\p{L}\p{N}]+/u, "").trim() || String(n));
@@ -37,6 +37,7 @@
       head.forEach((c, i) => {
         if (c === "item id") col.id = i; else if (c === "kategori") col.kat = i;
         else if (c === "nama item") col.item = i; else if (c === "vendor") col.vendor = i;
+        else if (c === "spesifikasi") col.spec = i; else if (c === "quantity") col.qty = i; else if (c === "satuan") col.unit = i;
         else { const m = c.match(COMBO); if (m) { col.cb[m[1] + "_" + m[2]] = i; combos[m[1] + "_" + m[2]] = { e: +m[1], g: +m[2] }; } }
       });
       if (col.item === undefined || col.vendor === undefined) return;
@@ -52,6 +53,9 @@
           kategori: col.kat !== undefined && row[col.kat] ? String(row[col.kat]).trim() : katFallback,
           item: String(row[col.item]).trim(),
           vendor: row[col.vendor] ? String(row[col.vendor]).trim() : "",
+          spec: col.spec !== undefined && row[col.spec] ? String(row[col.spec]).trim() : "",
+          qty: col.qty !== undefined && Number(row[col.qty]) > 0 ? Number(row[col.qty]) : 1,
+          unit: col.unit !== undefined && row[col.unit] ? String(row[col.unit]).trim() : "",
           combos: cp,
         });
       }

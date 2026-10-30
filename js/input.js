@@ -341,6 +341,12 @@
       },
       renderLabel: (opt) => opt.label || opt.namaVendor,
       getValue: (opt) => opt.namaVendor,
+      // flyout di samping vendor yang punya harga di database: pilih salah satu opsi harganya
+      getFlyout: (opt) => (window.InputPrice && window.InputPrice.vendorChoices ? window.InputPrice.vendorChoices(block, opt.namaVendor) : []),
+      onFlyoutPick: (opt, choice) => {
+        setError(vendorInput.closest(".field"), "");
+        if (window.InputPrice) window.InputPrice.pickChoice(block, opt.namaVendor, choice);
+      },
       onSelect: (opt) => {
         setError(vendorInput.closest(".field"), "");
         if (opt && opt.custom) {
