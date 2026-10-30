@@ -251,6 +251,9 @@
     const ts = (ev) => (typeof getEventUpdatedAt === "function" ? getEventUpdatedAt(ev) : new Date(ev.submittedAt || 0).getTime()) || 0;
     const when = (ev) => { const t = ts(ev); return t ? new Date(t).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"; };
     let note = "";
+    const picked = new Set();   /* id event yang dicentang untuk unduh Excel gabungan */
+    let shown = [];
+    const xbtn = $("pj-xlsx"), allBox = $("pj-all");
     const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 
     function render() {
@@ -260,10 +263,16 @@
       const m = sort.value;
       rows.sort((a, b) => m === "name" ? String(a.event || "~").localeCompare(String(b.event || "~"), "id", { numeric: true }) : m === "old" ? ts(a) - ts(b) : ts(b) - ts(a));
       list.textContent = "";
+      shown = rows;
+      const ids = new Set(all.map((e) => String(e.eventId)));
+      [...picked].forEach((id) => { if (!ids.has(id)) picked.delete(id); });   /* event yang sudah dihapus */
       msg.textContent = note || (!all.length ? "Belum ada event." : rows.length === all.length ? all.length + " event" : rows.length + " dari " + all.length + " event");
       rows.forEach((ev) => {
         const li = mk("li", String(ev.eventId) === String(curId) ? "cur" : "");
-        const info = mk("div");
+        const pick = mk("input", "pj-pick"); pick.type = "checkbox"; pick.checked = picked.has(String(ev.eventId));
+        pick.setAttribute("aria-label", "Pilih " + (ev.event || "event") + " untuk diunduh");
+        pick.addEventListener("change", () => { pick.checked ? picked.add(String(ev.eventId)) : picked.delete(String(ev.eventId)); paintPick(); });
+        const info = mk("div", "pj-info");
         info.append(mk("span", "nm", ev.event || "(Tanpa nama event)"),
           mk("div", "sub", [ev.city, (ev.itemCount || 0) + " barang", rp(ev.eventPrice), "diubah " + when(ev), ev.draft ? "DRAFT" : ""].filter(Boolean).join(" · ")));
         const btns = mk("div", "btns");
@@ -283,9 +292,32 @@
           ES.remove(ev.eventId).catch(() => {});
           note = "Event dihapus."; render();
         });
-        btns.append(open, edit, dup, del); li.append(info, btns); list.append(li);
+        btns.append(open, edit, dup, del); li.append(pick, info, btns); list.append(li);
       });
+      paintPick();
     }
+    function paintPick() {
+      const n = picked.size, vis = shown.filter((ev) => picked.has(String(ev.eventId))).length;
+      xbtn.textContent = "Unduh Excel (" + n + " dipilih)"; xbtn.disabled = n === 0;
+      allBox.checked = shown.length > 0 && vis === shown.length;
+      allBox.indeterminate = vis > 0 && vis < shown.length;
+    }
+    allBox.addEventListener("change", () => {
+      shown.forEach((ev) => (allBox.checked ? picked.add(String(ev.eventId)) : picked.delete(String(ev.eventId))));
+      render();
+    });
+    xbtn.addEventListener("click", async () => {
+      const evs = ES.all().filter((ev) => picked.has(String(ev.eventId))).sort((a, b) => ts(a) - ts(b));
+      if (!evs.length) return;
+      xbtn.disabled = true; const old = xbtn.textContent; xbtn.textContent = "Menyiapkan Excel…";
+      try {
+        if (!window.EventExport || !window.EventExport.downloadMultiExcel) throw new Error("Modul ekspor belum dimuat.");
+        const entries = evs.map((ev) => ({ report: ev }));
+        await window.EventExport.downloadMultiExcel(entries, evs.length === 1 ? (evs[0].event || "Event") + " - Laporan Event" : "Input Report - " + evs.length + " event");
+        note = evs.length + " event diunduh dalam satu file Excel.";
+      } catch (e) { note = "Gagal mengunduh: " + (e && e.message || "error"); }
+      xbtn.textContent = old; render();
+    });
     async function openDlg() {
       note = ""; if (!dlg.open) dlg.showModal();
       msg.textContent = "Memuat daftar event…";

@@ -387,6 +387,7 @@ table.ptable { font-size: 12.5px; }
 @media (max-width: 600px) { .b-grand strong { font-size: 20px; } .dur .top-in { flex: 0 0 64px; } }
 
 .v-list { position: fixed; z-index: 60; margin: 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 20px rgba(15,23,42,.12); max-height: 300px; overflow: auto; }
+.v-list { overscroll-behavior: contain; }
 .v-list[hidden] { display: none; }
 .v-list li { display: flex; justify-content: space-between; gap: 20px; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
 .v-list li b { font-weight: 600; white-space: nowrap; color: var(--blue); }
@@ -940,7 +941,7 @@ const refs = { items: {}, cats: {}, catInp: {} };
   function pick(name) { acInp.value = name; acRow.name = name; const rr = refs.items[acRow.id]; if (rr && rr.vauto) rr.vauto(); closeAc(); update(); save(); }
   function markAc() { [...list.children].forEach((li, i) => li.classList.toggle('on', i === acIdx)); }
 
-window.addEventListener("scroll", closeAc, true);
+window.addEventListener("scroll", e => { const l = $("b-list"); if (e.target !== document && l && l.contains(e.target)) return; closeAc(); }, true);
 /* pencarian item longgar: cocok persis, atau nama item DB mengandung teks yang diketik */
 function findItem(name) {
   const q = canon(name); if (!q) return null;
@@ -970,7 +971,7 @@ function openV(sel) {
   vlist.hidden = false;
 }
 document.addEventListener("mousedown", e => { if (!vlist.contains(e.target) && e.target.tagName !== "SELECT") closeV(); });
-window.addEventListener("scroll", closeV, true);
+window.addEventListener("scroll", e => { if (e.target !== document && vlist.contains(e.target)) return; closeV(); }, true);   /* menggulir isi daftar vendor tidak boleh menutupnya */
 
 
 /* ===== render struktur tabel ===== */
@@ -1368,8 +1369,8 @@ function buildWorkbook() {
       put("C" + r, it.name || "(tanpa nama)", { border: GRID });
       const val = (rr, o, nm) => {
         const jual = jualOf(o), modal = lineModal(o);
-        put("E" + rr, o.pcs || "", { fmt: "#,##0.##", align: CENTER, border: GRID });
-        put("G" + rr, o.dur || "", { fmt: "#,##0.##", align: CENTER, border: GRID });
+        put("E" + rr, o.pcs || "", { fmt: "General", align: CENTER, border: GRID });
+        put("G" + rr, o.dur || "", { fmt: "General", align: CENTER, border: GRID });
         if (nm !== undefined) put("D" + rr, nm, { border: GRID });
         put("J" + rr, jual, { fmt: ACC, border: GRID });
         put("M" + rr, modal, { fmt: ACC, border: GRID });

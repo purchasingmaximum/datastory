@@ -269,3 +269,12 @@ dialog#projects::backdrop{background:rgba(8,14,20,.5)}
   .pv-h{break-after:avoid}
   .items-table-wrap{overflow:visible!important}
 }
+
+/* Daftar Event: pilih banyak untuk unduh Excel gabungan */
+.pj-all{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:0 0 6px;cursor:pointer}
+.pj-all input,.pj-list .pj-pick{width:16px;height:16px;accent-color:var(--ink);cursor:pointer;flex:none}
+.pj-list li{flex-wrap:nowrap}
+.pj-list .pj-info{flex:1 1 auto;min-width:0}
+.pj-list .btns{flex:0 0 auto}
+@media (max-width:640px){.pj-list li{flex-wrap:wrap}.pj-list .pj-info{flex:1 1 calc(100% - 40px)}}
+.pj-foot .ghost:disabled{opacity:.45;cursor:not-allowed}

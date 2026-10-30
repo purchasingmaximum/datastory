@@ -24,7 +24,7 @@
         <div class="title-bar">
           <div class="field top-title" data-field="event">
             <label for="f-event" id="title-label">Input Report:</label>
-            <input class="title-in" id="f-event" name="event" type="text" placeholder="Nama event (wajib diisi)" autocomplete="off" required />
+            <input class="title-in" id="f-event" name="event" type="text" placeholder="Nama event" autocomplete="off" required />
             <div class="error-msg" role="alert"></div>
           </div>
           <div class="actions">
@@ -158,9 +158,11 @@
       <select id="pj-sort" aria-label="Urutkan"><option value="new">Terbaru diubah</option><option value="old">Terlama diubah</option><option value="name">Nama A–Z</option></select>
     </div>
     <div class="pj-msg" id="pj-msg" role="status"></div>
+    <label class="pj-all"><input type="checkbox" id="pj-all" /> Pilih semua yang tampil</label>
     <ul class="pj-list" id="pj-list"></ul>
     <div class="pj-foot">
       <span class="pj-sync" id="pj-sync"></span>
+      <button class="ghost" id="pj-xlsx" type="button" disabled>Unduh Excel (0 dipilih)</button>
     </div>
   </dialog>
 
