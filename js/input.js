@@ -19,7 +19,8 @@
   // dengan data event yang sudah ada, lalu submit akan MENGUPDATE event itu
   // (bukan membuat baris baru) lewat report.isEdit = true di submitEvent().
   const urlParams = new URLSearchParams(window.location.search);
-  const editEventId = urlParams.get("edit");
+  let editEventId = urlParams.get("edit");
+  const startedNew = !urlParams.get("edit");   // halaman dibuka sebagai event baru / salinan
   const copyEventId = urlParams.get("copy");   // "Duplikat" dari Daftar Event: isi form dari event lain, simpan sebagai event baru
   const viewEventId = urlParams.get("view");   // "Buka" dari Daftar Event: tampilan laporan (baca saja) + ekspor
   let editOriginalEvent = null;
@@ -28,12 +29,14 @@
   const backToList = document.getElementById("back-to-list");
   const editModeNote = document.getElementById("edit-mode-note");
 
-  if (editEventId) {
-    titleLabel.textContent = "Edit Report:";
+  if (editEventId) titleLabel.textContent = "Edit Report:";
+  if (!viewEventId) {
     backToList.hidden = false;
+    backToList.textContent = "Kembali ke Daftar Event";
     editModeNote.hidden = false;
-    submitBtn.textContent = "Next: Preview →";
+    editModeNote.textContent = "Tersimpan otomatis ke cloud saat Anda mengetik — pengguna lain yang membuka event ini melihat perubahan langsung. Laporan baru berstatus Draft (belum masuk Analytics) sampai Anda menekan Submit.";
   }
+  submitBtn.textContent = "Next: Preview →";
 
   let itemSeq = 0;
 
@@ -68,6 +71,7 @@
       if (!ev) throw new Error("Event tidak ditemukan.");
       if (editEventId) editOriginalEvent = ev;
       populateFormForEdit(ev);
+      if (editEventId) { lastSavedAt = ev.updatedAt || ""; lastSig = currentSig(); }
       if (copyEventId) form.event.value = (form.event.value || "") + " (salinan)";
     } else {
       addItemBlock();
@@ -589,18 +593,7 @@
   /* ---------------------------------------------------------------------
      Submission
      --------------------------------------------------------------------- */
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    formLevelError.textContent = "";
-
-    const topOk = validateTopLevel();
-    const itemsOk = validateItems();
-    if (!topOk || !itemsOk) {
-      formLevelError.textContent = "Periksa kembali field yang ditandai merah.";
-      form.querySelector(".has-error")?.querySelector("input,select")?.focus();
-      return;
-    }
-
+  function collectReport() {
     const items = [...itemsContainer.querySelectorAll("[data-item-block]")].map((block) => ({
       // Kode dari dictionary bila cocok; kosong = barang baru (backend membuat kode + mendaftarkannya ke dictionary).
       itemCode: block.querySelector('[data-name="itemName"]').dataset.itemId || "",
@@ -640,6 +633,22 @@
       // "Terakhir diperbarui" & urutan di Daftar Event.
       updatedAt: new Date().toISOString(),
     };
+    return report;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    formLevelError.textContent = "";
+
+    const topOk = validateTopLevel();
+    const itemsOk = validateItems();
+    if (!topOk || !itemsOk) {
+      formLevelError.textContent = "Periksa kembali field yang ditandai merah.";
+      form.querySelector(".has-error")?.querySelector("input,select")?.focus();
+      return;
+    }
+
+    const report = collectReport();
 
     // Jangan langsung kirim: tampilkan pratinjau dulu. Pengiriman sebenarnya
     // terjadi di confirmSubmit() setelah pengguna menekan Submit/Update.
@@ -719,7 +728,7 @@
   }
 
   function renderAnalysis(report) {
-    const an = window.EventAnalysis.analyze(report, window.EventStore.all());
+    const an = window.EventAnalysis.analyze(report, window.EventStore.published());
     lastAnalysis = an;
     const box = previewEl("section", "pv-analysis");
     box.appendChild(previewEl("h3", "pv-h", "Analisis"));
@@ -762,6 +771,7 @@
 
   // Tampilan baca-saja untuk "Buka" dari Daftar Event.
   function showReadOnly(ev) {
+    shownAt = ev.updatedAt || "";
     titleLabel.textContent = "Laporan:";
     showPreview(ev, { readOnly: true });
   }
@@ -931,7 +941,7 @@
 
     previewBody.appendChild(renderAnalysis(report));
 
-    const submitLabel = editEventId ? "Update Report" : "Submit Report";
+    const submitLabel = (editEventId && !startedNew) ? "Update Report" : "Submit Report";
     previewSubmitBtn.textContent = submitLabel;
     previewSubmitBtn2.textContent = submitLabel;
 
@@ -939,7 +949,7 @@
     previewEditBtn.hidden = readOnly;
     previewSubmitBtn.hidden = readOnly;
     previewSubmitBtn2.hidden = readOnly;
-    backToList.hidden = readOnly || !editEventId;
+    backToList.hidden = readOnly;
     ["vw-list", "vw-edit", "vw-dup", "vw-del"].forEach((id) => { document.getElementById(id).hidden = !readOnly; });
     if (readOnly && report.eventId) document.getElementById("vw-edit").href = "input.html?edit=" + encodeURIComponent(report.eventId);
     document.getElementById("pv-msg").textContent = "";
@@ -975,11 +985,20 @@
     try {
       rememberNewItems(report.items);
       await window.EventStore.ready;           // supaya ID event tidak bentrok dengan data yang belum termuat
-      const r = window.EventStore.save(report);
-      if (editEventId) { window.location.href = "input.html?view=" + encodeURIComponent(r.eventId); return; }
+      clearTimeout(saveTimer); saveTimer = null;
+      report.eventId = editEventId || report.eventId || "";
+      report.draft = false;                    // Submit = laporan final, masuk Analytics
+      selfSaving = true;
+      let r; try { r = window.EventStore.save(report); } finally { selfSaving = false; }
+      lastSavedAt = r.event.updatedAt; lastSig = "";
+      r.done.catch(() => {});
+      if (!startedNew) { window.location.href = "input.html?view=" + encodeURIComponent(r.eventId); return; }
       showSuccess();
       resetForm();
       hidePreview();
+      editEventId = null; lastSavedAt = "";
+      history.replaceState(null, "", "input.html");
+      titleLabel.textContent = "Input Report:";
     } catch (err) {
       console.error(err);
       previewError.textContent = "Gagal menyimpan laporan. Silakan coba lagi.";
@@ -1006,4 +1025,103 @@
   // (baik untuk mode create maupun setelah data event mode edit termuat) —
   // jangan tambahkan lagi di sini, supaya tidak dobel / muncul sebelum
   // data edit selesai dimuat.
+
+  /* ---------------------------------------------------------------------
+     Autosave + live edit (seperti Budget & Feasibility)
+     - Setiap ketikan disimpan otomatis ke cloud (jeda 0,7 detik).
+     - Event baru langsung dapat ID & tampil di Daftar Event sebagai Draft.
+     - Perubahan dari pengguna lain di event yang sama langsung masuk ke
+       form begitu Anda tidak sedang mengetik (versi terbaru menang, sama
+       seperti Budget). Tampilan "Buka" ikut ter-update otomatis.
+     --------------------------------------------------------------------- */
+  var shownAt = "", saveTimer = null, lastSavedAt = "", lastSig = "", selfSaving = false, applying = false, pendingRemote = null, goneShown = false;
+  const ES = window.EventStore;
+  const liveNote = document.createElement("span");
+  liveNote.className = "sync-note"; liveNote.setAttribute("role", "status");
+  document.getElementById("sync-note").after(liveNote);
+  let liveTimer = null;
+  function notice(text) {
+    liveNote.textContent = text; clearTimeout(liveTimer);
+    liveTimer = setTimeout(() => { liveNote.textContent = ""; }, 8000);
+  }
+  function sigOf(r) {
+    const c = Object.assign({}, r); delete c.submittedAt; delete c.updatedAt; delete c.isEdit; delete c.draft;
+    return JSON.stringify(c);
+  }
+  function currentSig() { const r = collectReport(); r.items = r.items.filter((it) => !isBlankItem(it)); return sigOf(r); }
+  function isBlankItem(it) { return !it.itemName && !it.vendor && !it.totalPrice && !it.category && !it.description; }
+
+  function autosaveNow() {
+    clearTimeout(saveTimer); saveTimer = null;
+    if (!ES || applying || viewEventId) return;
+    if (!form.event.value.trim()) return;          // belum ada nama event: belum disimpan
+    const report = collectReport();
+    report.items = report.items.filter((it) => !isBlankItem(it));
+    const sig = sigOf(report);
+    if (sig === lastSig) return;                   // tidak ada perubahan nyata
+    ES.ready.then(() => {
+      const prev = editEventId ? ES.get(editEventId) : null;
+      report.eventId = editEventId || "";
+      report.draft = prev ? !!prev.draft : true;   // event baru = Draft sampai Submit
+      goneShown = false;
+      selfSaving = true;
+      let r; try { r = ES.save(report); } finally { selfSaving = false; }
+      lastSig = sig; lastSavedAt = r.event.updatedAt;
+      r.done.catch(() => {});
+      if (!editEventId) {
+        editEventId = r.eventId;
+        history.replaceState(null, "", "input.html?edit=" + encodeURIComponent(r.eventId));
+        titleLabel.textContent = "Edit Report:";
+      }
+    });
+  }
+  function scheduleSave() {
+    if (applying || viewEventId) return;
+    clearTimeout(saveTimer); saveTimer = setTimeout(autosaveNow, 700);
+  }
+  form.addEventListener("input", scheduleSave);
+  form.addEventListener("change", scheduleSave);
+  form.addEventListener("focusout", () => { setTimeout(() => { scheduleSave(); applyRemoteIfIdle(); }, 0); });
+  new MutationObserver(scheduleSave).observe(itemsContainer, { childList: true });
+  const flush = () => { if (saveTimer) autosaveNow(); };
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
+
+  function applyRemoteIfIdle() {
+    if (!pendingRemote || saveTimer || applying) return;
+    const a = document.activeElement;
+    if (a && form.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;   // sedang mengetik: tunggu
+    const ev = pendingRemote; pendingRemote = null;
+    applying = true;
+    try {
+      populateFormForEdit(ev);
+      editOriginalEvent = ev; lastSavedAt = ev.updatedAt || ""; lastSig = currentSig();
+      if (!previewSection.hidden) hidePreview();
+      notice("Diperbarui dari pengguna lain · " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }));
+    } finally { setTimeout(() => { applying = false; lastSig = currentSig(); }, 300); }
+  }
+
+  function remoteCheck() {
+    if (selfSaving || !ES) return;
+    if (viewEventId) {                              // tampilan "Buka": ikuti perubahan terbaru
+      const ev = ES.get(viewEventId);
+      if (!ev) { if (shownAt && !goneShown) { goneShown = true; previewError.textContent = "Event ini sudah dihapus oleh pengguna lain."; } return; }
+      if ((ev.updatedAt || "") === shownAt) return;
+      const y = window.scrollY;
+      showReadOnly(JSON.parse(JSON.stringify(ev)));
+      window.scrollTo(0, y);
+      return;
+    }
+    if (!editEventId) return;
+    const cur = ES.get(editEventId);
+    if (!cur) {
+      if (lastSavedAt && !goneShown) { goneShown = true; notice("Event ini dihapus oleh pengguna lain. Mengetik lagi akan menyimpannya kembali."); }
+      return;
+    }
+    if (!lastSavedAt || (cur.updatedAt || "") <= lastSavedAt) return;   // gema tulisan sendiri / data lebih lama
+    pendingRemote = JSON.parse(JSON.stringify(cur));
+    applyRemoteIfIdle();
+  }
+  if (ES) ES.subscribe(remoteCheck);
+
 })();

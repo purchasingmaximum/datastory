@@ -19,7 +19,7 @@ const CONFIG = {
   // Leave empty to run fully client-side against the bundled sample data +
   // localStorage, which is the default "run locally" mode described in
   // README.md.
-  API_URL: "https://script.google.com/macros/s/AKfycbxJQCf8X5nIkeQ1iLN0dd3cweyWUcgkrA8H6b2CvVBHzHL91ZSS-Fry6TG6HsCSek8G/exec",
+  API_URL: "",   // Event kini di Firestore (js/event-store.js); tidak ada backend spreadsheet lagi.
   LOCAL_STORAGE_KEY: "eo_datastory_submissions_v1",
 };
 

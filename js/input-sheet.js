@@ -243,7 +243,7 @@
   const dlg = $("projects");
   if (dlg && window.EventStore) {
     const ES = window.EventStore;
-    const list = $("pj-list"), msg = $("pj-msg"), search = $("pj-search"), sort = $("pj-sort"), imp = $("pj-import");
+    const list = $("pj-list"), msg = $("pj-msg"), search = $("pj-search"), sort = $("pj-sort");
     const params = new URLSearchParams(location.search);
     const curId = params.get("edit") || params.get("view");
     const rp = (n) => "Rp " + nf.format(n || 0);
@@ -260,12 +260,11 @@
       rows.sort((a, b) => m === "name" ? String(a.event || "~").localeCompare(String(b.event || "~"), "id", { numeric: true }) : m === "old" ? ts(a) - ts(b) : ts(b) - ts(a));
       list.textContent = "";
       msg.textContent = note || (!all.length ? "Belum ada event." : rows.length === all.length ? all.length + " event" : rows.length + " dari " + all.length + " event");
-      imp.hidden = !ES.hasLegacy;
       rows.forEach((ev) => {
         const li = mk("li", String(ev.eventId) === String(curId) ? "cur" : "");
         const info = mk("div");
         info.append(mk("span", "nm", ev.event || "(Tanpa nama event)"),
-          mk("div", "sub", [ev.client, [ev.city, ev.country].filter(Boolean).join(", "), (ev.itemCount || 0) + " barang", rp(ev.eventPrice), "diubah " + when(ev)].filter(Boolean).join(" · ")));
+          mk("div", "sub", [ev.client, [ev.city, ev.country].filter(Boolean).join(", "), (ev.itemCount || 0) + " barang", rp(ev.eventPrice), "diubah " + when(ev), ev.draft ? "DRAFT" : ""].filter(Boolean).join(" · ")));
         const btns = mk("div", "btns");
         const open = mk("a", "ghost", "Buka"); open.href = "input.html?view=" + encodeURIComponent(ev.eventId);
         const edit = mk("a", "ghost", "Edit"); edit.href = "input.html?edit=" + encodeURIComponent(ev.eventId);
@@ -298,13 +297,6 @@
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
     search.addEventListener("input", render); sort.addEventListener("change", render);
 
-    imp.addEventListener("click", async () => {
-      if (!confirm("Salin semua event dari spreadsheet lama ke penyimpanan baru? Event yang sudah ada tidak akan ditimpa.")) return;
-      imp.disabled = true; note = "Mengimpor dari spreadsheet lama…"; render();
-      try { const r = await ES.importLegacy(); note = r.added + " event diimpor" + (r.skipped ? ", " + r.skipped + " sudah ada" : "") + "."; }
-      catch (e) { note = "Impor gagal: " + (e && e.message || "error"); }
-      imp.disabled = false; render();
-    });
     if (params.get("list") === "1") openDlg();
   }
 })();

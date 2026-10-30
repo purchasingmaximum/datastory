@@ -505,7 +505,7 @@
     window.EventStore.subscribe(() => {
       clearTimeout(liveTimer);
       liveTimer = setTimeout(() => {
-        const next = ensurePaymentFields(window.EventStore.all());
+        const next = ensurePaymentFields(window.EventStore.published());
         const sig = signature(next);
         if (sig === lastSig) return;
         lastSig = sig;

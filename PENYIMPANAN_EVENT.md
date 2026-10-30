@@ -12,6 +12,7 @@ Apps Script. Hasilnya:
 | Export Excel | Sheet **Laporan Event** (urutan & kolom sama dengan isian; Total/Sisa berisi rumus) + sheet **Analisis**. Tersedia di pratinjau sebelum submit dan di tampilan Buka. |
 | Export PDF | Tombol **PDF** memakai dialog cetak browser (Save as PDF), hanya area laporan. |
 | Analisis | Dihitung langsung dari semua event tersimpan: kategori & vendor terbesar, posisi total biaya vs event lain (Q1/median/Q3), harga per barang vs median event lain (per hari), sisa pembayaran. Tampil di pratinjau, di Buka, dan di sheet Analisis Excel. |
+| Autosave & live edit | Form menyimpan otomatis 0,7 detik setelah berhenti mengetik (seperti Budget). Event baru langsung tampil di Daftar Event berstatus **DRAFT** dan tidak masuk Analytics sampai **Submit**. Bila pengguna lain mengubah event yang sedang Anda edit, form ter-update sendiri begitu Anda berhenti mengetik; halaman **Buka** ikut ter-update. Aturan: versi terbaru menang (per event, bukan per kolom). |
 | Analytics | Membaca store yang sama dan **ter-update langsung** (tanpa muat ulang) saat ada event disimpan/diedit/dihapus. |
 
 ## File
@@ -26,9 +27,8 @@ Apps Script. Hasilnya:
    Bila aturan Anda hanya mengizinkan nama ruang tertentu, tambahkan ruang ini, atau ubah konstanta
    `WORKSPACE` di `js/event-store.js` ke ruang yang sudah diizinkan.
 2. **Anonymous Auth** harus aktif di proyek `feasibilitymxm` (sudah dipakai Budget/Feasibility).
-3. **Impor data lama:** buka Daftar Event → **Impor data dari spreadsheet lama**. Event di Google Sheets
-   disalin ke Firestore (ID & tanggal asli dipertahankan; yang sudah ada tidak ditimpa). Setelah itu
-   Apps Script (`Code.gs`) dan workflow `keep-warm.yml` tidak diperlukan lagi untuk Input/Analytics.
+3. **Tidak ada lagi hubungan ke spreadsheet** untuk event: fitur impor, `Code.gs`, dan ping Code.gs di
+   `keep-warm.yml` sudah dihapus. (Login tetap lewat `Login.gs`; harga di halaman Database/Input tetap dibaca dari Sheets harga.)
 
 ## Perilaku offline
 Perubahan selalu disimpan di perangkat lebih dulu; bila cloud belum tersambung, perubahan ditandai

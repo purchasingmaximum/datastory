@@ -19,7 +19,7 @@
      remove(id)       hapus event
      subscribe(fn)    dipanggil tiap data berubah; mengembalikan fungsi berhenti
      status()         { mode: "cloud"|"local"|"connecting", note, text }
-     importLegacy()   salin data lama dari Google Sheets (Apps Script) sekali jalan
+     published()      hanya event final (draft tidak ikut) — dipakai Analytics
    ========================================================================= */
 (function () {
   "use strict";
@@ -40,11 +40,6 @@
   var WORKSPACE = "eTnJNyzUEMfL4q4xDMM5JusiO7_laporan";
   var LOCAL_KEY = "mx_event_store_v1";
   var BOOT_TIMEOUT = 9000;
-
-  /* alamat Apps Script lama: hanya dipakai untuk "Impor data lama"; setelah itu
-     dikosongkan agar tidak ada permintaan ke Spreadsheet lagi. */
-  var LEGACY_API_URL = (typeof CONFIG !== "undefined" && CONFIG.API_URL) || "";
-  try { if (typeof CONFIG !== "undefined") CONFIG.API_URL = ""; } catch (_) {}
 
   /* ---------- state ---------- */
   var events = new Map();           // eventId -> report lengkap
@@ -240,7 +235,7 @@
     var copy = JSON.parse(JSON.stringify(src));
     copy.eventId = "";
     copy.event = (src.event || "Event") + " (salinan)";
-    delete copy.submittedAt; delete copy.updatedAt;
+    delete copy.submittedAt; delete copy.updatedAt; copy.draft = false;
     return save(copy);
   }
 
@@ -257,44 +252,6 @@
       .finally(function () { pendingWrites--; emit(); });
   }
 
-  /* ---------- impor dari Google Sheets lama ---------- */
-  async function importLegacy() {
-    if (!LEGACY_API_URL) throw new Error("Alamat spreadsheet lama tidak tersedia.");
-    await ready;
-    var res = await fetch(LEGACY_API_URL + "?action=getAnalytics");
-    if (!res.ok) throw new Error("Spreadsheet lama tidak menjawab (HTTP " + res.status + ")");
-    var payload = await res.json();
-    var list = (payload && payload.events) || [];
-    var added = 0, skipped = 0, writes = [];
-    list.forEach(function (old) {
-      var id = String(old.eventId || "");
-      if (!id) return;
-      if (events.has(id)) { skipped++; return; }
-      var ev = normalize(old);
-      ev.eventId = id;
-      ev.submittedAt = old.submittedAt || new Date().toISOString();
-      ev.updatedAt = old.updatedAt || ev.submittedAt;
-      if (!ev.eventDateEnd && ev.eventDate && ev.eventDays) {
-        var d = new Date(ev.eventDate + "T00:00:00"); d.setDate(d.getDate() + ev.eventDays - 1);
-        ev.eventDateEnd = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-      }
-      events.set(id, ev); added++;
-      writes.push(ev);
-    });
-    writes.forEach(function (ev) { dirty.add(ev.eventId); });
-    writeLocal(); emit();
-    if (writes.length && cloudUp) {
-      for (var i = 0; i < writes.length; i += 400) {
-        var batch = fb.fsM.writeBatch(fb.db);
-        writes.slice(i, i + 400).forEach(function (ev) { batch.set(fb.fsM.doc(col(), ev.eventId), toDoc(ev)); });
-        await batch.commit();
-      }
-      writes.forEach(function (ev) { dirty.delete(ev.eventId); });
-      writeLocal();
-    }
-    return { added: added, skipped: skipped, total: list.length };
-  }
-
   /* ---------- status & API ---------- */
   function status() {
     var text;
@@ -304,24 +261,24 @@
     return { mode: mode, note: note, pending: pendingWrites, text: text };
   }
   var all = function () { return Array.from(events.values()); };
+  var published = function () { return all().filter(function (e) { return !e.draft; }); };
   function summary(ev) {
     return {
       eventId: ev.eventId, event: ev.event, client: ev.client, city: ev.city, country: ev.country,
-      eventDate: ev.eventDate, eventDays: ev.eventDays, eventPrice: ev.eventPrice,
+      eventDate: ev.eventDate, eventDays: ev.eventDays, eventPrice: ev.eventPrice, draft: !!ev.draft,
       submittedAt: ev.submittedAt, updatedAt: ev.updatedAt, itemCount: (ev.items || []).length
     };
   }
 
   window.EventStore = {
-    ready: ready, all: all, summary: summary,
+    ready: ready, all: all, published: published, summary: summary,
     get: function (id) { return events.get(String(id)) || null; },
-    save: save, duplicate: duplicate, remove: remove, importLegacy: importLegacy, status: status,
-    hasLegacy: !!LEGACY_API_URL,
+    save: save, duplicate: duplicate, remove: remove, status: status,
     subscribe: function (fn) { listeners.push(fn); return function () { listeners = listeners.filter(function (x) { return x !== fn; }); }; }
   };
 
   /* ---------- timpa fungsi data.js ---------- */
-  window.loadAllEvents = async function () { await ready; return all(); };
+  window.loadAllEvents = async function () { await ready; return published(); };
   window.loadEventsList = async function () { await ready; return all().map(summary); };
   window.loadEventById = async function (id) {
     await ready;
@@ -331,7 +288,7 @@
   };
   window.loadStats = async function () {
     await ready;
-    var vendors = new Set(), items = new Set(), list = all();
+    var vendors = new Set(), items = new Set(), list = published();
     list.forEach(function (ev) {
       (ev.items || []).forEach(function (it) {
         if (it.vendor) vendors.add(canonicalKey(it.vendor));
