@@ -101,6 +101,82 @@
     });
   });
 
+  /* -----------------------------------------------------------------------
+     Filter Event — lihat satu event, beberapa event pilihan, atau semua.
+     Dipadukan (irisan) dengan filter tanggal di atas. selectedIds = null
+     berarti semua event; selain itu Set berisi eventId yang dipilih.
+     ----------------------------------------------------------------------- */
+  let selectedIds = null;
+  const evBtn = document.getElementById("event-filter-btn");
+  const evPop = document.getElementById("event-pop");
+  const evSearch = document.getElementById("event-pop-search");
+  const evList = document.getElementById("event-pop-list");
+  const evKey = (ev) => String(ev.eventId);
+
+  function eventFilterLabel() {
+    if (!selectedIds) return "Event: Semua";
+    const picked = rawEvents.filter((ev) => selectedIds.has(evKey(ev)));
+    if (picked.length === 1) {
+      const n = picked[0].event || "(Tanpa nama)";
+      return "Event: " + (n.length > 26 ? n.slice(0, 25) + "…" : n);
+    }
+    return "Event: " + picked.length + " dipilih";
+  }
+  function paintEventBtn() {
+    evBtn.textContent = eventFilterLabel() + " ▾";
+    evBtn.classList.toggle("active", !!selectedIds);
+  }
+  function eventsForPop() {
+    const q = evSearch.value.trim().toLowerCase();
+    return rawEvents
+      .filter((ev) => !q || [ev.event, ev.city].some((f) => String(f || "").toLowerCase().includes(q)))
+      .sort((a, b) => String(b.eventDate || "").localeCompare(String(a.eventDate || "")) || String(a.event || "").localeCompare(String(b.event || ""), "id"));
+  }
+  function renderEventPop() {
+    evList.textContent = "";
+    const rows = eventsForPop();
+    if (!rows.length) {
+      const li = document.createElement("li"); li.className = "event-pop-empty"; li.textContent = "Tidak ada event yang cocok."; evList.append(li);
+    }
+    rows.forEach((ev) => {
+      const li = document.createElement("li");
+      const label = document.createElement("label");
+      const cb = document.createElement("input"); cb.type = "checkbox";
+      cb.checked = !selectedIds || selectedIds.has(evKey(ev));
+      cb.addEventListener("change", () => toggleEvent(ev, cb.checked));
+      const txt = document.createElement("span"); txt.className = "event-pop-name"; txt.textContent = ev.event || "(Tanpa nama event)";
+      const sub = document.createElement("small");
+      sub.textContent = [ev.city, ev.eventDate ? formatDateID(ev.eventDate) : ""].filter(Boolean).join(" · ");
+      label.append(cb, txt, sub);
+      const only = document.createElement("button"); only.type = "button"; only.className = "event-pop-only"; only.textContent = "hanya ini";
+      only.addEventListener("click", () => setSelection(new Set([evKey(ev)])));
+      li.append(label, only); evList.append(li);
+    });
+  }
+  function setSelection(next) {
+    // kosong atau mencakup semua event -> kembali ke mode "Semua"
+    selectedIds = next && next.size && next.size < rawEvents.length ? next : null;
+    paintEventBtn(); renderEventPop();
+    withScrollPreserved(applyFilter);
+  }
+  function toggleEvent(ev, on) {
+    const cur = selectedIds ? new Set(selectedIds) : new Set(rawEvents.map(evKey));
+    on ? cur.add(evKey(ev)) : cur.delete(evKey(ev));
+    setSelection(cur);
+  }
+  function openEventPop(open) {
+    evPop.hidden = !open;
+    evBtn.setAttribute("aria-expanded", String(open));
+    if (open) { evSearch.value = ""; renderEventPop(); evSearch.focus(); }
+  }
+  evBtn.addEventListener("click", () => openEventPop(evPop.hidden));
+  evSearch.addEventListener("input", renderEventPop);
+  document.getElementById("event-pop-all").addEventListener("click", () => setSelection(null));
+  document.getElementById("event-pop-visible").addEventListener("click", () => setSelection(new Set(eventsForPop().map(evKey))));
+  document.addEventListener("mousedown", (e) => { if (!evPop.hidden && !document.getElementById("event-filter").contains(e.target)) openEventPop(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !evPop.hidden) { openEventPop(false); evBtn.focus(); } });
+  paintEventBtn();
+
   // The filter bar sticks right under the topnav (top: var(--topnav-h)).
   // That offset used to be a hard-coded "61px" guess, which only matched
   // the topnav's *actual* rendered height by luck — any mismatch (a font
@@ -416,7 +492,8 @@
   }
 
   function applyFilter() {
-    const events = filterEventsByDateRange(rawEvents, activeFrom, activeTo);
+    let events = filterEventsByDateRange(rawEvents, activeFrom, activeTo);
+    if (selectedIds) events = events.filter((ev) => selectedIds.has(evKey(ev)));
     const view = computeView(events);
     currentView = view;
 
@@ -424,9 +501,19 @@
     currentRenderers = buildSectionRenderers(view);
     everRendered.forEach((id) => currentRenderers[id] && currentRenderers[id]());
 
-    const rangeText = (activeFrom || activeTo)
-      ? `Menampilkan ${activeFrom ? formatDateID(activeFrom) : "awal data"} – ${activeTo ? formatDateID(activeTo) : "sekarang"} (${view.events.length} event).`
-      : `Menampilkan seluruh data (${view.events.length} event).`;
+    const dateText = (activeFrom || activeTo)
+      ? `${activeFrom ? formatDateID(activeFrom) : "awal data"} – ${activeTo ? formatDateID(activeTo) : "sekarang"}`
+      : "";
+    const picked = selectedIds ? rawEvents.filter((ev) => selectedIds.has(evKey(ev))).length : 0;
+    let rangeText;
+    if (selectedIds) {
+      rangeText = `Menampilkan ${view.events.length} dari ${picked} event pilihan` + (dateText ? `, rentang ${dateText}.` : ".");
+      if (picked && !view.events.length && dateText) rangeText += " Event pilihan berada di luar rentang tanggal.";
+    } else {
+      rangeText = dateText
+        ? `Menampilkan ${dateText} (${view.events.length} event).`
+        : `Menampilkan seluruh data (${view.events.length} event).`;
+    }
     rangeLabelEl.textContent = rangeText;
   }
 
@@ -517,6 +604,12 @@
         }
         const keepVendor = paymentVendorSelect.value, keepEvent = paymentEventSelect.value;
         populatePaymentFilterOptions(rawEvents);
+        if (selectedIds) {   // event yang sudah dihapus dibuang dari pilihan
+          const live = new Set(rawEvents.map(evKey));
+          const kept = new Set([...selectedIds].filter((id) => live.has(id)));
+          selectedIds = kept.size && kept.size < rawEvents.length ? kept : null;
+        }
+        paintEventBtn(); if (!evPop.hidden) renderEventPop();
         if ([...paymentVendorSelect.options].some((o) => o.value === keepVendor)) paymentVendorSelect.value = keepVendor;
         if ([...paymentEventSelect.options].some((o) => o.value === keepEvent)) paymentEventSelect.value = keepEvent;
         withScrollPreserved(applyFilter);

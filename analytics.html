@@ -31,6 +31,18 @@
         <input type="date" id="filter-to" />
         <button type="button" class="btn-apply-filter" id="btn-apply-filter">Terapkan</button>
       </div>
+      <div class="event-filter" id="event-filter">
+        <button type="button" class="btn-event-filter" id="event-filter-btn" aria-haspopup="true" aria-expanded="false">Event: Semua ▾</button>
+        <div class="event-pop" id="event-pop" hidden>
+          <input type="search" id="event-pop-search" placeholder="Cari nama event, kota…" aria-label="Cari event" autocomplete="off" />
+          <div class="event-pop-actions">
+            <button type="button" id="event-pop-all">Semua event</button>
+            <button type="button" id="event-pop-visible">Pilih yang tampil</button>
+          </div>
+          <ul class="event-pop-list" id="event-pop-list" role="listbox" aria-multiselectable="true"></ul>
+          <p class="event-pop-hint">Dipadukan dengan rentang tanggal di samping. Pilih satu atau beberapa event.</p>
+        </div>
+      </div>
       <div class="filter-presets" id="filter-presets">
         <button type="button" data-preset="all" class="active">Semua Data</button>
         <button type="button" data-preset="today">Hari Ini</button>
