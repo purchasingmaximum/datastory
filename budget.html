@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem("maximum-theme")==="dark"?"dark":"light"}catch(e){}</script>
+<link rel="stylesheet" href="css/homebar.css?v=20261030a">
 <style>
 :root {
   --bg: #eef1f4;
@@ -40,8 +41,6 @@ html[data-theme="dark"] {
   --focus: #6b9bff;
   color-scheme: dark;
 }
-html[data-theme="dark"] .fz-home { color: var(--muted); border-color: var(--line); }
-html[data-theme="dark"] .fz-home:hover { color: var(--ink); border-color: var(--muted); }
 html[data-theme="dark"] .top-in[type="date"], html[data-theme="dark"] .field input[type="date"] { color-scheme: dark; }
 html[data-theme="dark"] dialog#projects::backdrop { background: rgba(0, 0, 0, .65); }
 * { box-sizing: border-box; }
@@ -54,7 +53,7 @@ body {
   line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
-.wrap { max-width: 1160px; margin: 0 auto; padding: 24px 20px 64px; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 22px clamp(14px, 3vw, 28px) 64px; }
 
 /* ---------- header ---------- */
 .head { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
@@ -395,6 +394,11 @@ table.ptable { font-size: 12.5px; }
 </style>
 </head>
 <body>
+<header class="topnav homebar">
+  <a class="home-btn" href="index.html" aria-label="Kembali ke Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
+  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h2"/></svg>Budget</div>
+  <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+</header>
 <div class="wrap">
 <div id="view-edit">
 
@@ -420,7 +424,6 @@ table.ptable { font-size: 12.5px; }
     </div>
     <div class="actions">
       <span class="sync" id="sync" role="status"></span>
-      <button class="ghost" type="button" data-theme-toggle>🌙 Gelap</button>
       <button class="ghost" id="pj-open" type="button">Proyek</button>
       <button class="ghost" id="reset" type="button">Kembalikan ke template</button>
       <button class="primary go-prev" type="button">Next: Preview →</button>
@@ -1593,7 +1596,6 @@ function bootWithTimeout() {
     .catch(err => { const s = $("b-status"); s.className = "b-status err"; s.textContent = "Database gagal dimuat (" + ((err && err.message) || "error") + "). Anda tetap bisa mengisi manual."; });
 })();
 </script>
-<script src="js/homebtn.js?v=20261030a"></script>
 <script src="js/theme.js?v=20261030a"></script>
 </body>
 </html>

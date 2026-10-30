@@ -1,0 +1,75 @@
+/* home.css — halaman depan (Menu utama): panel kartu bergaya "pixel".
+   Hanya berlaku di <body class="home-page">; halaman fitur tidak terpengaruh.
+   Gelap = tampilan utama, terang = kebalikannya (netral hitam <-> putih). */
+
+body.home-page{
+  --paper:#f3f3f5; --paper-raised:#f3f3f5;
+  --ink:#16161a; --muted:#6a6a74; --line:#dcdce2;
+  --tile:#ffffff; --panel:rgba(22,22,26,.025);
+}
+:root[data-theme="dark"] body.home-page{
+  --paper:#0a0a0c; --paper-raised:#0a0a0c;
+  --ink:#f2f2f4; --muted:#9a9aa5; --line:#2a2a30;
+  --tile:#131316; --panel:rgba(255,255,255,.025);
+}
+
+/* bar atas: menyatu dengan latar */
+.home-page .topnav.homebar{background:var(--paper);}
+.home-page .topnav.homebar .brand{gap:10px}
+.home-page .topnav.homebar .brand .brand-mark{width:22px;height:22px;color:var(--ink);flex:none}
+
+/* judul */
+.home-page .home{max-width:1120px;padding-top:34px}
+.home-page .home h1{font-size:1.75rem;font-weight:650;margin:0 0 6px}
+.home-page .home .sub{margin:0 0 22px;font-size:.95rem;color:var(--muted)}
+
+/* panel */
+.home-page .tiles{
+  position:relative;overflow:hidden;isolation:isolate;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+  padding:14px;border:1px solid var(--line);border-radius:16px;
+  background:linear-gradient(180deg,var(--panel),transparent 70%);
+}
+.panel-px{position:absolute;z-index:0;pointer-events:none;color:var(--ink)}
+.panel-px.a{right:14px;bottom:14px;width:150px;opacity:.1}
+.panel-px.b{left:56%;bottom:14px;width:58px;opacity:.1}
+.panel-px.c{left:31%;bottom:18px;width:104px;opacity:.07}
+
+/* kartu: warna aksen per kartu (--tcl terang, --tcd gelap) */
+.home-page .tile{--tc:var(--tcl)}
+:root[data-theme="dark"] .home-page .tile{--tc:var(--tcd)}
+.home-page .tile{
+  position:relative;z-index:1;overflow:hidden;min-height:128px;
+  display:flex;flex-direction:column;gap:4px;padding:16px 16px 18px;
+  background:var(--tile);border:1px solid var(--line);border-radius:12px;
+  transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.home-page .tile:hover,.home-page .tile:focus-visible{
+  transform:none;
+  border-color:color-mix(in srgb,var(--tc) 55%,var(--line));
+  background:
+    radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--tc) 16%,transparent),transparent 62%),
+    var(--tile);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 14%,transparent);
+}
+.home-page .tile:focus-visible{outline:2px solid var(--tc);outline-offset:2px}
+
+.home-page .tile-ic{
+  width:36px;height:36px;border-radius:0;background:none;margin:0 0 12px;
+  display:block;color:var(--tc);
+}
+.home-page .tile-ic svg{width:100%;height:100%;display:block}
+.home-page .tile-t{font-weight:650;font-size:.98rem;letter-spacing:-.005em}
+.home-page .tile-d{font-size:.8rem;line-height:1.45;color:var(--muted);max-width:30ch}
+
+/* hiasan piksel di pojok kanan atas kartu */
+.tile-px{position:absolute;top:12px;right:12px;width:76px;color:var(--ink);opacity:.2;pointer-events:none;transition:opacity .25s ease}
+.home-page .tile:hover .tile-px,.home-page .tile:focus-visible .tile-px{opacity:.95}
+
+@media (max-width:1000px){.home-page .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){
+  .home-page .home{padding-top:24px}
+  .home-page .tiles{grid-template-columns:1fr;padding:10px;gap:10px;border-radius:14px}
+  .home-page .tile{min-height:0}
+  .tile-px{width:64px}
+}

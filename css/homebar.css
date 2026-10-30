@@ -1,0 +1,39 @@
+/* homebar.css — bar atas seragam (Home + nama fitur + tema) untuk halaman
+   mandiri Budget & Feasibility. Tampilannya sama dengan bar di Input Report,
+   Analytics, dan Database (css/feas.css), tapi memakai variabel warna halaman
+   ini sendiri (--surface, --line, --ink, --blue). */
+.topnav.homebar{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;gap:12px;
+  padding:10px clamp(14px,3vw,28px);
+  background:var(--paper-raised,var(--surface));
+  border-bottom:1px solid var(--line);
+  font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+.homebar svg{width:18px;height:18px;flex:none}
+.homebar .home-btn{
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;white-space:nowrap;
+  font-weight:600;font-size:.88rem;padding:7px 12px;
+  border:1px solid var(--line);border-radius:6px;color:var(--ink);background:transparent;
+}
+.homebar .home-btn:hover{border-color:var(--muted)}
+.homebar .brand{
+  display:flex;align-items:center;gap:8px;flex:0 1 auto;
+  font-weight:700;font-size:1.02rem;letter-spacing:0;color:var(--ink);
+}
+.homebar .brand svg{color:var(--f-blue,var(--blue))}
+.homebar .topnav-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.homebar .theme-toggle{
+  border:1px solid var(--line);background:var(--paper-raised,var(--surface));color:var(--ink);
+  border-radius:999px;padding:8px 12px;font:600 .78rem "Instrument Sans",system-ui,sans-serif;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:transform .2s ease,border-color .2s ease,background .2s ease;
+}
+.homebar .theme-toggle:hover{transform:translateY(-1px);border-color:var(--ink)}
+.homebar .home-btn:focus-visible,.homebar .theme-toggle:focus-visible{outline:2px solid var(--focus,var(--blue));outline-offset:2px}
+@media (max-width:760px){
+  .topnav.homebar{padding:10px 14px}
+  .homebar .home-btn span{display:none}
+  .homebar .home-btn{padding:7px 9px}
+}
+@media print{.topnav.homebar{display:none!important}}
