@@ -604,3 +604,7 @@ fieldset.form-section { min-width: 0; }
 .combo-option.combo-custom { border-top: 1px dashed var(--line); font-style: italic; }
 .items-table .combo-wrapper.combo-notoggle .combo-input { padding-right: 10px !important; }
 .combo-option:hover .combo-sub, .combo-option.active .combo-sub { color: inherit; opacity: .8; }
+
+/* Kategori "Lainnya": kolom teks muncul di bawah dropdown */
+.field .cat-other { margin-top: 6px; width: 100%; }
+.field .cat-other[hidden] { display: none; }

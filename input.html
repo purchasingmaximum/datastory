@@ -93,7 +93,7 @@
           <h2 id="items-title">Rental Items</h2>
           <div class="items-count">Total barang: <strong id="items-count">0</strong></div>
         </div>
-        <p class="items-hint" hidden>Ketik nama barang — saran dari dictionary muncul sebagai teks abu-abu (tekan Tab atau → untuk menerima), dan Kategori terisi otomatis. Barang yang belum ada di dictionary tetap bisa diisi dan otomatis ditambahkan ke dictionary saat disubmit. Nama vendor: klik atau ketik untuk mencari. Nominal DP otomatis sama dengan Harga total jika Lunas; isi manual hanya untuk DP.</p>
+        <p class="items-hint" hidden>Ketik nama barang — saran dari database muncul sebagai teks abu-abu (tekan Tab atau → untuk menerima), dan Kategori terisi otomatis. Barang atau kategori yang belum ada di database bisa diisi sendiri (pilih "Lainnya"). Nama vendor: klik atau ketik untuk mencari. Nominal DP otomatis sama dengan Harga total jika Lunas; isi manual hanya untuk DP.</p>
         <div class="items-table-wrap">
           <table class="items-table">
             <thead>
@@ -182,27 +182,8 @@
         <div class="field" data-field="category">
           <select data-name="category" aria-label="Kategori" required>
             <option value="">Pilih kategori</option>
-            <option>LED</option>
-            <option>Genset</option>
-            <option>Audio</option>
-            <option>Lighting</option>
-            <option>Documentation</option>
-            <option>Rigging</option>
-            <option>Effect</option>
-            <option>Internet</option>
-            <option>Multimedia</option>
-            <option>TV</option>
-            <option>Streaming</option>
-            <option>Show Management</option>
-            <option>Misty Fan & AC</option>
-            <option>Photobooth</option>
-            <option>Abrocadebra</option>
-            <option>Camera</option>
-            <option>LO</option>
-            <option>LD</option>
-            <option>Performance</option>
-            <option>Lainnya</option>
           </select>
+          <input type="text" data-name="categoryOther" class="cat-other" aria-label="Kategori lainnya" placeholder="Ketik kategori…" hidden />
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
@@ -251,6 +232,7 @@
   <script src="js/theme.js"></script>
   <script src="js/data.js"></script>
   <script src="js/event-store.js"></script>
+  <script src="js/db-dictionary.js"></script>
   <script src="js/event-analysis.js"></script>
   <script src="js/event-export.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" defer></script>

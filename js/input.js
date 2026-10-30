@@ -190,7 +190,39 @@
       opt.textContent = kategori;
       select.appendChild(opt);
     });
+    const other = document.createElement("option");
+    other.value = OTHER_CAT;
+    other.textContent = "Lainnya (isi sendiri)…";
+    select.appendChild(other);
     if ([...select.options].some((o) => o.value === current)) select.value = current;
+  }
+
+  // Kategori "Lainnya": pilih opsi ini, lalu ketik kategori sendiri.
+  const OTHER_CAT = "__other__";
+  function categoryOtherInput(block) { return block.querySelector('[data-name="categoryOther"]'); }
+  function syncCategoryOther(block, { focus } = {}) {
+    const sel = block.querySelector('[data-name="category"]');
+    const inp = categoryOtherInput(block);
+    const on = sel.value === OTHER_CAT;
+    inp.hidden = !on;
+    if (!on) inp.value = "";
+    else if (focus) inp.focus();
+  }
+  // Nilai kategori final (teks sendiri bila memilih Lainnya).
+  function categoryValue(block) {
+    const v = block.querySelector('[data-name="category"]').value;
+    return v === OTHER_CAT ? categoryOtherInput(block).value.trim().replace(/\s+/g, " ") : v;
+  }
+  function setCategory(block, value) {
+    const sel = block.querySelector('[data-name="category"]');
+    const v = String(value || "").trim();
+    if (!v) { sel.value = ""; }
+    else {
+      const hit = [...sel.options].find((o) => o.value && o.value !== OTHER_CAT && o.value.toLowerCase() === v.toLowerCase());
+      if (hit) sel.value = hit.value;
+      else { sel.value = OTHER_CAT; categoryOtherInput(block).value = v; }
+    }
+    syncCategoryOther(block);
   }
 
   // Kode item TIDAK lagi diisi manual. Untuk barang yang cocok dengan
@@ -203,7 +235,7 @@
     nameInput.dataset.itemId = opt.itemId || "";
     if (!commit) return;
     nameInput.value = opt.namaItemStandar;
-    if ([...categorySelect.options].some((o) => o.value === opt.kategori)) categorySelect.value = opt.kategori;
+    if (opt.kategori) setCategory(block, opt.kategori);
     setError(nameInput.closest(".field"), "");
     setError(categorySelect.closest(".field"), "");
   }
@@ -264,6 +296,11 @@
     const nameInput = block.querySelector('[data-name="itemName"]');
     const categorySelect = block.querySelector('[data-name="category"]');
     populateCategorySelect(categorySelect);
+    categorySelect.addEventListener("change", () => {
+      syncCategoryOther(block, { focus: true });
+      setError(categorySelect.closest(".field"), "");
+    });
+    categoryOtherInput(block).addEventListener("input", () => setError(categorySelect.closest(".field"), ""));
 
     initCombobox(nameInput, {
       getOptions: (query) => searchItems(query),
@@ -486,9 +523,7 @@
     nameField.dataset.itemId = item.itemCode || "";
 
     const categorySelect = node.querySelector('[data-name="category"]');
-    if ([...categorySelect.options].some((o) => o.value === item.category)) {
-      categorySelect.value = item.category;
-    }
+    setCategory(node, item.category);
 
     node.querySelector('[data-name="vendor"]').value = item.vendor || "";
     node.querySelector('[data-name="description"]').value = item.description || "";
@@ -651,7 +686,8 @@
       const dpEl = dpInput.closest(".field");
 
       setError(nameEl, nameEl.querySelector("input").value.trim() ? "" : "Wajib diisi.");
-      setError(catEl, catEl.querySelector("select").value ? "" : "Pilih kategori.");
+      const catSel = catEl.querySelector("select").value;
+      setError(catEl, categoryValue(block) ? "" : (catSel === OTHER_CAT ? "Ketik kategori." : "Pilih kategori."));
       setError(vendorEl, vendorEl.querySelector("input").value.trim() ? "" : "Wajib diisi.");
 
       const price = rupiahValue(priceInput);
@@ -678,7 +714,7 @@
       // Kode dari dictionary bila cocok; kosong = barang baru (backend membuat kode + mendaftarkannya ke dictionary).
       itemCode: block.querySelector('[data-name="itemName"]').dataset.itemId || "",
       itemName: block.querySelector('[data-name="itemName"]').value.trim(),
-      category: block.querySelector('[data-name="category"]').value,
+      category: categoryValue(block),
       description: block.querySelector('[data-name="description"]').value.trim(),
       vendor: block.querySelector('[data-name="vendor"]').value.trim(),
       totalPrice: rupiahValue(block.querySelector('[data-name="totalPrice"]')),

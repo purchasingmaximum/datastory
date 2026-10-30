@@ -73,7 +73,7 @@
     });
     return { rows, combos };
   }
-  fetchDb().then((res) => {
+  (window.MxDatabase ? window.MxDatabase.load() : fetchDb()).then((res) => {
     DB.rows = res.rows; DB.combos = res.combos;
     res.rows.forEach((o) => { const k = canon(o.item); if (!DB.items.has(k)) DB.items.set(k, []); DB.items.get(k).push(o); });
     DB.ready = true;
