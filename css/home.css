@@ -65,10 +65,13 @@ body.home-page{
 .home-page .tile-t{grid-area:t;align-self:end;font-weight:650;font-size:1.08rem;letter-spacing:-.005em}
 .home-page .tile-d{grid-area:d;align-self:start;font-size:.88rem;line-height:1.45;color:var(--muted);max-width:64ch;padding-right:0}
 
-/* hiasan piksel di sisi kanan baris */
-.tile-px{position:absolute;top:50%;right:22px;transform:translateY(-50%);width:104px;color:var(--ink);opacity:.2;pointer-events:none;transition:opacity .25s ease}
+/* hiasan piksel di sisi kanan baris: tiap baris punya pola acak sendiri, makin penuh ke kanan */
+.home-page .tile-t,.home-page .tile-d{position:relative;z-index:1}
+.tile-px{position:absolute;top:50%;right:22px;transform:translateY(-50%);width:250px;color:var(--ink);opacity:.2;pointer-events:none;transition:opacity .25s ease}
 .home-page .tile:hover .tile-px,.home-page .tile:focus-visible .tile-px{opacity:.95}
 
+@media (max-width:1000px){.tile-px{width:150px}}
+@media (max-width:760px){.tile-px{width:96px}}
 @media (max-width:560px){
   .home-page .home{padding-top:24px}
   .home-page .tiles{padding:10px;gap:10px;border-radius:14px;grid-auto-rows:minmax(88px,auto)}
