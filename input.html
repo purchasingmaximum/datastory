@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <script src="js/auth-guard.js?v=20261030c"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Input Laporan Event — MAXIMUM THE ULTIMATE</title>
+<title>Event Report Input — MAXIMUM THE ULTIMATE</title>
 <link rel="stylesheet" href="css/style.css?v=20261030c" />
 <link rel="stylesheet" href="css/loader.css?v=20261030c" />
 <link rel="stylesheet" href="css/input.css?v=20261030c" />
@@ -14,9 +14,9 @@
 </head>
 <body>
   <header class="topnav homebar">
-    <a class="home-btn" href="index.html" aria-label="Kembali ke Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
+    <a class="home-btn" href="index.html" aria-label="Back to Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
     <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v6M9 15h6"/></svg>Input Report</div>
-    <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+    <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Dark</button></div>
   </header>
 
   <main class="input-page">
@@ -25,61 +25,61 @@
         <div class="title-bar">
           <div class="field top-title" data-field="event">
             <label for="f-event" id="title-label">Input Report:</label>
-            <input class="title-in" id="f-event" name="event" type="text" placeholder="Nama event" autocomplete="off" required />
+            <input class="title-in" id="f-event" name="event" type="text" placeholder="Event name" autocomplete="off" required />
             <div class="error-msg" role="alert"></div>
           </div>
           <div class="actions">
-            <button class="ghost" id="pj-open" type="button">Daftar Event</button>
-            <a class="ghost" id="new-event" href="input.html">+ Event baru</a>
+            <button class="ghost" id="pj-open" type="button">Event List</button>
+            <a class="ghost" id="new-event" href="input.html">+ New event</a>
             <button class="primary" type="submit" id="top-submit">Next: Preview →</button>
           </div>
         </div>
-        <span class="edit-mode-note" id="edit-mode-note" hidden>Mengedit event yang sudah ada: item lama diganti dengan isi form ini.</span>
+        <span class="edit-mode-note" id="edit-mode-note" hidden>Editing an existing event: the old items are replaced with the contents of this form.</span>
         <span class="sync-note" id="sync-note" role="status" aria-live="polite"></span>
 
         <div class="info-grid">
           <div class="info-col">
           <div class="top-row">
             <div class="field" data-field="user">
-              <label class="top-k req" for="f-user">Pengisi Laporan:</label>
-              <input class="top-in" id="f-user" name="user" type="text" placeholder="Nama pengisi laporan" autocomplete="name" required />
+              <label class="top-k req" for="f-user">Reporter:</label>
+              <input class="top-in" id="f-user" name="user" type="text" placeholder="Reporter name" autocomplete="name" required />
               <div class="error-msg" role="alert"></div>
             </div>
           </div>
           <div class="top-row">
             <div class="field" data-field="city">
-              <label class="top-k req" for="f-city">Kota:</label>
-              <input class="top-in" id="f-city" name="city" type="text" placeholder="Kota" required />
+              <label class="top-k req" for="f-city">City:</label>
+              <input class="top-in" id="f-city" name="city" type="text" placeholder="City" required />
               <div class="error-msg" role="alert"></div>
             </div>
           </div>
           </div>
           <div class="info-col">
           <div class="top-row">
-            <span class="top-k req">Tanggal Event:</span>
+            <span class="top-k req">Event Date:</span>
             <div class="dates">
               <div class="field" data-field="eventDateStart">
-                <input class="top-in" id="f-date-start" name="eventDateStart" type="date" aria-label="Tanggal mulai event (di luar GR)" required />
+                <input class="top-in" id="f-date-start" name="eventDateStart" type="date" aria-label="Event start date (excluding GR)" required />
                 <div class="error-msg" role="alert"></div>
               </div>
-              <span class="sd">sampai</span>
+              <span class="sd">to</span>
               <div class="field" data-field="eventDateEnd">
-                <input class="top-in" id="f-date-end" name="eventDateEnd" type="date" aria-label="Tanggal selesai event (di luar GR)" required />
+                <input class="top-in" id="f-date-end" name="eventDateEnd" type="date" aria-label="Event end date (excluding GR)" required />
                 <div class="error-msg" role="alert"></div>
               </div>
-              <span class="top-hint">di luar GR</span>
+              <span class="top-hint">excluding GR</span>
             </div>
           </div>
           <div class="top-row">
             <div class="field" data-field="eventDays">
-              <label class="top-k" for="f-days">Jumlah Day:</label>
+              <label class="top-k" for="f-days">Number of Days:</label>
               <input class="top-in short" id="f-days" type="text" readonly tabindex="-1" value="—" />
-              <span class="top-hint">Dihitung otomatis dari tanggal event</span>
+              <span class="top-hint">Calculated automatically from the event dates</span>
             </div>
           </div>
           <div class="top-row">
             <div class="field" data-field="gr">
-              <label class="top-k req" for="f-gr">Jumlah GR:</label>
+              <label class="top-k req" for="f-gr">Number of GR:</label>
               <input class="top-in short" id="f-gr" name="gr" type="number" min="0" step="1" required />
               <span class="top-hint" id="total-days-hint">General Rehearsal</span>
               <div class="error-msg" role="alert"></div>
@@ -92,36 +92,36 @@
       <section class="form-section" aria-labelledby="items-title">
         <div class="sec-head">
           <h2 id="items-title">Rental Items</h2>
-          <div class="items-count">Total barang: <strong id="items-count">0</strong></div>
+          <div class="items-count">Total items: <strong id="items-count">0</strong></div>
         </div>
-        <p class="items-hint" hidden>Ketik nama barang — saran dari database muncul sebagai teks abu-abu (tekan Tab atau → untuk menerima), dan Kategori terisi otomatis. Barang atau kategori yang belum ada di database bisa diisi sendiri (pilih "Lainnya"). Nama vendor: klik atau ketik untuk mencari. Nominal DP otomatis sama dengan Harga total jika Lunas; isi manual hanya untuk DP.</p>
+        <p class="items-hint" hidden>Type an item name — suggestions from the database appear as grey text (press Tab or → to accept), and the Category is filled in automatically. Items or categories not yet in the database can be entered manually (choose "Other"). Vendor name: click or type to search. The DP amount automatically equals the Total price when paid in full; enter it manually only for DP.</p>
         <div class="items-table-wrap">
           <table class="items-table">
             <thead>
               <tr>
                 <th class="col-no">No</th>
-                <th class="col-name" title="Ketik sebagian nama barang (di bagian mana pun) — daftar saran muncul di bawah. Pilih dengan klik atau ↑ ↓ + Enter.">Nama Barang</th>
-                <th class="col-cat">Kategori</th>
-                <th class="col-vendor">Nama Vendor</th>
-                <th class="col-status">Status Pembayaran</th>
-                <th class="col-price">Harga Total (Rp)</th>
-                <th class="col-dp" title="Otomatis sama dengan Harga Total (Lunas). Isi manual hanya untuk DP.">Nominal DP (Rp)</th>
-                <th class="col-desc">Keterangan <span class="optional">(opsional)</span></th>
-                <th class="col-act"><span class="sr-only">Aksi</span></th>
+                <th class="col-name" title="Type part of the item name (anywhere in it) — suggestions appear below. Select by clicking or with ↑ ↓ + Enter.">Item Name</th>
+                <th class="col-cat">Category</th>
+                <th class="col-vendor">Vendor Name</th>
+                <th class="col-status">Payment Status</th>
+                <th class="col-price">Total Price (Rp)</th>
+                <th class="col-dp" title="Automatically equals the Total Price (paid in full). Enter manually only for DP.">DP Amount (Rp)</th>
+                <th class="col-desc">Notes <span class="optional">(optional)</span></th>
+                <th class="col-act"><span class="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody id="items-container"></tbody>
           </table>
         </div>
-        <p class="no-items-msg" id="no-items-msg">Belum ada barang ditambahkan.</p>
-        <button type="button" class="btn-add-item" id="add-item">+ Tambah Barang</button>
+        <p class="no-items-msg" id="no-items-msg">No items added yet.</p>
+        <button type="button" class="btn-add-item" id="add-item">+ Add Item</button>
       </section>
 
       <div class="submit-row bar">
         <div class="totals" aria-live="polite">
           <div><span>Total</span><strong id="t-total">Rp 0</strong></div>
-          <div><span>Terbayar (DP/Lunas)</span><strong id="t-dp">Rp 0</strong></div>
-          <div><span>Sisa</span><strong id="t-sisa">Rp 0</strong></div>
+          <div><span>Paid (DP/Paid in full)</span><strong id="t-dp">Rp 0</strong></div>
+          <div><span>Remaining</span><strong id="t-sisa">Rp 0</strong></div>
           <div class="t-days" id="t-days"></div>
         </div>
         <span class="form-level-error" id="form-level-error" role="alert"></span>
@@ -133,15 +133,15 @@
     <section class="report-preview" id="report-preview" hidden aria-live="polite">
       <div class="pv-toolbar">
         <button type="button" class="ghost" id="preview-edit">← Edit</button>
-        <a href="input.html?list=1" class="ghost" id="vw-list" hidden>← Daftar Event</a>
+        <a href="input.html?list=1" class="ghost" id="vw-list" hidden>← Event List</a>
         <div class="actions">
-          <a href="input.html?list=1" class="ghost" id="back-to-list" hidden>Kembali ke Daftar Event tanpa menyimpan</a>
+          <a href="input.html?list=1" class="ghost" id="back-to-list" hidden>Back to Event List without saving</a>
           <span class="form-level-error" id="preview-error" role="alert"></span>
-          <button type="button" class="ghost" id="pv-xlsx" title="Unduh .xlsx dengan format yang sama seperti isian">Excel</button>
-          <button type="button" class="ghost" id="pv-pdf" title="Cetak atau simpan sebagai PDF">PDF</button>
+          <button type="button" class="ghost" id="pv-xlsx" title="Download .xlsx in the same format as the form">Excel</button>
+          <button type="button" class="ghost" id="pv-pdf" title="Print or save as PDF">PDF</button>
           <a class="ghost" id="vw-edit" href="#" hidden>Edit</a>
-          <button type="button" class="ghost" id="vw-dup" hidden>Duplikat</button>
-          <button type="button" class="ghost danger" id="vw-del" hidden>Hapus</button>
+          <button type="button" class="ghost" id="vw-dup" hidden>Duplicate</button>
+          <button type="button" class="ghost danger" id="vw-del" hidden>Delete</button>
           <button type="button" class="primary" id="preview-submit">Submit Report</button>
         </div>
       </div>
@@ -153,80 +153,80 @@
 
 
   <dialog id="projects" aria-labelledby="pj-title">
-    <div class="pj-head"><h2 id="pj-title">Daftar Event</h2><button class="x" id="pj-close" type="button" aria-label="Tutup">×</button></div>
+    <div class="pj-head"><h2 id="pj-title">Event List</h2><button class="x" id="pj-close" type="button" aria-label="Close">×</button></div>
     <div class="pj-tools">
-      <input class="pj-search" id="pj-search" type="search" placeholder="Cari nama event, kota…" aria-label="Cari event" autocomplete="off" />
-      <select id="pj-sort" aria-label="Urutkan"><option value="new">Terbaru diubah</option><option value="old">Terlama diubah</option><option value="name">Nama A–Z</option></select>
+      <input class="pj-search" id="pj-search" type="search" placeholder="Search event name, city…" aria-label="Search events" autocomplete="off" />
+      <select id="pj-sort" aria-label="Sort"><option value="new">Recently edited</option><option value="old">Oldest edited</option><option value="name">Name A–Z</option></select>
     </div>
     <div class="pj-msg" id="pj-msg" role="status"></div>
-    <label class="pj-all"><input type="checkbox" id="pj-all" /> Pilih semua yang tampil</label>
+    <label class="pj-all"><input type="checkbox" id="pj-all" /> Select all shown</label>
     <ul class="pj-list" id="pj-list"></ul>
     <div class="pj-foot">
       <span class="pj-sync" id="pj-sync"></span>
-      <button class="ghost" id="pj-xlsx" type="button" disabled>Unduh Excel (0 dipilih)</button>
+      <button class="ghost" id="pj-xlsx" type="button" disabled>Download Excel (0 selected)</button>
     </div>
   </dialog>
 
   <div class="success-toast" id="success-toast" role="status" aria-live="polite">
     <div><span class="check">✓</span><strong>REPORT SAVED</strong></div>
-    <p>Tersimpan dan langsung masuk ke Analytics.</p>
+    <p>Saved and immediately included in Analytics.</p>
   </div>
 
   <template id="item-block-template">
     <tr class="item-block" data-item-block>
       <td class="col-no" data-label="No"><span data-item-number>1</span></td>
-      <td class="col-name" data-label="Nama Barang">
+      <td class="col-name" data-label="Item Name">
         <div class="field" data-field="itemName">
-          <input type="text" data-name="itemName" aria-label="Nama Barang" placeholder="Cari barang, mis. P3.9" required />
+          <input type="text" data-name="itemName" aria-label="Item Name" placeholder="Search item, e.g. P3.9" required />
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
-      <td class="col-cat" data-label="Kategori">
+      <td class="col-cat" data-label="Category">
         <div class="field" data-field="category">
-          <select data-name="category" aria-label="Kategori" required>
-            <option value="">Pilih kategori</option>
+          <select data-name="category" aria-label="Category" required>
+            <option value="">Select category</option>
           </select>
-          <input type="text" data-name="categoryOther" class="cat-other" aria-label="Kategori lainnya" placeholder="Ketik kategori…" hidden />
+          <input type="text" data-name="categoryOther" class="cat-other" aria-label="Other category" placeholder="Type category…" hidden />
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
-      <td class="col-vendor" data-label="Nama vendor">
+      <td class="col-vendor" data-label="Vendor name">
         <div class="field" data-field="vendor">
-          <input type="text" data-name="vendor" aria-label="Nama vendor" placeholder="Cari / pilih / isi sendiri" required />
+          <input type="text" data-name="vendor" aria-label="Vendor name" placeholder="Search / select / enter manually" required />
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
-      <td class="col-status" data-label="Status Pembayaran">
+      <td class="col-status" data-label="Payment Status">
         <div class="field" data-field="paymentStatus">
-          <select data-name="paymentStatus" aria-label="Status Pembayaran" required>
-            <option value="">Pilih status</option>
-            <option value="Lunas">Lunas</option>
+          <select data-name="paymentStatus" aria-label="Payment Status" required>
+            <option value="">Select status</option>
+            <option value="Lunas">Paid in full</option>
             <option value="DP">DP</option>
           </select>
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
-      <td class="col-price" data-label="Harga total (Rp)">
+      <td class="col-price" data-label="Total price (Rp)">
         <div class="field" data-field="totalPrice">
-          <input type="text" inputmode="numeric" placeholder="5.000.000 atau 2x2.500.000" data-name="totalPrice" aria-label="Harga total (Rp)" required />
+          <input type="text" inputmode="numeric" placeholder="5.000.000 or 2x2.500.000" data-name="totalPrice" aria-label="Total price (Rp)" required />
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
-      <td class="col-dp" data-label="Nominal DP (Rp)">
+      <td class="col-dp" data-label="DP amount (Rp)">
         <div class="field" data-field="nominalDP">
-          <input type="text" inputmode="numeric" placeholder="2.000.000 atau =4000000/2" data-name="nominalDP" aria-label="Nominal DP (Rp)" disabled />
+          <input type="text" inputmode="numeric" placeholder="2.000.000 or =4000000/2" data-name="nominalDP" aria-label="DP amount (Rp)" disabled />
           <span class="hint" data-sisa-dp-display></span>
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
-      <td class="col-desc" data-label="Keterangan (opsional)">
+      <td class="col-desc" data-label="Notes (optional)">
         <div class="field" data-field="description">
-          <textarea data-name="description" rows="1" aria-label="Keterangan (opsional)" placeholder="Spesifikasi / catatan"></textarea>
+          <textarea data-name="description" rows="1" aria-label="Notes (optional)" placeholder="Specifications / notes"></textarea>
           <div class="error-msg" role="alert"></div>
         </div>
       </td>
       <td class="col-act" data-label="">
-        <button type="button" class="btn-remove-item" data-remove-item aria-label="Hapus barang" title="Hapus barang"><span class="x-ic" aria-hidden="true">×</span><span class="x-tx">Hapus</span></button>
+        <button type="button" class="btn-remove-item" data-remove-item aria-label="Delete item" title="Delete item"><span class="x-ic" aria-hidden="true">×</span><span class="x-tx">Delete</span></button>
       </td>
     </tr>
   </template>

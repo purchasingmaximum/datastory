@@ -36,7 +36,7 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, re
   const toggleBtn = document.createElement("button");
   toggleBtn.type = "button";
   toggleBtn.className = "combo-toggle";
-  toggleBtn.setAttribute("aria-label", "Tampilkan daftar");
+  toggleBtn.setAttribute("aria-label", "Show list");
   toggleBtn.tabIndex = -1;
   if (toggle) wrapper.appendChild(toggleBtn);
   else wrapper.classList.add("combo-notoggle");
@@ -70,7 +70,7 @@ function initCombobox(inputEl, { getOptions, renderLabel, getValue, onSelect, re
     if (options.length === 0) {
       const li = document.createElement("li");
       li.className = "combo-option combo-empty";
-      li.textContent = emptyText || "Tidak ditemukan — data akan disimpan sebagai teks bebas.";
+      li.textContent = emptyText || "Not found — the data will be saved as free text.";
       list.appendChild(li);
       return;
     }

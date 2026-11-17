@@ -64,7 +64,7 @@
           spec: col.spec !== undefined ? String(row[col.spec] || '').trim() : '',
           qty: col.qty !== undefined && row[col.qty] !== '' && Number(row[col.qty]) > 0 ? Number(row[col.qty]) : 1,
           unit: col.unit !== undefined ? String(row[col.unit] || '').trim() : '',
-          vendor: row[col.vendor] ? String(row[col.vendor]).trim() : '(vendor tidak diketahui)', combos: cp
+          vendor: row[col.vendor] ? String(row[col.vendor]).trim() : '(unknown vendor)', combos: cp
         });
       }
     });
@@ -91,7 +91,7 @@
       k = best;
     }
     const m = DB.combos[k];
-    return { unit: r2(o.combos[k] / o.qty), exact, label: m ? m.e + ' Hari Event' + (m.g ? ' + ' + m.g + ' Hari GR' : ' (Tanpa GR)') : '' };
+    return { unit: r2(o.combos[k] / o.qty), exact, label: m ? m.e + ' Event Days' + (m.g ? ' + ' + m.g + ' GR Days' : ' (No GR)') : '' };
   }
   const cheapest = list => list.reduce((b, o) => { const p = priceOf(o); return p && (!b || p.unit < b.p.unit) ? { o, p } : b; }, null);
 
@@ -170,7 +170,7 @@
   function vendorOptions(it) {
     const e = DB.items.get(canon(it.name));
     const sel = it._sel; sel.textContent = '';
-    sel.append(h('option', { value: '', text: e ? 'Pilih vendor (' + new Set(e.offers.map(o => o.vendor)).size + ')' : 'Pilih vendor' }));
+    sel.append(h('option', { value: '', text: e ? 'Select vendor (' + new Set(e.offers.map(o => o.vendor)).size + ')' : 'Select vendor' }));
     sel.append(h('option', { value: '-', text: '-' }));   /* tanpa vendor: tidak disimpan/ditampilkan */
     if (e) {
       const by = new Map();
@@ -186,7 +186,7 @@
     const best = offers.length ? cheapest(offers) : null;
     if (best) {
       it.offerId = best.o.id; it.price = best.p.unit; if (!it.pcs && !silent) it.pcs = 1;
-      const r = refs[it.id]; r.price.title = 'Database: ' + best.p.label + (best.p.exact ? '' : ' (kombinasi terdekat)');
+      const r = refs[it.id]; r.price.title = 'Database: ' + best.p.label + (best.p.exact ? '' : ' (closest combination)');
       r.show(); r.pcsShow();
     } else { it.offerId = null; if (refs[it.id]) refs[it.id].price.title = ''; }
   }
@@ -195,24 +195,24 @@
     state.cats.forEach((cat, ci) => {
       const tb = h('tbody'), sub = h('td', { class: 'n' });
       let name;
-      if (cat.custom) { const inp = h('input', { class: 'cat-in', value: cat.name, placeholder: 'Nama kategori', 'aria-label': 'Nama kategori' }); inp.addEventListener('input', () => { cat.name = inp.value; save(); }); name = h('span', {}, letter(ci) + '.  ', inp); }
+      if (cat.custom) { const inp = h('input', { class: 'cat-in', value: cat.name, placeholder: 'Category name', 'aria-label': 'Category name' }); inp.addEventListener('input', () => { cat.name = inp.value; save(); }); name = h('span', {}, letter(ci) + '.  ', inp); }
       else name = h('span', { text: letter(ci) + '.  ' + cat.name });
       const delc = h('td', { class: 'noprint' });
-      if (cat.custom) delc.append(h('button', { class: 'x', type: 'button', title: 'Hapus kategori', 'aria-label': 'Hapus kategori', text: '×', onclick: () => { state.cats = state.cats.filter(c => c.id !== cat.id); render(); update(); save(); } }));
+      if (cat.custom) delc.append(h('button', { class: 'x', type: 'button', title: 'Delete category', 'aria-label': 'Delete category', text: '×', onclick: () => { state.cats = state.cats.filter(c => c.id !== cat.id); render(); update(); save(); } }));
       tb.append(h('tr', { class: 'cat' }, h('td', { colspan: '5' }, name), sub, delc));
       refs[cat.id] = sub;
       cat.items.forEach((it, i) => tb.append(row(cat, it, i)));
-      tb.append(h('tr', { class: 'addrow' }, h('td', { colspan: '7' }, h('button', { class: 'add', type: 'button', text: '+ Tambah barang', onclick: () => { const n = newItem(); cat.items.push(n); render(); update(); save(); refs[n.id].nm.focus(); } }))));
+      tb.append(h('tr', { class: 'addrow' }, h('td', { colspan: '7' }, h('button', { class: 'add', type: 'button', text: '+ Add item', onclick: () => { const n = newItem(); cat.items.push(n); render(); update(); save(); refs[n.id].nm.focus(); } }))));
       table.append(tb);
     });
   }
   function row(cat, it, i) {
-    const nm = h('input', { class: 'cell name', value: it.name, placeholder: 'Ketik nama barang…', 'aria-label': 'Nama barang', autocomplete: 'off' });
+    const nm = h('input', { class: 'cell name', value: it.name, placeholder: 'Type item name…', 'aria-label': 'Item name', autocomplete: 'off' });
     const ghost = h('span', { class: 'ghost', 'aria-hidden': 'true' });
     it._sel = h('select', { 'aria-label': 'Vendor' });
     it.rebuild = () => { vendorOptions(it); };
     const pcs = h('input', { class: 'cell', inputmode: 'decimal', placeholder: '0', 'aria-label': 'Pcs' });
-    const price = h('input', { class: 'cell', inputmode: 'decimal', placeholder: '0', 'aria-label': 'Harga satuan' });
+    const price = h('input', { class: 'cell', inputmode: 'decimal', placeholder: '0', 'aria-label': 'Unit price' });
     const pcsShow = bindNum(pcs, () => it.pcs, v => { it.pcs = v; });
     const show = bindNum(price, () => it.price, v => { it.price = v; it.offerId = null; price.title = ''; });
     const tot = h('td', { class: 'tot' });
@@ -234,7 +234,7 @@
     nm.addEventListener('blur', () => setTimeout(() => { if (acInp === nm) closeAc(); }, 120));
     vendorOptions(it);
     it._sel.addEventListener('change', () => { it.vendor = it._sel.value; applyVendor(it); update(); save(); });
-    const del = h('td', { class: 'noprint' }, h('button', { class: 'x', type: 'button', title: 'Hapus baris', 'aria-label': 'Hapus baris', text: '×', onclick: () => { cat.items = cat.items.filter(x => x.id !== it.id); if (!cat.items.length) cat.items.push(newItem()); render(); update(); save(); } }));
+    const del = h('td', { class: 'noprint' }, h('button', { class: 'x', type: 'button', title: 'Delete row', 'aria-label': 'Delete row', text: '×', onclick: () => { cat.items = cat.items.filter(x => x.id !== it.id); if (!cat.items.length) cat.items.push(newItem()); render(); update(); save(); } }));
     return h('tr', {}, h('td', { class: 'no', text: String(i + 1) }), h('td', {}, h('div', { class: 'ac' }, ghost, nm)), h('td', {}, it._sel), h('td', {}, pcs), h('td', {}, price), tot, del);
   }
   /* Total baris: harga dari database sudah mencakup kombinasi hari, jadi tidak dikali hari lagi. Harga manual dikali (hari GR + hari Event). */
@@ -247,13 +247,13 @@
       G += c; if (refs[cat.id]) refs[cat.id].textContent = fmt(c);
     });
     $('b-grand').textContent = 'Rp ' + fmt(G);
-    $('b-foot').textContent = 'Harga dari database sudah sesuai kombinasi ' + (state.ev || 0) + ' Hari Event + ' + (state.gr || 0) + ' Hari GR. Harga yang diketik manual dikali ' + days() + ' hari.';
+    $('b-foot').textContent = 'The database price already matches the combination of ' + (state.ev || 0) + ' Event Days + ' + (state.gr || 0) + ' GR Days. A manually typed price is multiplied by ' + days() + ' days.';
   }
   function refreshPrices() {   /* hari berubah: hitung ulang harga yang berasal dari database */
     state.cats.forEach(c => c.items.forEach(it => {
       if (!it.offerId) return;
       const o = DB.rows.find(x => x.id === it.offerId); const p = o && priceOf(o);
-      if (p) { it.price = p.unit; refs[it.id].show(); refs[it.id].price.title = 'Database: ' + p.label + (p.exact ? '' : ' (kombinasi terdekat)'); }
+      if (p) { it.price = p.unit; refs[it.id].show(); refs[it.id].price.title = 'Database: ' + p.label + (p.exact ? '' : ' (closest combination)'); }
     }));
     state.cats.forEach(c => c.items.forEach(it => { if (DB.rows.length) vendorOptions(it); }));
   }
@@ -269,8 +269,8 @@
   let rt = null;
   $('b-reset').addEventListener('click', () => {
     const b = $('b-reset');
-    if (!rt) { b.textContent = 'Yakin? Klik lagi untuk reset'; rt = setTimeout(() => { b.textContent = 'Kosongkan semua isian'; rt = null; }, 3000); return; }
-    clearTimeout(rt); rt = null; b.textContent = 'Kosongkan semua isian';
+    if (!rt) { b.textContent = 'Sure? Click again to reset'; rt = setTimeout(() => { b.textContent = 'Clear all fields'; rt = null; }, 3000); return; }
+    clearTimeout(rt); rt = null; b.textContent = 'Clear all fields';
     state = fresh(state); sync(); render(); update(); save();
   });
   $('b-print').addEventListener('click', () => { const old = document.title; document.title = 'Budget - ' + (state.nama || 'Event'); window.addEventListener('afterprint', () => { document.title = old; }, { once: true }); try { window.print(); } catch (e) { document.title = old; } });
@@ -280,9 +280,9 @@
   fetchDb().then(res => {
     indexDb(res); state.cats.forEach(c => c.items.forEach(it => { vendorOptions(it); if (it.offerId) applyVendor(it, true); }));
     refreshPrices(); update();
-    $('b-status').textContent = 'Database terhubung: ' + DB.items.size + ' item dari ' + DB.vendors.length + ' vendor.';
+    $('b-status').textContent = 'Database connected: ' + DB.items.size + ' items from ' + DB.vendors.length + ' vendors.';
   }).catch(err => {
     const s = $('b-status'); s.className = 'b-status err';
-    s.textContent = 'Database gagal dimuat (' + (err && err.message || 'error') + '). Anda tetap bisa mengisi manual.';
+    s.textContent = 'Failed to load the database (' + (err && err.message || 'error') + '). You can still enter data manually.';
   });
 })();

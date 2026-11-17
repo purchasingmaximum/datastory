@@ -1,8 +1,8 @@
 /* =========================================================================
    loader.js — helper untuk loader "grid fill".
 
-     MaximumLoader.markup("Harap Tunggu")  -> string HTML loader
-     MaximumLoader.show("Harap Tunggu")    -> overlay layar penuh
+     MaximumLoader.markup("Please Wait")  -> string HTML loader
+     MaximumLoader.show("Please Wait")    -> overlay layar penuh
      MaximumLoader.setLabel("Menyimpan…")  -> ganti teks overlay
      MaximumLoader.hide()                  -> tutup overlay (fade out)
      MaximumLoader.mount(el, "Memuat…")    -> pasang loader di dalam elemen
@@ -26,7 +26,7 @@
         '<svg class="mx-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
           '<circle class="mx-circle" cx="50" cy="50" r="48"/>' + rects +
         "</svg>" +
-        '<div class="mx-label">' + (label || "Harap Tunggu") + "</div>" +
+        '<div class="mx-label">' + (label || "Please Wait") + "</div>" +
       "</div>"
     );
   }
@@ -72,7 +72,7 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("[data-mx-loader]").forEach(function (el) {
-      mount(el, el.getAttribute("data-mx-loader") || "Harap Tunggu", el.hasAttribute("data-mx-small"));
+      mount(el, el.getAttribute("data-mx-loader") || "Please Wait", el.hasAttribute("data-mx-small"));
     });
   });
 })();

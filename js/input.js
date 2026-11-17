@@ -32,9 +32,9 @@
   if (editEventId) titleLabel.textContent = "Edit Report:";
   if (!viewEventId) {
     backToList.hidden = false;
-    backToList.textContent = "Kembali ke Daftar Event";
+    backToList.textContent = "Back to Event List";
     editModeNote.hidden = false;
-    editModeNote.textContent = "Tersimpan otomatis ke cloud saat Anda mengetik — pengguna lain yang membuka event ini melihat perubahan langsung. Laporan baru berstatus Draft (belum masuk Analytics) sampai Anda menekan Submit.";
+    editModeNote.textContent = "Saved to the cloud automatically as you type — other users who open this event see changes instantly. New reports stay as Draft (not yet in Analytics) until you press Submit.";
   }
   submitBtn.textContent = "Next: Preview →";
 
@@ -50,13 +50,13 @@
   let itemDictionary = [];
   let vendorDictionary = [];
 
-  MaximumLoader.show((editEventId || viewEventId) ? "Memuat Data Event" : "Memuat Data Master");
+  MaximumLoader.show((editEventId || viewEventId) ? "Loading Event Data" : "Loading Master Data");
   Promise.all([
     loadDictionaries(),
     (editEventId || copyEventId || viewEventId) ? loadEventById(editEventId || copyEventId || viewEventId) : Promise.resolve(null),
   ]).then(([dicts, ev]) => {
     if (viewEventId) {
-      if (!ev) throw new Error("Event tidak ditemukan.");
+      if (!ev) throw new Error("Event not found.");
       showReadOnly(ev);
       return;
     }
@@ -68,22 +68,22 @@
     loadCustomItems().then(mergeIntoDictionary);
 
     if (editEventId || copyEventId) {
-      if (!ev) throw new Error("Event tidak ditemukan.");
+      if (!ev) throw new Error("Event not found.");
       if (editEventId) editOriginalEvent = ev;
       populateFormForEdit(ev);
       if (editEventId) { lastSavedAt = ev.updatedAt || ""; lastSig = currentSig(); }
-      if (copyEventId) form.event.value = (form.event.value || "") + " (salinan)";
+      if (copyEventId) form.event.value = (form.event.value || "") + " (copy)";
     } else {
       addItemBlock();
     }
   }).catch((err) => {
     console.error("Failed to load data master / event to edit", err);
     if (viewEventId) {
-      formLevelError.textContent = (err && err.message) || "Event tidak ditemukan.";
+      formLevelError.textContent = (err && err.message) || "Event not found.";
       backToList.hidden = false;
     }
     if (editEventId) {
-      formLevelError.textContent = (err && err.message) || "Gagal memuat data event untuk diedit.";
+      formLevelError.textContent = (err && err.message) || "Failed to load event data for editing.";
       submitBtn.disabled = true;
     }
   }).finally(() => {
@@ -119,7 +119,7 @@
         seen.add(k);
         fromEvents.push({ itemId: it.itemCode || "", kategori: it.category || "", namaItemStandar: it.itemName, satuanStandar: "item" });
       }));
-    } catch (err) { console.warn("Gagal membaca barang dari event tersimpan.", err); }
+    } catch (err) { console.warn("Failed to read items from saved events.", err); }
     return fromEvents.concat(readLocalCustomItems());
   }
   function mergeIntoDictionary(list) {
@@ -182,7 +182,7 @@
     select.innerHTML = "";
     const placeholder = document.createElement("option");
     placeholder.value = "";
-    placeholder.textContent = "Pilih kategori";
+    placeholder.textContent = "Select category";
     select.appendChild(placeholder);
     categoryList().forEach((kategori) => {
       const opt = document.createElement("option");
@@ -192,7 +192,7 @@
     });
     const other = document.createElement("option");
     other.value = OTHER_CAT;
-    other.textContent = "Lainnya (isi sendiri)…";
+    other.textContent = "Other (enter manually)…";
     select.appendChild(other);
     if ([...select.options].some((o) => o.value === current)) select.value = current;
   }
@@ -336,8 +336,8 @@
         const exists = typed && list.some((o) => canonName(o.namaVendor) === canonName(typed));
         if (exists) return list;
         return list.concat([typed
-          ? { namaVendor: typed, label: "Lainnya: pakai “" + typed + "” (isi sendiri)", custom: true }
-          : { namaVendor: "", label: "Lainnya (isi sendiri)…", custom: true }]);
+          ? { namaVendor: typed, label: "Other: use “" + typed + "” (custom)", custom: true }
+          : { namaVendor: "", label: "Other (enter manually)…", custom: true }]);
       },
       renderLabel: (opt) => opt.label || opt.namaVendor,
       getValue: (opt) => opt.namaVendor,
@@ -350,7 +350,7 @@
       onSelect: (opt) => {
         setError(vendorInput.closest(".field"), "");
         if (opt && opt.custom) {
-          if (!opt.namaVendor) { vendorInput.value = ""; vendorInput.placeholder = "Ketik nama vendor…"; vendorInput.focus(); }
+          if (!opt.namaVendor) { vendorInput.value = ""; vendorInput.placeholder = "Type vendor name…"; vendorInput.focus(); }
           return;
         }
         if (window.InputPrice) window.InputPrice.vendorChosen(block);
@@ -431,7 +431,7 @@
       const dp = rupiahValue(dpInput) || 0;
       const sisa = Math.max(0, total - dp);
       sisaDisplay.textContent = statusSelect.value
-        ? `Sisa DP: Rp ${sisa.toLocaleString("id-ID")}`
+        ? `Remaining DP: Rp ${sisa.toLocaleString("id-ID")}`
         : "";
     }
 
@@ -539,7 +539,7 @@
 
     const statusSelect = node.querySelector('[data-name="paymentStatus"]');
     // Data lama (sebelum revisi ini) mungkin belum punya paymentStatus sama
-    // sekali — dibiarkan kosong ("Pilih status") supaya pengguna mengisinya
+    // sekali — dibiarkan kosong ("Select status") supaya pengguna mengisinya
     // secara sadar, bukan ditebak.
     if (item.paymentStatus === "Lunas" || item.paymentStatus === "DP") {
       statusSelect.value = item.paymentStatus;
@@ -605,11 +605,11 @@
 
   function recomputeEventDays() {
     const days = computedEventDays();
-    daysDisplay.value = days === null ? "—" : `${days} hari`;
+    daysDisplay.value = days === null ? "—" : `${days} days`;
 
     const gr = Number(grInputEl.value);
     if (days !== null && grInputEl.value !== "" && Number.isInteger(gr) && gr >= 0) {
-      totalDaysHint.textContent = `Total termasuk GR: ${days + gr} hari (${days} event + ${gr} GR).`;
+      totalDaysHint.textContent = `Total including GR: ${days + gr} days (${days} event + ${gr} GR).`;
     } else {
       totalDaysHint.textContent = "";
     }
@@ -644,7 +644,7 @@
     for (const name of requiredText) {
       const input = form.querySelector(`[name="${name}"]`);
       const fieldEl = input.closest(".field");
-      if (!input.value.trim()) { setError(fieldEl, "Wajib diisi."); ok = false; }
+      if (!input.value.trim()) { setError(fieldEl, "Required."); ok = false; }
       else setError(fieldEl, "");
     }
 
@@ -653,18 +653,18 @@
     const startValid = dateStartInput.value && !isNaN(new Date(dateStartInput.value).getTime());
     const endValid = dateEndInput.value && !isNaN(new Date(dateEndInput.value).getTime());
 
-    if (!startValid) { setError(dateStartFieldEl, "Tanggal mulai tidak valid."); ok = false; }
+    if (!startValid) { setError(dateStartFieldEl, "Invalid start date."); ok = false; }
     else setError(dateStartFieldEl, "");
 
-    if (!endValid) { setError(dateEndFieldEl, "Tanggal selesai tidak valid."); ok = false; }
+    if (!endValid) { setError(dateEndFieldEl, "Invalid end date."); ok = false; }
     else if (startValid && new Date(dateEndInput.value) < new Date(dateStartInput.value)) {
-      setError(dateEndFieldEl, "Tanggal selesai tidak boleh sebelum tanggal mulai.");
+      setError(dateEndFieldEl, "End date cannot be before the start date.");
       ok = false;
     } else setError(dateEndFieldEl, "");
 
     const grFieldEl = grInputEl.closest(".field");
     const gr = Number(grInputEl.value);
-    if (grInputEl.value === "" || !Number.isInteger(gr) || gr < 0) { setError(grFieldEl, "GR tidak boleh negatif."); ok = false; }
+    if (grInputEl.value === "" || !Number.isInteger(gr) || gr < 0) { setError(grFieldEl, "GR cannot be negative."); ok = false; }
     else setError(grFieldEl, "");
 
     recomputeEventDays();
@@ -675,7 +675,7 @@
   function validateItems() {
     const blocks = [...itemsContainer.querySelectorAll("[data-item-block]")];
     if (blocks.length === 0) {
-      formLevelError.textContent = "Tambahkan minimal satu barang, atau lanjutkan tanpa barang jika event ini memang tidak menyewa apa pun.";
+      formLevelError.textContent = "Add at least one item, or continue without items if this event does not rent anything.";
       return true; // spec allows "event tanpa item" as a data-quality case to handle, not a hard block
     }
     let ok = true;
@@ -691,19 +691,19 @@
       const dpInput = block.querySelector('[data-name="nominalDP"]');
       const dpEl = dpInput.closest(".field");
 
-      setError(nameEl, nameEl.querySelector("input").value.trim() ? "" : "Wajib diisi.");
+      setError(nameEl, nameEl.querySelector("input").value.trim() ? "" : "Required.");
       const catSel = catEl.querySelector("select").value;
-      setError(catEl, categoryValue(block) ? "" : (catSel === OTHER_CAT ? "Ketik kategori." : "Pilih kategori."));
-      setError(vendorEl, vendorEl.querySelector("input").value.trim() ? "" : "Wajib diisi.");
+      setError(catEl, categoryValue(block) ? "" : (catSel === OTHER_CAT ? "Type a category." : "Select a category."));
+      setError(vendorEl, vendorEl.querySelector("input").value.trim() ? "" : "Required.");
 
       const price = rupiahValue(priceInput);
-      setError(priceEl, (Number.isFinite(price) && price >= 0) ? "" : "Harga harus berupa angka.");
+      setError(priceEl, (Number.isFinite(price) && price >= 0) ? "" : "Price must be a number.");
 
-      setError(statusEl, statusSelect.value ? "" : "Pilih status pembayaran.");
+      setError(statusEl, statusSelect.value ? "" : "Select a payment status.");
 
       const dp = rupiahValue(dpInput);
       const dpOk = statusSelect.value !== "DP" || (Number.isFinite(dp) && dp >= 0 && dp <= (Number.isFinite(price) ? price : Infinity));
-      setError(dpEl, dpOk ? "" : "Nominal DP harus antara 0 dan harga total.");
+      setError(dpEl, dpOk ? "" : "DP amount must be between 0 and the total price.");
 
       if (![nameEl, catEl, vendorEl, priceEl, statusEl, dpEl].every((el) => !el.classList.contains("has-error"))) {
         ok = false;
@@ -763,7 +763,7 @@
     const topOk = validateTopLevel();
     const itemsOk = validateItems();
     if (!topOk || !itemsOk) {
-      formLevelError.textContent = "Periksa kembali field yang ditandai merah.";
+      formLevelError.textContent = "Please recheck the fields marked in red.";
       form.querySelector(".has-error")?.querySelector("input,select")?.focus();
       return;
     }
@@ -801,7 +801,7 @@
   function formatDateId(iso) {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
     if (!m) return iso || "—";
-    return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   }
 
   const previewSubmitBtn2 = document.getElementById("preview-submit-2");
@@ -843,7 +843,7 @@
       row.append(lab, track);
       card.appendChild(row);
     });
-    if (rows.length > 6) card.appendChild(previewEl("div", "pv-bar-more", `+ ${rows.length - 6} lainnya (lihat file Excel)`));
+    if (rows.length > 6) card.appendChild(previewEl("div", "pv-bar-more", `+ ${rows.length - 6} more (see Excel file)`));
     return card;
   }
 
@@ -851,40 +851,40 @@
     const an = window.EventAnalysis.analyze(report, window.EventStore.published());
     lastAnalysis = an;
     const box = previewEl("section", "pv-analysis");
-    box.appendChild(previewEl("h3", "pv-h", "Analisis"));
+    box.appendChild(previewEl("h3", "pv-h", "Analysis"));
     if (an.notes.length) {
       const ul = previewEl("ul", "pv-notes");
       an.notes.forEach((n) => ul.appendChild(previewEl("li", "", n)));
       box.appendChild(ul);
     }
     const grid = previewEl("div", "pv-an-grid");
-    grid.appendChild(barList("Biaya per kategori", an.byCategory));
-    grid.appendChild(barList("Biaya per vendor", an.byVendor));
+    grid.appendChild(barList("Cost by category", an.byCategory));
+    grid.appendChild(barList("Cost by vendor", an.byVendor));
     box.appendChild(grid);
 
     if (an.itemChecks.length) {
-      box.appendChild(previewEl("h4", "pv-h2", "Harga per barang vs event lain (per hari)"));
+      box.appendChild(previewEl("h4", "pv-h2", "Price per item vs other events (per day)"));
       const wrap = previewEl("div", "items-table-wrap");
       const table = previewEl("table", "items-table preview-table pv-an-table");
       const head = previewEl("tr");
-      ["Nama Barang", "Harga / hari", "Median / hari", "Selisih", "Penilaian"].forEach((h) => head.appendChild(previewEl("th", "", h)));
+      ["Item Name", "Price / day", "Median / day", "Difference", "Assessment"].forEach((h) => head.appendChild(previewEl("th", "", h)));
       table.appendChild(previewEl("thead")).appendChild(head);
       const tb = previewEl("tbody");
       an.itemChecks.forEach((c) => {
         const tr = previewEl("tr", "preview-item-row");
         const td = (t, cls, label) => { const e = previewEl("td", cls || "", t); e.dataset.label = label || ""; return e; };
-        tr.appendChild(td(c.itemName || "—", "col-name", "Nama Barang"));
-        tr.appendChild(td(formatRupiah(Math.round(c.perDay)), "num", "Harga / hari"));
-        tr.appendChild(td(c.median == null ? "—" : formatRupiah(Math.round(c.median)), "num", "Median / hari"));
-        tr.appendChild(td(c.diffPct == null ? "—" : (c.diffPct > 0 ? "+" : "") + c.diffPct.toFixed(0) + "%", "num", "Selisih"));
-        const v = c.verdict === "Lebih mahal" ? "v-mahal" : c.verdict === "Lebih murah" ? "v-murah" : "";
-        tr.appendChild(td(c.verdict + (c.samples ? ` (n=${c.samples})` : ""), "pv-verdict-cell " + v, "Penilaian"));
+        tr.appendChild(td(c.itemName || "—", "col-name", "Item Name"));
+        tr.appendChild(td(formatRupiah(Math.round(c.perDay)), "num", "Price / day"));
+        tr.appendChild(td(c.median == null ? "—" : formatRupiah(Math.round(c.median)), "num", "Median / day"));
+        tr.appendChild(td(c.diffPct == null ? "—" : (c.diffPct > 0 ? "+" : "") + c.diffPct.toFixed(0) + "%", "num", "Difference"));
+        const v = c.verdict === "More expensive" ? "v-mahal" : c.verdict === "Cheaper" ? "v-murah" : "";
+        tr.appendChild(td(c.verdict + (c.samples ? ` (n=${c.samples})` : ""), "pv-verdict-cell " + v, "Assessment"));
         tb.appendChild(tr);
       });
       table.appendChild(tb);
       wrap.appendChild(table);
       box.appendChild(wrap);
-      box.appendChild(previewEl("p", "pv-an-foot", "Pembanding memakai harga per hari (Day + GR) dari barang yang sama di event lain; ≥ 2 data diperlukan. Selisih di atas ±25% ditandai."));
+      box.appendChild(previewEl("p", "pv-an-foot", "The comparison uses the per-day price (Day + GR) of the same item in other events; at least 2 data points are required. Differences above ±25% are flagged."));
     }
     return box;
   }
@@ -892,7 +892,7 @@
   // Tampilan baca-saja untuk "Buka" dari Daftar Event.
   function showReadOnly(ev) {
     shownAt = ev.updatedAt || "";
-    titleLabel.textContent = "Laporan:";
+    titleLabel.textContent = "Report:";
     showPreview(ev, { readOnly: true });
   }
 
@@ -902,11 +902,11 @@
     document.getElementById("pv-xlsx").addEventListener("click", async (e) => {
       const btn = e.currentTarget;
       if (!pendingReport) return;
-      btn.disabled = true; msgEl().textContent = "Menyiapkan Excel…";
+      btn.disabled = true; msgEl().textContent = "Preparing Excel…";
       try {
         await window.EventExport.downloadExcel(pendingReport, lastAnalysis);
-        msgEl().textContent = "Excel diunduh.";
-      } catch (err) { msgEl().textContent = (err && err.message) || "Gagal membuat Excel."; }
+        msgEl().textContent = "Excel downloaded.";
+      } catch (err) { msgEl().textContent = (err && err.message) || "Failed to create Excel."; }
       btn.disabled = false;
       setTimeout(() => { msgEl().textContent = ""; }, 5000);
     });
@@ -917,12 +917,12 @@
       try {
         const r = window.EventStore.duplicate(pendingReport.eventId);
         window.location.href = "input.html?edit=" + encodeURIComponent(r.eventId);
-      } catch (err) { msgEl().textContent = (err && err.message) || "Gagal menyalin."; }
+      } catch (err) { msgEl().textContent = (err && err.message) || "Failed to copy."; }
     });
     const delBtn = document.getElementById("vw-del");
     let t = null;
     delBtn.addEventListener("click", () => {
-      if (!t) { delBtn.textContent = "Yakin hapus?"; t = setTimeout(() => { delBtn.textContent = "Hapus"; t = null; }, 3000); return; }
+      if (!t) { delBtn.textContent = "Sure to delete?"; t = setTimeout(() => { delBtn.textContent = "Delete"; t = null; }, 3000); return; }
       clearTimeout(t);
       window.EventStore.remove(pendingReport.eventId).catch(() => {});
       window.location.href = "input.html?list=1";
@@ -955,26 +955,26 @@
     previewBody.appendChild(previewEl("h2", "pv-title", `${editEventId && !readOnly ? "Edit Report" : "Input Report"}: ${report.event || "—"}`));
     const meta = previewEl("div", "pv-meta");
     const sameDay = report.eventDate === report.eventDateEnd;
-    meta.appendChild(previewInfo("Tanggal Event:", (sameDay
+    meta.appendChild(previewInfo("Event Date:", (sameDay
       ? formatDateId(report.eventDate)
-      : `${formatDateId(report.eventDate)} sampai ${formatDateId(report.eventDateEnd)}`) + " (di luar GR)"));
-    meta.appendChild(previewInfo("Kota:", report.city));
-    meta.appendChild(previewInfo("Pengisi Laporan:", report.user));
-    if (readOnly && report.eventId) meta.appendChild(previewInfo("ID Event:", report.eventId));
+      : `${formatDateId(report.eventDate)} to ${formatDateId(report.eventDateEnd)}`) + " (excluding GR)"));
+    meta.appendChild(previewInfo("City:", report.city));
+    meta.appendChild(previewInfo("Reporter:", report.user));
+    if (readOnly && report.eventId) meta.appendChild(previewInfo("Event ID:", report.eventId));
     previewBody.appendChild(meta);
 
     // Tiga kotak ringkasan: total biaya (biru), barang, durasi.
     const boxes = previewEl("div", "pv-boxes");
 
     const verdict = previewEl("div", "pv-verdict");
-    verdict.appendChild(previewEl("div", "pv-label", "Total biaya event"));
+    verdict.appendChild(previewEl("div", "pv-label", "Total event cost"));
     verdict.appendChild(previewEl("div", "pv-word", formatRupiah(sumTotal)));
     const gauge = previewEl("div", "pv-gauge");
     const bar = document.createElement("i");
     bar.style.width = paidPct + "%";
     gauge.appendChild(bar);
     verdict.appendChild(gauge);
-    [["Terbayar", `${formatRupiah(sumDP)} (${paidPct}%)`], ["Sisa pembayaran", formatRupiah(sumSisa)]].forEach(([k, v]) => {
+    [["Paid", `${formatRupiah(sumDP)} (${paidPct}%)`], ["Remaining payment", formatRupiah(sumSisa)]].forEach(([k, v]) => {
       const gap = previewEl("div", "pv-gap");
       gap.appendChild(previewEl("span", "", k));
       gap.appendChild(previewEl("strong", "", v));
@@ -983,30 +983,30 @@
     boxes.appendChild(verdict);
 
     const cardItems = previewEl("div", "pv-card");
-    cardItems.appendChild(previewRow("Jumlah barang", items.length));
-    cardItems.appendChild(previewRow("Barang Lunas", nLunas));
-    cardItems.appendChild(previewRow("Barang DP", nDP));
+    cardItems.appendChild(previewRow("Number of items", items.length));
+    cardItems.appendChild(previewRow("Items paid in full", nLunas));
+    cardItems.appendChild(previewRow("Items with DP", nDP));
     boxes.appendChild(cardItems);
 
     const cardDays = previewEl("div", "pv-card");
-    cardDays.appendChild(previewRow("Jumlah Day event", days ? `${days} hari` : "—"));
-    cardDays.appendChild(previewRow("Jumlah GR", report.gr));
-    cardDays.appendChild(previewRow("Total termasuk GR", days ? `${days + report.gr} hari` : "—", true));
+    cardDays.appendChild(previewRow("Event days", days ? `${days} days` : "—"));
+    cardDays.appendChild(previewRow("Number of GR", report.gr));
+    cardDays.appendChild(previewRow("Total including GR", days ? `${days + report.gr} days` : "—", true));
     boxes.appendChild(cardDays);
     previewBody.appendChild(boxes);
 
     // Tabel barang.
     previewBody.appendChild(previewEl("h3", "pv-h", `Rental Items (${items.length})`));
     if (items.length === 0) {
-      previewBody.appendChild(previewEl("p", "no-items-msg", "Tanpa barang — event ini disimpan tanpa item sewa."));
+      previewBody.appendChild(previewEl("p", "no-items-msg", "No items — this event is saved without rental items."));
     } else {
       const wrap = previewEl("div", "items-table-wrap");
       const table = previewEl("table", "items-table preview-table");
 
       const headers = [
-        ["No", "col-no"], ["Nama Barang", "col-name"], ["Kategori", "col-cat"],
-        ["Nama Vendor", "col-vendor"], ["Status Pembayaran", "col-status"], ["Harga Total (Rp)", "col-price"],
-        ["Nominal DP (Rp)", "col-dp"], ["Sisa DP (Rp)", "col-sisa"], ["Keterangan", "col-desc"],
+        ["No", "col-no"], ["Item Name", "col-name"], ["Category", "col-cat"],
+        ["Vendor Name", "col-vendor"], ["Payment Status", "col-status"], ["Total Price (Rp)", "col-price"],
+        ["DP Amount (Rp)", "col-dp"], ["Remaining DP (Rp)", "col-sisa"], ["Notes", "col-desc"],
       ];
       const thead = previewEl("thead");
       const headRow = previewEl("tr");
@@ -1027,27 +1027,27 @@
         const sisa = Math.max(0, total - dp);
         const tr = previewEl("tr", "preview-item-row");
         tr.appendChild(cell(i + 1, "No", "col-no"));
-        tr.appendChild(cell(item.itemName, "Nama Barang", "col-name"));
-        tr.appendChild(cell(item.category, "Kategori", "col-cat"));
-        tr.appendChild(cell(item.vendor, "Nama vendor", "col-vendor"));
-        tr.appendChild(cell(item.paymentStatus, "Status Pembayaran", "col-status st-" + String(item.paymentStatus || "").toLowerCase()));
-        tr.appendChild(cell(formatRupiah(total), "Harga total", "col-price num"));
-        tr.appendChild(cell(formatRupiah(dp), "Nominal DP", "col-dp num"));
-        tr.appendChild(cell(formatRupiah(sisa), "Sisa DP", "col-sisa num"));
-        tr.appendChild(cell(item.description, "Keterangan", "col-desc"));
+        tr.appendChild(cell(item.itemName, "Item Name", "col-name"));
+        tr.appendChild(cell(item.category, "Category", "col-cat"));
+        tr.appendChild(cell(item.vendor, "Vendor name", "col-vendor"));
+        tr.appendChild(cell(item.paymentStatus === "Lunas" ? "Paid in full" : item.paymentStatus, "Payment Status", "col-status st-" + String(item.paymentStatus || "").toLowerCase()));
+        tr.appendChild(cell(formatRupiah(total), "Total price", "col-price num"));
+        tr.appendChild(cell(formatRupiah(dp), "DP amount", "col-dp num"));
+        tr.appendChild(cell(formatRupiah(sisa), "Remaining DP", "col-sisa num"));
+        tr.appendChild(cell(item.description, "Notes", "col-desc"));
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);
 
       const tfoot = previewEl("tfoot");
       const footRow = previewEl("tr");
-      const footLabel = previewEl("td", "foot-label", `Total (${items.length} barang)`);
+      const footLabel = previewEl("td", "foot-label", `Total (${items.length} items)`);
       footLabel.colSpan = 5;
       footLabel.dataset.label = "";
       footRow.appendChild(footLabel);
-      footRow.appendChild(cell(formatRupiah(sumTotal), "Harga total", "col-price num"));
-      footRow.appendChild(cell(formatRupiah(sumDP), "Nominal DP", "col-dp num"));
-      footRow.appendChild(cell(formatRupiah(sumSisa), "Sisa DP", "col-sisa num"));
+      footRow.appendChild(cell(formatRupiah(sumTotal), "Total price", "col-price num"));
+      footRow.appendChild(cell(formatRupiah(sumDP), "DP amount", "col-dp num"));
+      footRow.appendChild(cell(formatRupiah(sumSisa), "Remaining DP", "col-sisa num"));
       const footBlank = previewEl("td", "col-desc");
       footBlank.dataset.label = "";
       footRow.appendChild(footBlank);
@@ -1120,7 +1120,7 @@
       titleLabel.textContent = "Input Report:";
     } catch (err) {
       console.error(err);
-      previewError.textContent = "Gagal menyimpan laporan. Silakan coba lagi.";
+      previewError.textContent = "Failed to save the report. Please try again.";
     }
     previewSubmitBtn.disabled = false;
     previewEditBtn.disabled = false;
@@ -1215,7 +1215,7 @@
       populateFormForEdit(ev);
       editOriginalEvent = ev; lastSavedAt = ev.updatedAt || ""; lastSig = currentSig();
       if (!previewSection.hidden) hidePreview();
-      notice("Diperbarui dari pengguna lain · " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }));
+      notice("Updated by another user · " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }));
     } finally { setTimeout(() => { applying = false; lastSig = currentSig(); }, 300); }
   }
 
@@ -1223,7 +1223,7 @@
     if (selfSaving || !ES) return;
     if (viewEventId) {                              // tampilan "Buka": ikuti perubahan terbaru
       const ev = ES.get(viewEventId);
-      if (!ev) { if (shownAt && !goneShown) { goneShown = true; previewError.textContent = "Event ini sudah dihapus oleh pengguna lain."; } return; }
+      if (!ev) { if (shownAt && !goneShown) { goneShown = true; previewError.textContent = "This event has been deleted by another user."; } return; }
       if ((ev.updatedAt || "") === shownAt) return;
       const y = window.scrollY;
       showReadOnly(JSON.parse(JSON.stringify(ev)));
@@ -1233,7 +1233,7 @@
     if (!editEventId) return;
     const cur = ES.get(editEventId);
     if (!cur) {
-      if (lastSavedAt && !goneShown) { goneShown = true; notice("Event ini dihapus oleh pengguna lain. Mengetik lagi akan menyimpannya kembali."); }
+      if (lastSavedAt && !goneShown) { goneShown = true; notice("This event was deleted by another user. Typing again will save it back."); }
       return;
     }
     if (!lastSavedAt || (cur.updatedAt || "") <= lastSavedAt) return;   // gema tulisan sendiri / data lebih lama

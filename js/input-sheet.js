@@ -102,7 +102,7 @@
     }
     if (rate === null) return null;
     const n = e + g;
-    return { price: r0(rate * n), src: "perday", note: "Kombinasi " + e + " Day + " + g + " GR tidak ada di database: Rp " + nf.format(r0(rate)) + " per hari x " + n + " hari" };
+    return { price: r0(rate * n), src: "perday", note: "Combination " + e + " Day + " + g + " GR is not in the database: Rp " + nf.format(r0(rate)) + " per day x " + n + " days" };
   }
   const blockParts = (b) => ({
     name: b.querySelector('[data-name="itemName"]'), vendor: b.querySelector('[data-name="vendor"]'),
@@ -112,9 +112,9 @@
   function setSrc(b, src, note) {
     b.dataset.psrc = src || "";
     const tag = b.querySelector("[data-psrc]"); if (!tag) return;
-    tag.textContent = src === "db" || src === "pick" ? "DB" : src === "perday" ? "/hari" : src === "manual" ? "manual" : "";
+    tag.textContent = src === "db" || src === "pick" ? "DB" : src === "perday" ? "/day" : src === "manual" ? "manual" : "";
     tag.dataset.src = src || "";
-    const p = blockParts(b).price; if (p) p.title = note || (src === "manual" ? "Diisi manual. Kosongkan sel untuk kembali ke harga database." : "");
+    const p = blockParts(b).price; if (p) p.title = note || (src === "manual" ? "Entered manually. Clear the cell to return to the database price." : "");
   }
   function applyPrice(b, force) {
     if (!DB.ready) return;
@@ -153,7 +153,7 @@
         if (!c || (p && (!c.p || p.price < c.p.price))) by.set(o.vendor, { o, p });
       });
       const db = [...by.entries()].filter(([v]) => !q || v.toLowerCase().includes(q))
-        .map(([v, x]) => ({ namaVendor: v, label: v + (x.p ? "  ·  Rp " + nf.format(x.p.price) + (x.p.src === "perday" ? " (/hari)" : "") : "") }));
+        .map(([v, x]) => ({ namaVendor: v, label: v + (x.p ? "  ·  Rp " + nf.format(x.p.price) + (x.p.src === "perday" ? " (/day)" : "") : "") }));
       const seen = new Set(db.map((x) => canon(x.namaVendor)));
       return db.concat((fallback || []).filter((x) => !seen.has(canon(x.namaVendor)))).slice(0, 50);
     },
@@ -166,14 +166,14 @@
       const out = [];
       offers.forEach((o, i) => {
         if (offers.length > 1) {
-          const bits = [o.spec, o.qty > 1 ? "harga untuk " + o.qty + (o.unit ? " " + o.unit : " unit") : ""].filter(Boolean);
-          out.push({ header: true, label: bits.join(" · ") || "Penawaran " + (i + 1) });
+          const bits = [o.spec, o.qty > 1 ? "price for " + o.qty + (o.unit ? " " + o.unit : " units") : ""].filter(Boolean);
+          out.push({ header: true, label: bits.join(" · ") || "Offer " + (i + 1) });
         }
         const rows = [];
         const exactKey = e !== null && g !== null ? e + "_" + g : null;
         if (exactKey && o.combos[exactKey] === undefined) {      /* kombinasi persis tidak ada: tawarkan hitungan per hari */
           const p = priceOf(o, e, g);
-          if (p) rows.push({ label: "Hitung per hari", sub: e + " Day + " + g + " GR = " + (e + g) + " hari", right: "Rp " + nf.format(p.price), match: true, data: { value: p.price, src: "perday", note: p.note } });
+          if (p) rows.push({ label: "Calculate per day", sub: e + " Day + " + g + " GR = " + (e + g) + " days", right: "Rp " + nf.format(p.price), match: true, data: { value: p.price, src: "perday", note: p.note } });
         }
         Object.keys(o.combos).sort((a, b) => {
           const A = DB.combos[a], B = DB.combos[b]; return A && B ? A.e - B.e || A.g - B.g : 0;
@@ -182,7 +182,7 @@
           const v = r0(o.combos[k]);
           rows.push({
             label: m.e + " Day + " + m.g + " GR", right: "Rp " + nf.format(v), match: m.e === e && m.g === g,
-            data: { value: v, src: "db", note: "Dipilih dari database: " + m.e + " Day + " + m.g + " GR. Kosongkan sel untuk kembali ke harga otomatis." },
+            data: { value: v, src: "db", note: "Selected from database: " + m.e + " Day + " + m.g + " GR. Clear the cell to return to the automatic price." },
           });
         });
         rows.sort((a, b) => (b.match ? 1 : 0) - (a.match ? 1 : 0));   /* yang sesuai isian saat ini di atas; sisanya tetap urut Day/GR */
@@ -245,7 +245,7 @@
   }
   function dayText() {
     const { e, g } = dayInfo();
-    return e === null || g === null ? "Isi tanggal & GR untuk harga database" : e + " Day + " + g + " GR (" + (e + g) + " hari)";
+    return e === null || g === null ? "Fill in dates & GR for the database price" : e + " Day + " + g + " GR (" + (e + g) + " days)";
   }
   ["f-date-start", "f-date-end", "f-gr"].forEach((id) => $(id).addEventListener("input", updateTotals));
   cont.addEventListener("click", () => setTimeout(updateTotals, 0));
@@ -299,7 +299,7 @@
     const curId = params.get("edit") || params.get("view");
     const rp = (n) => "Rp " + nf.format(n || 0);
     const ts = (ev) => (typeof getEventUpdatedAt === "function" ? getEventUpdatedAt(ev) : new Date(ev.submittedAt || 0).getTime()) || 0;
-    const when = (ev) => { const t = ts(ev); return t ? new Date(t).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"; };
+    const when = (ev) => { const t = ts(ev); return t ? new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"; };
     let note = "";
     const picked = new Set();   /* id event yang dicentang untuk unduh Excel gabungan */
     let shown = [];
@@ -316,31 +316,31 @@
       shown = rows;
       const ids = new Set(all.map((e) => String(e.eventId)));
       [...picked].forEach((id) => { if (!ids.has(id)) picked.delete(id); });   /* event yang sudah dihapus */
-      msg.textContent = note || (!all.length ? "Belum ada event." : rows.length === all.length ? all.length + " event" : rows.length + " dari " + all.length + " event");
+      msg.textContent = note || (!all.length ? "No events yet." : rows.length === all.length ? all.length + " events" : rows.length + " of " + all.length + " events");
       rows.forEach((ev) => {
         const li = mk("li", String(ev.eventId) === String(curId) ? "cur" : "");
         const pick = mk("input", "pj-pick"); pick.type = "checkbox"; pick.checked = picked.has(String(ev.eventId));
-        pick.setAttribute("aria-label", "Pilih " + (ev.event || "event") + " untuk diunduh");
+        pick.setAttribute("aria-label", "Select " + (ev.event || "event") + " for download");
         pick.addEventListener("change", () => { pick.checked ? picked.add(String(ev.eventId)) : picked.delete(String(ev.eventId)); paintPick(); });
         const info = mk("div", "pj-info");
-        info.append(mk("span", "nm", ev.event || "(Tanpa nama event)"),
-          mk("div", "sub", [ev.city, (ev.itemCount || 0) + " barang", rp(ev.eventPrice), "diubah " + when(ev), ev.draft ? "DRAFT" : ""].filter(Boolean).join(" · ")));
+        info.append(mk("span", "nm", ev.event || "(Unnamed event)"),
+          mk("div", "sub", [ev.city, (ev.itemCount || 0) + " items", rp(ev.eventPrice), "edited " + when(ev), ev.draft ? "DRAFT" : ""].filter(Boolean).join(" · ")));
         const btns = mk("div", "btns");
-        const open = mk("a", "ghost", "Buka"); open.href = "input.html?view=" + encodeURIComponent(ev.eventId);
+        const open = mk("a", "ghost", "Open"); open.href = "input.html?view=" + encodeURIComponent(ev.eventId);
         const edit = mk("a", "ghost", "Edit"); edit.href = "input.html?edit=" + encodeURIComponent(ev.eventId);
-        const dup = mk("button", "ghost", "Duplikat"); dup.type = "button";
+        const dup = mk("button", "ghost", "Duplicate"); dup.type = "button";
         dup.addEventListener("click", () => {
-          try { const r = ES.duplicate(ev.eventId); note = "Disalin sebagai “" + r.event.event + "”."; }
-          catch (e) { note = "Gagal menyalin: " + (e && e.message || "error"); }
+          try { const r = ES.duplicate(ev.eventId); note = "Copied as “" + r.event.event + "”."; }
+          catch (e) { note = "Failed to copy: " + (e && e.message || "error"); }
           render();
         });
-        const del = mk("button", "ghost danger", "Hapus"); del.type = "button";
+        const del = mk("button", "ghost danger", "Delete"); del.type = "button";
         let t = null;
         del.addEventListener("click", () => {
-          if (!t) { del.textContent = "Yakin?"; t = setTimeout(() => { del.textContent = "Hapus"; t = null; }, 3000); return; }
+          if (!t) { del.textContent = "Sure?"; t = setTimeout(() => { del.textContent = "Delete"; t = null; }, 3000); return; }
           clearTimeout(t);
           ES.remove(ev.eventId).catch(() => {});
-          note = "Event dihapus."; render();
+          note = "Event deleted."; render();
         });
         btns.append(open, edit, dup, del); li.append(pick, info, btns); list.append(li);
       });
@@ -348,7 +348,7 @@
     }
     function paintPick() {
       const n = picked.size, vis = shown.filter((ev) => picked.has(String(ev.eventId))).length;
-      xbtn.textContent = "Unduh Excel (" + n + " dipilih)"; xbtn.disabled = n === 0;
+      xbtn.textContent = "Download Excel (" + n + " selected)"; xbtn.disabled = n === 0;
       allBox.checked = shown.length > 0 && vis === shown.length;
       allBox.indeterminate = vis > 0 && vis < shown.length;
     }
@@ -359,18 +359,18 @@
     xbtn.addEventListener("click", async () => {
       const evs = ES.all().filter((ev) => picked.has(String(ev.eventId))).sort((a, b) => ts(a) - ts(b));
       if (!evs.length) return;
-      xbtn.disabled = true; const old = xbtn.textContent; xbtn.textContent = "Menyiapkan Excel…";
+      xbtn.disabled = true; const old = xbtn.textContent; xbtn.textContent = "Preparing Excel…";
       try {
-        if (!window.EventExport || !window.EventExport.downloadMultiExcel) throw new Error("Modul ekspor belum dimuat.");
+        if (!window.EventExport || !window.EventExport.downloadMultiExcel) throw new Error("Export module not loaded yet.");
         const entries = evs.map((ev) => ({ report: ev }));
-        await window.EventExport.downloadMultiExcel(entries, evs.length === 1 ? (evs[0].event || "Event") + " - Laporan Event" : "Input Report - " + evs.length + " event");
-        note = evs.length + " event diunduh dalam satu file Excel.";
-      } catch (e) { note = "Gagal mengunduh: " + (e && e.message || "error"); }
+        await window.EventExport.downloadMultiExcel(entries, evs.length === 1 ? (evs[0].event || "Event") + " - Event Report" : "Input Report - " + evs.length + " events");
+        note = evs.length + " events downloaded in one Excel file.";
+      } catch (e) { note = "Failed to download: " + (e && e.message || "error"); }
       xbtn.textContent = old; render();
     });
     async function openDlg() {
       note = ""; if (!dlg.open) dlg.showModal();
-      msg.textContent = "Memuat daftar event…";
+      msg.textContent = "Loading event list…";
       try { await ES.ready; } catch (_) {}
       render();
     }

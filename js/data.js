@@ -578,7 +578,7 @@ async function loadEventsList(onRetry) {
 async function loadEventById(eventId, onRetry) {
   if (CONFIG.API_URL) {
     const payload = await apiFetchJSON(CONFIG.API_URL + "?action=getEventById&eventId=" + encodeURIComponent(eventId), undefined, onRetry);
-    if (!payload.ok) throw new Error(payload.error || "Event tidak ditemukan.");
+    if (!payload.ok) throw new Error(payload.error || "Event not found.");
     return payload.event;
   }
   const local = readLocalSubmissions();
@@ -586,11 +586,11 @@ async function loadEventById(eventId, onRetry) {
   if (found) return found;
   const sample = SAMPLE_EVENTS.find((ev) => ev.eventId === eventId);
   if (sample) {
-    const err = new Error("Event contoh (sample) tidak bisa diedit dalam mode demo.");
+    const err = new Error("Sample events cannot be edited in demo mode.");
     err.isSampleEvent = true;
     throw err;
   }
-  throw new Error("Event tidak ditemukan.");
+  throw new Error("Event not found.");
 }
 
 // Ringkasan angka saja (jumlah event, vendor unik, jenis barang unik) untuk
@@ -621,7 +621,7 @@ async function loadStats(onRetry) {
 function updateLocalSubmission(report) {
   const all = readLocalSubmissions();
   const idx = all.findIndex((ev) => ev.eventId === report.eventId);
-  if (idx === -1) throw new Error("Event tidak ditemukan di penyimpanan lokal.");
+  if (idx === -1) throw new Error("Event not found in local storage.");
   all[idx] = report;
   localStorage.setItem(CONFIG.LOCAL_STORAGE_KEY, JSON.stringify(all));
 }
@@ -645,7 +645,7 @@ async function loadDictionaries() {
   if (CONFIG.API_URL) {
     try {
       const res = await fetch(`${CONFIG.API_URL}?action=getDictionaries`);
-      if (!res.ok) throw new Error("Gagal memuat dictionary: " + res.status);
+      if (!res.ok) throw new Error("Failed to load dictionary: " + res.status);
       const payload = await res.json();
       const items = payload && Array.isArray(payload.items) ? payload.items : [];
       const vendors = payload && Array.isArray(payload.vendors) ? payload.vendors : [];
@@ -673,7 +673,7 @@ async function submitEvent(report) {
     if (!res.ok) throw new Error("Failed to submit report: " + res.status);
     const payload = await res.json();
     if (payload && payload.ok === false) {
-      throw new Error(payload.error || "Backend menolak data.");
+      throw new Error(payload.error || "The backend rejected the data.");
     }
     // Picu sync sheet -> Firestore di eksekusi Apps Script TERPISAH, tanpa
     // menunggu hasilnya. Submit tetap cepat; kegagalan di sini diabaikan
@@ -839,7 +839,7 @@ function aggregatePeakWeek(events) {
   return [...byWeek.entries()].map(([week, count]) => ({ week, count })).sort((a, b) => a.week - b.week);
 }
 
-const MONTH_LABELS_ID = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const MONTH_LABELS_ID = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function aggregatePeakMonth(events) {
   const byMonth = new Map();
@@ -992,19 +992,19 @@ function formatRupiah(value) {
 }
 
 function formatRupiahCompact(value) {
-  if (value >= 1e9) return "Rp " + (value / 1e9).toFixed(1).replace(/\.0$/, "") + " M";
-  if (value >= 1e6) return "Rp " + (value / 1e6).toFixed(1).replace(/\.0$/, "") + " Jt";
-  if (value >= 1e3) return "Rp " + (value / 1e3).toFixed(0) + " Rb";
+  if (value >= 1e9) return "Rp " + (value / 1e9).toFixed(1).replace(/\.0$/, "") + " bn";
+  if (value >= 1e6) return "Rp " + (value / 1e6).toFixed(1).replace(/\.0$/, "") + " mn";
+  if (value >= 1e3) return "Rp " + (value / 1e3).toFixed(0) + " k";
   return "Rp " + Math.round(value);
 }
 
 function formatDateID(dateStr) {
-  return new Date(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
 function formatDateTimeID(timestamp) {
   const d = new Date(timestamp);
-  const date = d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-  const time = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const date = d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
   return { date, time: time + " WIB" };
 }

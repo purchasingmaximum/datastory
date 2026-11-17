@@ -108,7 +108,7 @@
     li.classList.add("has-fly");
     const chev = document.createElement("span");
     chev.className = "vfly-chev"; chev.textContent = "›";
-    chev.setAttribute("aria-hidden", "true"); chev.title = "Lihat pilihan harga vendor ini";
+    chev.setAttribute("aria-hidden", "true"); chev.title = "See this vendor's price options";
     li.appendChild(chev);
     li.setAttribute("aria-haspopup", "menu");
     li.addEventListener("mouseenter", () => {

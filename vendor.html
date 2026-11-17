@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <script src="js/auth-guard.js?v=20261030b"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://sheets.googleapis.com" crossorigin />
 <link rel="dns-prefetch" href="https://sheets.googleapis.com" />
-<title>Database &amp; Harga — MAXIMUM THE ULTIMATE</title>
+<title>Database &amp; Prices — MAXIMUM THE ULTIMATE</title>
 <link rel="stylesheet" href="css/style.css?v=20261030b" />
 <link rel="stylesheet" href="css/loader.css?v=20261030b" />
 <link rel="stylesheet" href="css/vendor.css?v=20261030b" />
@@ -14,46 +14,46 @@
 </head>
 <body>
   <header class="topnav homebar">
-    <a class="home-btn" href="index.html" aria-label="Kembali ke Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
+    <a class="home-btn" href="index.html" aria-label="Back to Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
     <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v13c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-13M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></svg>Database</div>
-    <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+    <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Dark</button></div>
   </header>
 
   <main class="vendor-page">
-    <div class="loading" id="loading" data-mx-loader="Memuat Database"></div>
+    <div class="loading" id="loading" data-mx-loader="Loading Database"></div>
 
     <div class="topbar">
       <div>
-        <div class="eyebrow">SISTEM DATABASE</div>
-        <h1>Pusat Database &amp; Harga</h1>
+        <div class="eyebrow">DATABASE SYSTEM</div>
+        <h1>Database &amp; Price Center</h1>
         <div class="sub">Database MAXIMUM THE ULTIMATE.</div>
       </div>
     </div>
 
     <div class="searchbar">
       <div class="field">
-        <input type="text" id="searchInput" placeholder="Cari item, ID item, vendor, kategori, spesifikasi, sheet...">
+        <input type="text" id="searchInput" placeholder="Search item, item ID, vendor, category, specification, sheet...">
         <div class="searchmeta">
-          <span>Pencarian real-time</span>
-          <span><span class="count" id="resultCount">0</span> hasil</span>
+          <span>Real-time search</span>
+          <span><span class="count" id="resultCount">0</span> results</span>
         </div>
     </div>
     </div>
 
     <div class="filters">
-      <select class="sel" id="selKategori"><option value="">Semua Kategori</option></select>
-      <select class="sel" id="selVendor"><option value="">Semua Vendor</option></select>
+      <select class="sel" id="selKategori"><option value="">All Categories</option></select>
+      <select class="sel" id="selVendor"><option value="">All Vendors</option></select>
       <select class="sel" id="selJenis"><option value="">Item &amp; Package</option></select>
       <select class="sel" id="selSort">
-        <option value="nama_asc">Nama A-Z</option>
-        <option value="harga_desc">Harga tertinggi</option>
-        <option value="harga_asc">Harga terendah</option>
+        <option value="nama_asc">Name A-Z</option>
+        <option value="harga_desc">Highest price</option>
+        <option value="harga_asc">Lowest price</option>
         <option value="vendor_asc">Vendor A-Z</option>
-        <option value="kategori_asc">Kategori A-Z</option>
+        <option value="kategori_asc">Category A-Z</option>
       </select>
       <div class="divider-dot"></div>
       <div class="duration-controls">
-        <label>Kombinasi Hari + GR</label>
+        <label>Day + GR Combination</label>
         <select id="selKombinasi"></select>
       </div>
     </div>
@@ -65,46 +65,46 @@
           <tr>
             <th>Item</th>
             <th>Vendor</th>
-            <th>Kategori</th>
-            <th>Spesifikasi</th>
-            <th>Harga</th>
-            <th>Sumber</th>
+            <th>Category</th>
+            <th>Specification</th>
+            <th>Price</th>
+            <th>Source</th>
             <th></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-      <div class="empty" id="emptyState" style="display:none">Tidak ada data.</div>
+      <div class="empty" id="emptyState" style="display:none">No data.</div>
     </div>
 
     <!-- OPTIMIZER -->
     <div class="section-divider">
-      <h2>Optimasi Kombinasi Pembelian/Sewa</h2>
+      <h2>Purchase/Rental Combination Optimizer</h2>
       <div class="sub">
-        Masukkan kebutuhan (item, qty, kombinasi hari event + GR). Sistem mencari vendor termurah
-        untuk tiap item, memakai Item ID untuk mencocokkan penawaran antar vendor. Karena harga
-        per kombinasi bersifat sparse, sistem otomatis memakai kombinasi terdekat yang tersedia
-        (ditandai "≈") bila kombinasi yang diminta tidak ada datanya persis untuk vendor tsb.
-        Harga disesuaikan proporsional bila qty yang diminta berbeda dari qty per listing.
+        Enter your requirements (item, qty, event day + GR combination). The system finds the cheapest vendor
+        for each item, using the Item ID to match offers across vendors. Because prices per combination
+        are sparse, the system automatically uses the closest available combination
+        (marked "≈") when the requested combination has no exact data for that vendor.
+        Prices are adjusted proportionally if the requested qty differs from the qty per listing.
       </div>
 
       <div class="opt-layout">
         <div class="opt-panel">
-          <h3>Daftar Kebutuhan</h3>
+          <h3>Requirements List</h3>
           <div class="opt-headrow">
-            <span>Item</span><span>Qty</span><span>Kombinasi Hari + GR</span><span></span>
+            <span>Item</span><span>Qty</span><span>Day + GR Combination</span><span></span>
           </div>
           <div id="optRows"></div>
           <div class="opt-actions">
-            <button class="btn btn-ghost" id="btnAddRow">+ Tambah Item</button>
-            <button class="btn btn-primary" id="btnOptimize">Cari Kombinasi Termurah</button>
+            <button class="btn btn-ghost" id="btnAddRow">+ Add Item</button>
+            <button class="btn btn-primary" id="btnOptimize">Find Cheapest Combination</button>
           </div>
         </div>
 
         <div class="opt-panel">
-          <h3>Hasil Optimasi</h3>
+          <h3>Optimization Result</h3>
           <div id="optResult">
-            <div class="opt-result-empty">Isi kebutuhan lalu klik "Cari Kombinasi Termurah".</div>
+            <div class="opt-result-empty">Fill in the requirements, then click "Find Cheapest Combination".</div>
           </div>
         </div>
     </div>
@@ -112,25 +112,25 @@
 
     <!-- VENDOR COMPARISON -->
     <div class="section-divider">
-      <h2>Bandingkan Harga Semua Vendor</h2>
+      <h2>Compare Prices Across All Vendors</h2>
       <div class="sub">
-        Memakai Item ID yang sudah distandardisasi lintas vendor supaya perbandingan apple-to-apple.
-        Ketik nama item, pilih dari saran yang muncul, lalu klik <b>"Bandingkan"</b> untuk melihat
-        spesifikasi lengkap dan harga dari setiap vendor. Setelah hasil muncul, kombinasi Hari Event +
-        Hari GR bisa diganti langsung di dalam kartu hasil — karena vendor termurah bisa berbeda-beda
-        tergantung kombinasi yang dipilih.
+        Uses Item IDs standardized across vendors so the comparison is apples-to-apples.
+        Type an item name, pick from the suggestions that appear, then click <b>"Compare"</b> to see
+        the full specifications and prices from each vendor. Once results appear, the Event Day +
+        GR Day combination can be changed right inside the result card — because the cheapest vendor can differ
+        depending on the combination selected.
       </div>
 
       <div class="cmp-panel">
         <div class="cmp-controls">
           <div class="cmp-search-wrap">
-            <input type="text" id="cmpSearchInput" placeholder="Ketik nama item/package, mis. &quot;LED P2.6 Indoor&quot;..." autocomplete="off">
+            <input type="text" id="cmpSearchInput" placeholder="Type an item/package name, e.g. &quot;LED P2.6 Indoor&quot;..." autocomplete="off">
             <div class="cmp-suggestions" id="cmpSuggestions"></div>
           </div>
-          <select class="sel" id="cmpKategori"><option value="">Semua Kategori</option></select>
-          <button class="btn btn-primary" id="btnCompare" type="button">🔍 Bandingkan</button>
+          <select class="sel" id="cmpKategori"><option value="">All Categories</option></select>
+          <button class="btn btn-primary" id="btnCompare" type="button">🔍 Compare</button>
         </div>
-        <div class="cmp-hint" id="cmpHint">Ketik nama item, pilih dari daftar saran, lalu klik "Bandingkan". Atau klik kolom pencarian untuk melihat beberapa contoh item.</div>
+        <div class="cmp-hint" id="cmpHint">Type an item name, pick from the suggestions, then click "Compare". Or click the search box to see some example items.</div>
         <div id="cmpResult"></div>
       </div>
     </div>

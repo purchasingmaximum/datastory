@@ -218,7 +218,7 @@ dialog#projects::backdrop{background:rgba(8,14,20,.5)}
 .pj-list .btns{display:flex;gap:6px}
 .pj-list .ghost{font:inherit;font-size:13px;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;text-decoration:none}
 .pj-list .ghost:hover{color:var(--ink);border-color:var(--muted)}
-.pj-list li.cur .nm::after{content:" · dibuka";font-weight:400;color:var(--muted)}
+.pj-list li.cur .nm::after{content:" · open";font-weight:400;color:var(--muted)}
 
 /* ---------- status sinkron, aksi baru ---------- */
 .sync-note,.pj-sync{display:block;font-size:12.5px;color:var(--muted);margin:4px 0 0}

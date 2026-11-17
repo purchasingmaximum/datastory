@@ -10,7 +10,7 @@
 
   // matriks 3x3 per ikon (kecerahan tiap kotak, baris atas dulu) — sama dengan Menu utama
   var ITEMS = [
-    { href: "index.html",       name: "Menu utama",  m: [1,1,1, 0,1,1, 1,0,1],            l: "#16161a", d: "#f2f2f4" },
+    { href: "index.html",       name: "Main menu",  m: [1,1,1, 0,1,1, 1,0,1],            l: "#16161a", d: "#f2f2f4" },
     { href: "input.html",       name: "Input Report", m: [0,1,0, .8,1,.8, 0,.55,0],       l: "#1f8a70", d: "#9fd4ab" },
     { href: "analytics.html",   name: "Analytics",    m: [0,1,0, 0,1,.7, .45,1,.7],       l: "#6b4fa0", d: "#aa9ddb" },
     { href: "budget.html",      name: "Budget",       m: [0,0,1, 0,.75,1, .4,.75,1],      l: "#d4472a", d: "#f2a691" },
@@ -65,17 +65,17 @@
   var btn = document.createElement("button");
   btn.type = "button"; btn.className = "mxa-btn";
   btn.setAttribute("aria-haspopup", "menu"); btn.setAttribute("aria-expanded", "false");
-  btn.setAttribute("aria-label", "Menu pindah fitur"); btn.title = "Pindah fitur";
+  btn.setAttribute("aria-label", "Feature switcher menu"); btn.title = "Switch feature";
   btn.innerHTML = pix(ITEMS[0].m);
 
   var panel = document.createElement("div");
   panel.className = "mxa-panel"; panel.hidden = true; panel.setAttribute("role", "menu");
-  var html = '<div class="mxa-head">Pindah fitur</div>';
+  var html = '<div class="mxa-head">Switch feature</div>';
   ITEMS.forEach(function (it, i) {
     var cur = it.href === file;
     html += '<a class="mxa-item" role="menuitem" href="' + it.href + '" style="--tl:' + it.l + ';--td:' + it.d + '"' +
             (cur ? ' aria-current="page"' : "") + ">" + pix(it.m) + "<span>" + it.name + "</span>" +
-            (cur ? '<span class="mxa-here">Di sini</span>' : "") + "</a>";
+            (cur ? '<span class="mxa-here">Here</span>' : "") + "</a>";
     if (i === 0) html += '<div class="mxa-sep" role="separator"></div>';
   });
   panel.innerHTML = html;

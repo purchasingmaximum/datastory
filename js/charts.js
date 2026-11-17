@@ -112,9 +112,9 @@ function renderPaymentDonut(container, summary) {
   const TH = themeTokens();
 
   const data = [
-    { key: "Lunas", value: summary.lunasTotal, color: ACCENT.lunas },
+    { key: "Paid in full", value: summary.lunasTotal, color: ACCENT.lunas },
     { key: "DP", value: summary.dpPaidTotal, color: ACCENT.dp },
-    { key: "Belum Dibayar", value: summary.outstanding, color: ACCENT.belum },
+    { key: "Unpaid", value: summary.outstanding, color: ACCENT.belum },
   ].filter((d) => d.value > 0);
 
   if (!data.length) {
@@ -123,7 +123,7 @@ function renderPaymentDonut(container, summary) {
     // Terbesar" di sebelahnya saat kombinasi filter tidak punya data.
     d3.select(container).append("div")
       .attr("class", "chart-empty-msg")
-      .text("Belum ada data pembayaran untuk pilihan ini.");
+      .text("No payment data for this selection.");
     return;
   }
 
@@ -160,7 +160,7 @@ function renderPaymentDonut(container, summary) {
     .text(formatRupiahCompact(total));
   g.append("text").attr("text-anchor", "middle").attr("dy", "1.5em")
     .attr("fill", TH.muted).style("font-size", "0.75rem").style("letter-spacing", "0.04em")
-    .text("TOTAL TERCATAT");
+    .text("TOTAL RECORDED");
 }
 
 /* -------------------------------------------------------------------------
@@ -363,7 +363,7 @@ function renderItemVendorBubbles(container, pairs) {
   circ
     .on("mouseenter", (event, d) => {
       d3.select(event.currentTarget).attr("fill-opacity", 1);
-      showTooltip(event, `<strong>${d.itemName}</strong> — ${d.vendor}<br>Frekuensi: ${d.frequency}×<br>Total pengeluaran: ${formatRupiah(d.totalSpending)}`);
+      showTooltip(event, `<strong>${d.itemName}</strong> — ${d.vendor}<br>Frequency: ${d.frequency}×<br>Total spending: ${formatRupiah(d.totalSpending)}`);
     })
     .on("mousemove", moveTooltip)
     .on("mouseleave", (event) => { d3.select(event.currentTarget).attr("fill-opacity", 0.75); hideTooltip(); });
@@ -407,7 +407,7 @@ function renderVerticalBars(container, data, { labelKey, valueKey, color }) {
     .attr("height", (d) => innerH - y(d[valueKey]));
 
   g.selectAll("rect")
-    .on("mouseenter", (event, d) => showTooltip(event, `<strong>${d[labelKey]}</strong><br>${d[valueKey]} event`))
+    .on("mouseenter", (event, d) => showTooltip(event, `<strong>${d[labelKey]}</strong><br>${d[valueKey]} events`))
     .on("mousemove", moveTooltip)
     .on("mouseleave", hideTooltip);
 }
@@ -480,7 +480,7 @@ function renderTimeline(container, timeline) {
       const idx = Math.max(0, Math.min(labels.length - 1, Math.round(mx / step)));
       const d = timeline[idx];
       focusLine.attr("x1", x(d.label)).attr("x2", x(d.label)).attr("opacity", 1);
-      showTooltip(event, `<strong>${d.label}</strong><br>Total event: ${d.eventCount}<br>Total spending: ${formatRupiah(d.spending)}<br>Rata-rata/event: ${formatRupiah(d.avgPerEvent)}`);
+      showTooltip(event, `<strong>${d.label}</strong><br>Total events: ${d.eventCount}<br>Total spending: ${formatRupiah(d.spending)}<br>Average/event: ${formatRupiah(d.avgPerEvent)}`);
     })
     .on("mouseleave", () => { focusLine.attr("opacity", 0); hideTooltip(); });
 }

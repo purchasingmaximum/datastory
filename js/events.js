@@ -1,5 +1,5 @@
 /* =========================================================================
-   events.js — "Daftar Event": memuat daftar ringkas semua event, dengan
+   events.js — "Event List": memuat daftar ringkas semua event, dengan
    pencarian dan tombol Edit yang membuka input.html dalam mode edit
    (input.html?edit=<eventId>).
    ========================================================================= */
@@ -18,8 +18,8 @@
 
   function renderCount(shown, total) {
     countEl.textContent = shown === total
-      ? `${total} event`
-      : `${shown} dari ${total} event`;
+      ? `${total} events`
+      : `${shown} of ${total} events`;
   }
 
   // Urutan daftar: terakhir diperbarui (updatedAt, atau submittedAt untuk
@@ -62,14 +62,14 @@
     listEl.innerHTML = "";
     sortEvents(events, sortSelect.value).forEach((ev) => {
         const node = rowTemplate.content.firstElementChild.cloneNode(true);
-        node.querySelector("[data-event-name]").textContent = ev.event || "(Tanpa nama event)";
+        node.querySelector("[data-event-name]").textContent = ev.event || "(Unnamed event)";
         node.querySelector("[data-event-client]").textContent = ev.client || "—";
         node.querySelector("[data-event-location]").textContent = [ev.city, ev.country].filter(Boolean).join(", ") || "—";
         node.querySelector("[data-event-price]").textContent = formatRupiah(ev.eventPrice || 0);
         node.querySelector("[data-event-date]").textContent = ev.eventDate ? formatDateID(ev.eventDate) : "—";
         node.querySelector("[data-event-submitted]").textContent = ev.submittedAt ? formatDateTimeID(ev.submittedAt).date : "—";
 
-        // "Diperbarui" hanya tampil kalau event pernah diedit (lebih baru dari submit awal).
+        // "Updated" hanya tampil kalau event pernah diedit (lebih baru dari submit awal).
         const upd = updatedTime(ev);
         const sub = new Date(ev.submittedAt || 0).getTime() || 0;
         if (upd && upd - sub > 60 * 1000) {
@@ -78,7 +78,7 @@
           node.querySelector("[data-event-updated-wrap]").hidden = false;
         }
 
-        node.querySelector("[data-event-items]").textContent = `${ev.itemCount || 0} barang`;
+        node.querySelector("[data-event-items]").textContent = `${ev.itemCount || 0} items`;
         node.querySelector("[data-event-edit-link]").href = "input.html?edit=" + encodeURIComponent(ev.eventId);
         listEl.appendChild(node);
       });
@@ -103,7 +103,7 @@
     try {
       allEvents = await loadEventsList((attempt, attempts) => {
         const labelEl = loadingEl.querySelector(".mx-label");
-        if (labelEl) labelEl.textContent = `Masih memuat, mencoba lagi… (${attempt}/${attempts})`;
+        if (labelEl) labelEl.textContent = `Still loading, retrying… (${attempt}/${attempts})`;
       });
       loadingEl.hidden = true;
       if (allEvents.length === 0) {
@@ -118,7 +118,7 @@
       console.error(err);
       loadingEl.hidden = true;
       errorEl.hidden = false;
-      errorEl.textContent = "Gagal memuat daftar event. Periksa koneksi atau konfigurasi API_URL di js/data.js.";
+      errorEl.textContent = "Failed to load the event list. Check your connection or the API_URL configuration in js/data.js.";
     }
   })();
 })();

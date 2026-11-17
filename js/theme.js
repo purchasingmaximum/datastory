@@ -7,9 +7,9 @@
     root.dataset.theme = t;
     try { localStorage.setItem(KEY, t); } catch (_) {}
     document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
-      btn.textContent = t === "dark" ? "☀️ Terang" : "🌙 Gelap";
-      btn.setAttribute("aria-label", t === "dark" ? "Aktifkan mode terang" : "Aktifkan mode gelap");
-      btn.setAttribute("title", t === "dark" ? "Mode terang" : "Mode gelap");
+      btn.textContent = t === "dark" ? "☀️ Light" : "🌙 Dark";
+      btn.setAttribute("aria-label", t === "dark" ? "Switch to light mode" : "Switch to dark mode");
+      btn.setAttribute("title", t === "dark" ? "Light mode" : "Dark mode");
     });
     // Let other scripts (e.g. the D3 charts in analytics.js, which read
     // --ink/--muted/--line/--paper at render time) know the palette

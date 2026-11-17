@@ -1,9 +1,9 @@
 /* =========================================================================
    event-export.js — ekspor satu laporan event ke Excel (.xlsx) dan PDF.
 
-   Excel : sheet "Laporan Event" memakai urutan & kolom yang sama dengan form
+   Excel : sheet "Event Report" memakai urutan & kolom yang sama dengan form
            Input Report (info event di atas, tabel Rental Items di bawah,
-           baris Total berisi rumus SUM). Sheet "Analisis" memuat ringkasan
+           baris Total berisi rumus SUM). Sheet "Analysis" memuat ringkasan
            kategori, vendor, dan pembanding harga.
    PDF   : memakai dialog cetak browser (Simpan sebagai PDF) pada area
            laporan; gaya cetak ada di css/input-feas.css (@media print).
@@ -23,10 +23,10 @@
   function longDate(iso) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
     if (!m) return iso || "";
-    var bln = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    var bln = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     return +m[3] + " " + bln[+m[2] - 1] + " " + m[1];
   }
-  function safeName(s) { return (String(s || "").replace(/[\\/:*?"<>|]/g, "").trim() || "Laporan Event"); }
+  function safeName(s) { return (String(s || "").replace(/[\\/:*?"<>|]/g, "").trim() || "Event Report"); }
 
   /* ---------- gaya bersama ---------- */
   var thin = { style: "thin", color: { argb: "FFBFBFBF" } };
@@ -69,14 +69,14 @@
   function dateText(report) {
     var sameDay = report.eventDate && report.eventDate === report.eventDateEnd;
     return report.eventDate
-      ? (sameDay || !report.eventDateEnd ? longDate(report.eventDate) : longDate(report.eventDate) + " sampai " + longDate(report.eventDateEnd)) + " (di luar GR)"
+      ? (sameDay || !report.eventDateEnd ? longDate(report.eventDate) : longDate(report.eventDate) + " to " + longDate(report.eventDateEnd)) + " (excluding GR)"
       : "";
   }
 
   /* ================= Sheet laporan satu event ================= */
   function addReportSheet(wb, report, name) {
     var items = report.items || [];
-    var ws = wb.addWorksheet(name || "Laporan Event", { views: [{ showGridLines: false }] });
+    var ws = wb.addWorksheet(name || "Event Report", { views: [{ showGridLines: false }] });
     var W = { A: 6, B: 38, C: 18, D: 28, E: 16, F: 19, G: 19, H: 19, I: 38 };
     Object.keys(W).forEach(function (k) { ws.getColumn(k).width = W[k]; });
 
@@ -89,13 +89,13 @@
 
     var days = num(report.eventDays);
     var info = [
-      ["Pengisi Laporan", report.user || ""],
-      ["Kota", report.city || ""],
-      ["Tanggal Event", dateText(report)],
-      ["Jumlah Day", days || ""],
-      ["Jumlah GR", num(report.gr)],
-      ["Total Hari (Day + GR)", days ? days + num(report.gr) : ""],
-      ["ID Event", report.eventId || ""]
+      ["Reporter", report.user || ""],
+      ["City", report.city || ""],
+      ["Event Date", dateText(report)],
+      ["Number of Days", days || ""],
+      ["Number of GR", num(report.gr)],
+      ["Total Days (Day + GR)", days ? days + num(report.gr) : ""],
+      ["Event ID", report.eventId || ""]
     ];
     info.forEach(function (r, i) {
       var row = 3 + i;
@@ -112,7 +112,7 @@
     ws.getRow(hr).height = 22;
 
     var th = hr + 1;
-    ["No", "Nama Barang", "Kategori", "Nama Vendor", "Status Pembayaran", "Harga Total (Rp)", "Nominal DP (Rp)", "Sisa DP (Rp)", "Keterangan"].forEach(function (h, i) {
+    ["No", "Item Name", "Category", "Vendor Name", "Payment Status", "Total Price (Rp)", "DP Amount (Rp)", "Remaining DP (Rp)", "Notes"].forEach(function (h, i) {
       var c = ws.getCell(th, i + 1);
       c.value = h; c.font = FH; c.fill = solid(HEAD); c.border = GRID; c.alignment = CENTER;
     });
@@ -121,7 +121,7 @@
     var first = th + 1;
     items.forEach(function (it, i) {
       var r = first + i, total = num(it.totalPrice), dp = paidOf(it);
-      var vals = [i + 1, it.itemName || "", it.category || "", it.vendor || "", it.paymentStatus || "", total, dp, null, it.description || ""];
+      var vals = [i + 1, it.itemName || "", it.category || "", it.vendor || "", (it.paymentStatus === "Lunas" ? "Paid in full" : it.paymentStatus) || "", total, dp, null, it.description || ""];
       vals.forEach(function (v, ci) {
         var c = ws.getCell(r, ci + 1);
         if (ci === 7) c.value = { formula: "MAX(0,F" + r + "-G" + r + ")", result: Math.max(0, total - dp) };
@@ -142,7 +142,7 @@
     var tr = items.length ? last + 1 : first;
     var sums = sumsOf(items);
     ws.mergeCells("A" + tr + ":E" + tr);
-    var lab = ws.getCell("A" + tr); lab.value = "Total (" + items.length + " barang)"; lab.font = FB; lab.alignment = RIGHT;
+    var lab = ws.getCell("A" + tr); lab.value = "Total (" + items.length + " items)"; lab.font = FB; lab.alignment = RIGHT;
     [["F", sums.total], ["G", sums.dp], ["H", sums.sisa]].forEach(function (p) {
       var c = ws.getCell(p[0] + tr);
       c.value = items.length ? { formula: "SUM(" + p[0] + first + ":" + p[0] + last + ")", result: p[1] } : 0;
@@ -153,9 +153,9 @@
 
     /* ringkasan pembayaran: kotak kecil di bawah tabel */
     var sr = tr + 2, pct = sums.total > 0 ? Math.min(1, sums.dp / sums.total) : 0;
-    [["Total biaya event", { formula: "F" + tr, result: sums.total }, ACC], ["Terbayar (DP / Lunas)", { formula: "G" + tr, result: sums.dp }, ACC],
-     ["Sisa pembayaran", { formula: "H" + tr, result: sums.sisa }, ACC],
-     ["Persentase terbayar", { formula: "IF(F" + tr + "=0,0,G" + tr + "/F" + tr + ")", result: pct }, "0%"]].forEach(function (r, i) {
+    [["Total event cost", { formula: "F" + tr, result: sums.total }, ACC], ["Paid (DP / Paid in full)", { formula: "G" + tr, result: sums.dp }, ACC],
+     ["Remaining payment", { formula: "H" + tr, result: sums.sisa }, ACC],
+     ["Percentage paid", { formula: "IF(F" + tr + "=0,0,G" + tr + "/F" + tr + ")", result: pct }, "0%"]].forEach(function (r, i) {
       var row = sr + i;
       ws.mergeCells("A" + row + ":C" + row);
       var k = ws.getCell("A" + row); k.value = r[0]; k.font = FB; k.fill = solid(LABEL); k.alignment = LEFT;
@@ -173,12 +173,12 @@
 
   /* ================= Sheet analisis satu event ================= */
   function addAnalysisSheet(wb, report, analysis, name) {
-    var wa = wb.addWorksheet(name || "Analisis", { views: [{ showGridLines: false }] });
+    var wa = wb.addWorksheet(name || "Analysis", { views: [{ showGridLines: false }] });
     var W = { A: 38, B: 26, C: 22, D: 22, E: 14, F: 26 };
     Object.keys(W).forEach(function (k) { wa.getColumn(k).width = W[k]; });
     var r = 1;
     wa.mergeCells("A1:F1");
-    var title = wa.getCell("A1"); title.value = "ANALISIS  ·  " + (report.event || "-");
+    var title = wa.getCell("A1"); title.value = "ANALYSIS  ·  " + (report.event || "-");
     title.font = { name: "Calibri", size: 15, bold: true, color: { argb: "FFFFFFFF" } }; title.fill = solid(HEAD); title.alignment = { vertical: "middle", indent: 1 };
     wa.getRow(1).height = 32; r = 3;
 
@@ -194,7 +194,7 @@
       return c;
     };
 
-    section("Catatan");
+    section("Notes");
     (analysis.notes || []).forEach(function (n) {
       wa.mergeCells("A" + r + ":F" + r);
       var c = wa.getCell("A" + r); c.value = "•  " + n; c.font = F; c.alignment = { wrapText: true, vertical: "top", indent: 1 };
@@ -204,7 +204,7 @@
 
     var block = function (label, first, rows) {
       section(label);
-      header(r, [first, "Total (Rp)", "Jumlah barang", "% dari total"]); r++;
+      header(r, [first, "Total (Rp)", "Number of items", "% of total"]); r++;
       var s = r;
       rows.forEach(function (g, i) {
         cell(r, 1, g.name); cell(r, 2, g.total, ACC); cell(r, 3, g.count, "0", false, CENTER);
@@ -221,19 +221,19 @@
       }
       r++;
     };
-    block("Biaya per kategori", "Kategori", analysis.byCategory || []);
-    block("Biaya per vendor", "Vendor", analysis.byVendor || []);
+    block("Cost by category", "Category", analysis.byCategory || []);
+    block("Cost by vendor", "Vendor", analysis.byVendor || []);
 
-    section("Pembanding harga per barang (harga per hari vs median event lain)");
-    header(r, ["Nama Barang", "Vendor", "Harga per hari (Rp)", "Median per hari (Rp)", "Selisih", "Penilaian"]); r++;
+    section("Price comparison per item (price per day vs median of other events)");
+    header(r, ["Item Name", "Vendor", "Price per day (Rp)", "Median per day (Rp)", "Difference", "Assessment"]); r++;
     (analysis.itemChecks || []).forEach(function (c, i) {
       cell(r, 1, c.itemName || ""); cell(r, 2, c.vendor || "", null, false, LEFT);
       cell(r, 3, Math.round(c.perDay), ACC);
       cell(r, 4, c.median == null ? "-" : Math.round(c.median), ACC, false, c.median == null ? CENTER : null);
       cell(r, 5, c.diffPct == null ? "-" : c.diffPct / 100, "+0%;-0%;0%", false, CENTER);
       var v = cell(r, 6, c.verdict + (c.samples ? " (n=" + c.samples + ")" : ""), null, false, CENTER);
-      if (c.verdict === "Lebih mahal") v.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FFC00000" } };
-      else if (c.verdict === "Lebih murah") v.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF2E7D32" } };
+      if (c.verdict === "More expensive") v.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FFC00000" } };
+      else if (c.verdict === "Cheaper") v.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF2E7D32" } };
       if (i % 2) for (var k = 1; k <= 6; k++) wa.getCell(r, k).fill = solid(ZEBRA);
       fit(wa.getRow(r), [[c.itemName, W.A - 2], [c.vendor, W.B - 2]]); r++;
     });
@@ -247,27 +247,27 @@
     return wb;
   }
 
-  /* satu event: sheet "Laporan Event" + "Analisis" */
+  /* satu event: sheet "Event Report" + "Analysis" */
   function buildWorkbook(ExcelJS, report, analysis) {
     var wb = newWorkbook(ExcelJS);
-    addReportSheet(wb, report, "Laporan Event");
-    if (analysis) addAnalysisSheet(wb, report, analysis, "Analisis");
+    addReportSheet(wb, report, "Event Report");
+    if (analysis) addAnalysisSheet(wb, report, analysis, "Analysis");
     return wb;
   }
 
-  /* banyak event dalam satu file: sheet "Ringkasan" + satu sheet per event.
-     entries: [{ report, analysis? }]  (analysis opsional -> sheet "Analisis" per event) */
+  /* banyak event dalam satu file: sheet "Summary" + satu sheet per event.
+     entries: [{ report, analysis? }]  (analysis opsional -> sheet "Analysis" per event) */
   function buildMultiWorkbook(ExcelJS, entries) {
     var wb = newWorkbook(ExcelJS);
-    var sum = wb.addWorksheet("Ringkasan", { views: [{ showGridLines: false }] });
+    var sum = wb.addWorksheet("Summary", { views: [{ showGridLines: false }] });
     var W = { A: 6, B: 40, C: 18, D: 32, E: 12, F: 19, G: 19, H: 19, I: 12 };
     Object.keys(W).forEach(function (k) { sum.getColumn(k).width = W[k]; });
     sum.mergeCells("A1:I1");
-    var t = sum.getCell("A1"); t.value = "RINGKASAN INPUT REPORT  ·  " + entries.length + " event";
+    var t = sum.getCell("A1"); t.value = "INPUT REPORT SUMMARY  ·  " + entries.length + " events";
     t.font = { name: "Calibri", size: 15, bold: true, color: { argb: "FFFFFFFF" } }; t.fill = solid(HEAD); t.alignment = { vertical: "middle", indent: 1 };
     sum.getRow(1).height = 32;
     var th = 3;
-    ["No", "Nama Event", "Kota", "Tanggal Event", "Barang", "Total Biaya (Rp)", "Terbayar (Rp)", "Sisa (Rp)", "Status"].forEach(function (h, i) {
+    ["No", "Event Name", "City", "Event Date", "Items", "Total Cost (Rp)", "Paid (Rp)", "Remaining (Rp)", "Status"].forEach(function (h, i) {
       var c = sum.getCell(th, i + 1); c.value = h; c.font = FH; c.fill = solid(HEAD); c.border = GRID; c.alignment = CENTER;
     });
     sum.getRow(th).height = 28;
@@ -280,7 +280,7 @@
       used.push(tab);
       var r = first + i;
       var tgl = rep.eventDate ? (rep.eventDateEnd && rep.eventDateEnd !== rep.eventDate ? longDate(rep.eventDate) + " – " + longDate(rep.eventDateEnd) : longDate(rep.eventDate)) : "";
-      var vals = [i + 1, rep.event || "(Tanpa nama event)", rep.city || "", tgl, items.length, null, null, null, rep.draft ? "Draft" : "Final"];
+      var vals = [i + 1, rep.event || "(Unnamed event)", rep.city || "", tgl, items.length, null, null, null, rep.draft ? "Draft" : "Final"];
       vals.forEach(function (v, ci) {
         var c = sum.getCell(r, ci + 1); c.font = F; c.border = GRID;
         if (ci >= 5 && ci <= 7) {
@@ -290,17 +290,17 @@
         if (i % 2) c.fill = solid(ZEBRA);
       });
       var nm = sum.getCell(r, 2);   /* nama event menaut ke sheet-nya */
-      nm.value = { text: rep.event || "(Tanpa nama event)", hyperlink: "#'" + tab + "'!A1" };
+      nm.value = { text: rep.event || "(Unnamed event)", hyperlink: "#'" + tab + "'!A1" };
       nm.font = { name: "Calibri", size: 10, color: { argb: "FF0563C1" }, underline: true }; nm.alignment = LEFT;
       fit(sum.getRow(r), [[rep.event, W.B - 2], [rep.city, W.C - 2], [tgl, W.D - 2]]);
 
       addReportSheet(wb, rep, tab);
-      if (en.analysis) addAnalysisSheet(wb, rep, en.analysis, sheetName(wb, "A" + ((i + 1) < 10 ? "0" : "") + (i + 1) + " Analisis"));
+      if (en.analysis) addAnalysisSheet(wb, rep, en.analysis, sheetName(wb, "A" + ((i + 1) < 10 ? "0" : "") + (i + 1) + " Analysis"));
     });
 
     var last = first + entries.length - 1, tr = last + 1;
     sum.mergeCells("A" + tr + ":D" + tr);
-    var lab = sum.getCell("A" + tr); lab.value = "Total (" + entries.length + " event)"; lab.font = FB; lab.alignment = RIGHT;
+    var lab = sum.getCell("A" + tr); lab.value = "Total (" + entries.length + " events)"; lab.font = FB; lab.alignment = RIGHT;
     var e = sumsOf([].concat.apply([], entries.map(function (x) { return x.report.items || []; })));
     var cnt = sum.getCell("E" + tr); cnt.value = entries.length ? { formula: "SUM(E" + first + ":E" + last + ")", result: entries.reduce(function (a, x) { return a + (x.report.items || []).length; }, 0) } : 0;
     cnt.alignment = { horizontal: "center", vertical: "middle" };
@@ -324,18 +324,18 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
   }
   async function downloadExcel(report, analysis) {
-    if (typeof ExcelJS === "undefined") throw new Error("Pustaka Excel gagal dimuat. Periksa koneksi lalu coba lagi.");
+    if (typeof ExcelJS === "undefined") throw new Error("Excel library failed to load. Check your connection and try again.");
     var buf = await buildWorkbook(ExcelJS, report, analysis).xlsx.writeBuffer();
-    saveBlob(buf, safeName(report.event) + " - Laporan Event.xlsx");
+    saveBlob(buf, safeName(report.event) + " - Event Report.xlsx");
   }
   async function downloadMultiExcel(entries, fileName) {
-    if (typeof ExcelJS === "undefined") throw new Error("Pustaka Excel gagal dimuat. Periksa koneksi lalu coba lagi.");
+    if (typeof ExcelJS === "undefined") throw new Error("Excel library failed to load. Check your connection and try again.");
     var buf = await buildMultiWorkbook(ExcelJS, entries).xlsx.writeBuffer();
-    saveBlob(buf, safeName(fileName || ("Input Report - " + entries.length + " event")) + ".xlsx");
+    saveBlob(buf, safeName(fileName || ("Input Report - " + entries.length + " events")) + ".xlsx");
   }
   function printPdf(report) {
     var old = document.title;
-    document.title = safeName(report && report.event) + " - Laporan Event";
+    document.title = safeName(report && report.event) + " - Event Report";
     window.addEventListener("afterprint", function () { document.title = old; }, { once: true });
     try { window.print(); } catch (e) { document.title = old; }
   }

@@ -89,7 +89,7 @@
       const ik = canon(r.item);
       if (ik && !items.has(ik)) items.set(ik, { itemId: r.itemId, kategori: r.kategori, namaItemStandar: r.item, satuanStandar: "item" });
       const vk = canon(r.vendor);
-      if (vk && vk.indexOf("(vendor tidak diketahui)") !== 0 && !vendors.has(vk)) vendors.set(vk, { vendorId: "", namaVendor: r.vendor, kategoriLayanan: "" });
+      if (vk && vk.indexOf("(unknown vendor)") !== 0 && !vendors.has(vk)) vendors.set(vk, { vendorId: "", namaVendor: r.vendor, kategoriLayanan: "" });
     });
     const byName = (k) => (a, b) => a[k].localeCompare(b[k], "id");
     return { items: [...items.values()].sort(byName("namaItemStandar")), vendors: [...vendors.values()].sort(byName("namaVendor")) };

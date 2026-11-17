@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Budget Event</title>
+<title>Event Budget</title>
 <script src="js/auth-guard.js?v=20261030b"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -300,7 +300,7 @@ dialog#projects::backdrop { background: rgba(8, 14, 20, .5); }
 .pj-list .st.no { color: var(--red); }
 .pj-list .btns { display: flex; gap: 6px; flex-wrap: wrap; }
 .pj-list .ghost { padding: 5px 10px; font-size: 13px; }
-.pj-list li.cur .nm::after { content: " · dibuka"; font-weight: 400; color: var(--muted); }
+.pj-list li.cur .nm::after { content: " · open"; font-weight: 400; color: var(--muted); }
 .ghost:disabled { opacity: .45; cursor: default; }
 .pj-acct { font-size: 12.5px; color: var(--muted); margin: 12px 0 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .pj-acct .ghost { padding: 3px 9px; font-size: 12.5px; }
@@ -395,9 +395,9 @@ table.ptable { font-size: 12.5px; }
 </head>
 <body>
 <header class="topnav homebar">
-  <a class="home-btn" href="index.html" aria-label="Kembali ke Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
+  <a class="home-btn" href="index.html" aria-label="Back to Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
   <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h2"/></svg>Budget</div>
-  <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+  <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Dark</button></div>
 </header>
 <div class="wrap">
 <div id="view-edit">
@@ -406,40 +406,40 @@ table.ptable { font-size: 12.5px; }
     <div class="top">
       <div class="top-title">
         <label for="p-nama">Budget:</label>
-        <input class="title-in" id="p-nama" aria-label="Nama event (wajib diisi)" placeholder="Nama event (wajib diisi)" autocomplete="off">
+        <input class="title-in" id="p-nama" aria-label="Event name (required)" placeholder="Event name (required)" autocomplete="off">
       </div>
       <div class="top-row">
-        <span class="top-k">Tanggal Event:</span>
+        <span class="top-k">Event Date:</span>
         <div class="dates">
-          <input class="top-in" id="p-mulai" type="date" aria-label="Tanggal mulai event">
-          <span class="sd">sampai</span>
-          <input class="top-in" id="p-selesai" type="date" aria-label="Tanggal selesai event">
+          <input class="top-in" id="p-mulai" type="date" aria-label="Event start date">
+          <span class="sd">to</span>
+          <input class="top-in" id="p-selesai" type="date" aria-label="Event end date">
         </div>
       </div>
       <div class="top-row">
         <label class="top-k req" for="p-venue">Venue:</label>
-        <input class="top-in" id="p-venue" placeholder="Nama venue (wajib diisi)" autocomplete="off">
+        <input class="top-in" id="p-venue" placeholder="Venue name (required)" autocomplete="off">
       </div>
       <p class="req-msg" id="req-msg" role="alert" hidden></p>
     </div>
     <div class="actions">
       <span class="sync" id="sync" role="status"></span>
-      <button class="ghost" id="pj-open" type="button">Proyek</button>
-      <button class="ghost" id="reset" type="button">Kembalikan ke template</button>
+      <button class="ghost" id="pj-open" type="button">Projects</button>
+      <button class="ghost" id="reset" type="button">Reset to template</button>
       <button class="primary go-prev" type="button">Next: Preview →</button>
     </div>
   </div>
-  <div class="b-status" id="b-status" role="status">Memuat database…</div>
+  <div class="b-status" id="b-status" role="status">Loading database…</div>
 
   <main>
     <div class="sheet-wrap">
       <table class="sheet" id="sheet">
         <colgroup><col style="width:15%"><col style="width:12%"><col style="width:5%"><col style="width:5%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:10%"><col style="width:8%"></colgroup>
-        <thead><tr><th>Item</th><th>Vendor</th><th>Qty</th><th>Durasi</th><th>Harga Jual Satuan</th><th>Total Harga Jual</th><th>Modal Satuan</th><th>Total Modal</th><th>Margin</th><th style="text-align:center">Ada</th></tr></thead>
+        <thead><tr><th>Item</th><th>Vendor</th><th>Qty</th><th>Duration</th><th>Unit Selling Price</th><th>Total Selling Price</th><th>Unit Cost Price</th><th>Total Cost Price</th><th>Margin</th><th style="text-align:center">Available</th></tr></thead>
       </table>
     </div>
-    <button class="add-cat" id="add-cat" type="button">+ Tambah kategori khusus untuk proyek ini</button>
-    <div class="b-grand"><span>Total Harga Jual</span><span id="grand-sub" style="font-size:13px;opacity:.9"></span><strong id="grand">Rp 0</strong></div>
+    <button class="add-cat" id="add-cat" type="button">+ Add a custom category for this project</button>
+    <div class="b-grand"><span>Total Selling Price</span><span id="grand-sub" style="font-size:13px;opacity:.9"></span><strong id="grand">Rp 0</strong></div>
     <div class="b-foot" id="b-foot"></div>
     <button class="primary block go-prev" type="button">Next: Preview →</button>
   </main>
@@ -448,9 +448,9 @@ table.ptable { font-size: 12.5px; }
 <ul class="v-list" id="v-list" role="listbox" hidden></ul>
 
 <dialog id="projects" aria-labelledby="pj-title">
-  <div class="pj-head"><h2 id="pj-title">Proyek tersimpan</h2><button class="x" id="pj-close" type="button" aria-label="Tutup">×</button></div>
+  <div class="pj-head"><h2 id="pj-title">Saved projects</h2><button class="x" id="pj-close" type="button" aria-label="Close">×</button></div>
   <div class="pj-tools">
-    <button class="primary" id="pj-new" type="button">+ Proyek baru</button>
+    <button class="primary" id="pj-new" type="button">+ New project</button>
   </div>
   <div class="pj-msg" id="pj-msg" role="status"></div>
   <ul class="pj-list" id="pj-list"></ul>
@@ -459,11 +459,11 @@ table.ptable { font-size: 12.5px; }
 
 <div id="view-prev" hidden>
   <div class="toolbar noprint">
-    <button class="ghost" id="back" type="button">← Kembali ke isian</button>
+    <button class="ghost" id="back" type="button">← Back to editing</button>
     <div class="actions">
       <span class="xmsg" id="x-msg" role="status"></span>
-      <button class="ghost" id="xlsx" type="button" hidden>Simpan Excel</button>
-      <button class="primary" id="print" type="button">Cetak / Simpan PDF</button>
+      <button class="ghost" id="xlsx" type="button" hidden>Save Excel</button>
+      <button class="primary" id="print" type="button">Print / Save as PDF</button>
     </div>
   </div>
   <div class="paper" id="prev-body"></div>
@@ -527,8 +527,8 @@ const cloudOn = () => !!(fb && fb.user);
 
 /* --- lokal --- */
 function localWrite() {
-  try { localStorage.setItem(PROJ_KEY, JSON.stringify(store)); setSync("Tersimpan di browser" + (cloudNote ? " · " + cloudNote : ""), cloudNote ? "" : "ok"); }
-  catch (e) { setSync("Gagal menyimpan (penyimpanan browser diblokir/penuh)", "err"); }
+  try { localStorage.setItem(PROJ_KEY, JSON.stringify(store)); setSync("Saved in browser" + (cloudNote ? " · " + cloudNote : ""), cloudNote ? "" : "ok"); }
+  catch (e) { setSync("Failed to save (browser storage blocked/full)", "err"); }
 }
 function loadLocal() {
   try {
@@ -576,14 +576,14 @@ function cloudData(id) {
 }
 function queueCloud(id, now) {
   clearTimeout(saveTimers[id]);
-  setSync("Menyimpan…", "");
+  setSync("Saving…", "");
   const run = () => {
     delete saveTimers[id];
     if (!store.items[id]) return;
     fb.fsM.setDoc(fb.fsM.doc(cloudCol(), id), cloudData(id))
-      .then(() => { if (!Object.keys(saveTimers).length) setSync("Tersimpan di cloud", "ok"); })
-      .catch(e => setSync("Gagal menyimpan (" + ((e && e.code) || "error") + ")", "err"));
-    if (!navigator.onLine) setSync("Offline: akan tersimpan saat tersambung", "");
+      .then(() => { if (!Object.keys(saveTimers).length) setSync("Saved to cloud", "ok"); })
+      .catch(e => setSync("Failed to save (" + ((e && e.code) || "error") + ")", "err"));
+    if (!navigator.onLine) setSync("Offline: will be saved when reconnected", "");
   };
   if (now) run(); else saveTimers[id] = setTimeout(run, 700);
 }
@@ -607,12 +607,12 @@ function removeProject(id) {
   delete store.items[id];
   if (cloudOn()) {
     clearTimeout(saveTimers[id]); delete saveTimers[id];
-    fb.fsM.deleteDoc(fb.fsM.doc(cloudCol(), id)).catch(e => setSync("Gagal menghapus (" + ((e && e.code) || "error") + ")", "err"));
+    fb.fsM.deleteDoc(fb.fsM.doc(cloudCol(), id)).catch(e => setSync("Failed to delete (" + ((e && e.code) || "error") + ")", "err"));
   } else localWrite();
 }
 
 async function initCloud() {
-  if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) { cloudNote = "Firebase belum diatur"; return false; }
+  if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) { cloudNote = "Firebase not configured"; return false; }
   try {
     const base = "https://www.gstatic.com/firebasejs/" + FB_VER + "/";
     const [appM, authM, fsM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
@@ -623,7 +623,7 @@ async function initCloud() {
     catch (e) { db = fsM.getFirestore(app); }
     fb = { appM, authM, fsM, auth, db, user: null };
     return true;
-  } catch (e) { cloudNote = "Firebase tidak bisa dimuat (periksa koneksi)"; return false; }
+  } catch (e) { cloudNote = "Firebase could not be loaded (check connection)"; return false; }
 }
 function waitAuth() {
   return new Promise(res => {
@@ -649,8 +649,8 @@ function startCloud(user) {
     let first = true;
     unsubCloud = fb.fsM.onSnapshot(cloudCol(), snap => {
       if (bootAborted) return;
-      if (snap.metadata && snap.metadata.fromCache) setSync("Menunggu sambungan ke cloud…", "");
-      else if (!first && !Object.keys(saveTimers).length) setSync("Tersimpan di cloud" + (FB_WORKSPACE ? " (ruang bersama)" : ""), "ok");
+      if (snap.metadata && snap.metadata.fromCache) setSync("Waiting for cloud connection…", "");
+      else if (!first && !Object.keys(saveTimers).length) setSync("Saved to cloud" + (FB_WORKSPACE ? " (shared workspace)" : ""), "ok");
       snap.docChanges().forEach(ch => {
         const id = ch.doc.id;
         if (ch.type === "removed") { if (id !== curId) delete store.items[id]; return; }
@@ -670,7 +670,7 @@ function startCloud(user) {
       if (first) { first = false; resolve(); }
       else if ($("projects").open) renderProjects();
     }, err => {
-      setSync("Gagal membaca cloud (" + ((err && err.code) || "error") + ")", "err");
+      setSync("Failed to read cloud (" + ((err && err.code) || "error") + ")", "err");
       if (first) { first = false; resolve(); }
     });
   });
@@ -692,19 +692,19 @@ async function bootStorage() {
         const c = (e && e.code) || "";
         fb = null;
         cloudNote = c === "auth/operation-not-allowed"
-          ? "aktifkan Anonymous di Firebase (Authentication → Sign-in method)"
-          : "gagal masuk otomatis (" + (c || "error") + ")";
-        loadLocal(); setSync("Tersimpan di browser · " + cloudNote, ""); return;
+          ? "enable Anonymous in Firebase (Authentication → Sign-in method)"
+          : "automatic sign-in failed (" + (c || "error") + ")";
+        loadLocal(); setSync("Saved in browser · " + cloudNote, ""); return;
       }
     }
     await startCloud(user);
     if (bootAborted) return;
     openInitialCloud();
-    setSync("Tersimpan di cloud" + (FB_WORKSPACE ? " (ruang bersama)" : ""), "ok");
+    setSync("Saved to cloud" + (FB_WORKSPACE ? " (shared workspace)" : ""), "ok");
     return;
   }
   loadLocal();
-  setSync(cloudNote ? "Tersimpan di browser · " + cloudNote : "Tersimpan di browser", cloudNote ? "" : "ok");
+  setSync(cloudNote ? "Saved in browser · " + cloudNote : "Saved in browser", cloudNote ? "" : "ok");
 }
 
 /* ===== util ===== */
@@ -881,7 +881,7 @@ const r2 = round2;
           spec: col.spec !== undefined ? String(row[col.spec] || '').trim() : '',
           qty: col.qty !== undefined && row[col.qty] !== '' && Number(row[col.qty]) > 0 ? Number(row[col.qty]) : 1,
           unit: col.unit !== undefined ? String(row[col.unit] || '').trim() : '',
-          vendor: row[col.vendor] ? String(row[col.vendor]).trim() : '(vendor tidak diketahui)', combos: cp
+          vendor: row[col.vendor] ? String(row[col.vendor]).trim() : '(unknown vendor)', combos: cp
         });
       }
     });
@@ -908,7 +908,7 @@ function priceOf(o, dur) {
     k = best;
   }
   const m = DB.combos[k]; if (!m || k == null) return null;
-  return { unit: round2(o.combos[k] / o.qty / Math.max(m.e, 1)), exact, label: m.e + " hari event" + (m.g ? " + " + m.g + " hari GR" : "") };
+  return { unit: round2(o.combos[k] / o.qty / Math.max(m.e, 1)), exact, label: m.e + " event days" + (m.g ? " + " + m.g + " GR days" : "") };
 }
 const cheapest = (list, dur) => list.reduce((b, o) => { const p = priceOf(o, dur); return p && (!b || p.unit < b.p.unit) ? { o, p } : b; }, null);
 const refs = { items: {}, cats: {}, catInp: {} };
@@ -986,18 +986,18 @@ function render() {
     const tb = h("tbody"), modalT = h("td", { class: "n" }), jualT = h("td", { class: "n" }), marT = h("td", { class: "n" });
     let nameCell;
     if (cat.custom) {
-      const inp = h("input", { class: "cat-in", value: cat.name, "aria-label": "Nama kategori" });
+      const inp = h("input", { class: "cat-in", value: cat.name, "aria-label": "Category name" });
       inp.addEventListener("input", () => { cat.name = inp.value; save(); });
       nameCell = h("div", { class: "cat-name" }, h("span", { class: "code", text: letter(ci) + "." }), inp);
       refs.catInp[cat.id] = inp;
     } else nameCell = h("div", { class: "cat-name" }, h("span", { class: "code", text: letter(ci) + "." }), h("span", { text: cat.name }));
     const actCell = h("td", { class: "td-act" });
-    if (cat.custom) actCell.append(h("button", { class: "x", type: "button", title: "Hapus kategori", "aria-label": "Hapus kategori", text: "×",
+    if (cat.custom) actCell.append(h("button", { class: "x", type: "button", title: "Delete category", "aria-label": "Delete category", text: "×",
       onclick: () => { state.cats = state.cats.filter(c => c.id !== cat.id); render(); update(); save(); } }));
     tb.append(h("tr", { class: "cat" }, h("td", {}, nameCell), h("td", { colspan: "4" }), jualT, h("td"), modalT, marT, actCell));
     refs.cats[cat.id] = { modalT, jualT, marT };
     cat.items.forEach(it => { tb.append(lineRow(cat, it)); (it.subs || []).forEach(sb => tb.append(lineRow(cat, sb, it))); });
-    tb.append(h("tr", { class: "addrow" }, h("td", { colspan: "10" }, h("button", { class: "add", type: "button", text: "+ Tambah item",
+    tb.append(h("tr", { class: "addrow" }, h("td", { colspan: "10" }, h("button", { class: "add", type: "button", text: "+ Add item",
       onclick: () => { const it = newItem(true); cat.items.push(it); render(); update(); save(); const r = refs.items[it.id]; if (r) r.nameInp.focus(); } }))));
     table.append(tb);
   });
@@ -1014,17 +1014,17 @@ const lineModal = (it, st = state) => round2((it.pcs || 0) * durOf(it, st) * (it
 function lineRow(cat, it, parent) {
   const sub = !!parent, fixed = !sub && !it.custom;
   if (it.dur === undefined) it.dur = durOf(it);
-  const nm = h("input", { class: "cell name", value: it.name, "aria-label": "Nama item", placeholder: sub ? "Sub item" : "Nama item", autocomplete: "off", "data-col": "name" });
+  const nm = h("input", { class: "cell name", value: it.name, "aria-label": "Item name", placeholder: sub ? "Sub-item" : "Item name", autocomplete: "off", "data-col": "name" });
   const ghost = h("span", { class: "acg", "aria-hidden": "true" });
   /* vendor: dropdown dari database + "Lainnya" untuk isi manual */
   const OTHER = "__other";
   const sel = h("select", { "aria-label": "Vendor" });
-  const vo = h("input", { class: "cell", placeholder: "Ketik nama vendor", "aria-label": "Nama vendor (manual)", autocomplete: "off", hidden: "" });
-  const vb = h("button", { class: "x vback", type: "button", title: "Pilih dari daftar vendor", "aria-label": "Pilih dari daftar vendor", text: "▾", hidden: "" });
+  const vo = h("input", { class: "cell", placeholder: "Type vendor name", "aria-label": "Vendor name (manual)", autocomplete: "off", hidden: "" });
+  const vb = h("button", { class: "x vback", type: "button", title: "Choose from the vendor list", "aria-label": "Choose from the vendor list", text: "▾", hidden: "" });
   function vendorOptions() {
     const e = findItem(it.name);
     sel.textContent = "";
-    sel.append(h("option", { value: "", text: "Pilih vendor" }), h("option", { value: "-", text: "-" }));
+    sel.append(h("option", { value: "", text: "Select vendor" }), h("option", { value: "-", text: "-" }));
     let names = [];
     if (e) {
       const by = new Map();
@@ -1032,7 +1032,7 @@ function lineRow(cat, it, parent) {
       [...by.entries()].sort((a, b) => a[1].p.unit - b[1].p.unit).forEach(([v, x]) => { names.push(v); const op = h("option", { value: v, text: v + " · Rp " + fmt(x.p.unit) }); op.dataset.v = v; op.dataset.price = fmt(x.p.unit); sel.append(op); });
     } else { names = DB.vendors.slice().sort((a, b) => a.localeCompare(b)); names.forEach(v => sel.append(h("option", { value: v, text: v }))); }
     if (it.vendor && !it.vOther && it.vendor !== "-" && !names.includes(it.vendor)) sel.append(h("option", { value: it.vendor, text: it.vendor }));
-    sel.append(h("option", { value: OTHER, text: "Lainnya…" }));
+    sel.append(h("option", { value: OTHER, text: "Other…" }));
     sel.value = it.vOther ? OTHER : (it.vendor || "");
     sel.hidden = !!it.vOther; vo.hidden = vb.hidden = !it.vOther; vo.value = it.vOther ? (it.vendor || "") : "";
   }
@@ -1044,7 +1044,7 @@ function lineRow(cat, it, parent) {
     const r = refs.items[it.id];
     if (best) {
       it.offerId = best.o.id; it.price = best.p.unit; if (!it.pcs && !silent) it.pcs = 1;
-      if (r) { r.price.value = fmt(it.price); r.pcs.value = it.pcs ? fmt(it.pcs) : ""; r.price.title = "Database: " + best.p.label + (best.p.exact ? "" : " (kombinasi terdekat)"); }
+      if (r) { r.price.value = fmt(it.price); r.pcs.value = it.pcs ? fmt(it.pcs) : ""; r.price.title = "Database: " + best.p.label + (best.p.exact ? "" : " (closest combination)"); }
     } else { it.offerId = null; if (r) r.price.title = ""; }
   }
   function autoVendor() {   /* item dipilih dari database: vendor termurah terisi otomatis (bisa diganti) */
@@ -1066,7 +1066,7 @@ vo.addEventListener("input", () => { it.vendor = vo.value; save(); });
   vo.addEventListener("blur", () => { if (it.vOther && !vo.value.trim()) setTimeout(() => { if (it.vOther && !vo.value.trim()) backToList(false); }, 120); });
   vb.addEventListener("click", () => backToList(true));
   const num = (label, col, ph) => h("input", { class: "cell", inputmode: "decimal", placeholder: ph || "0", "aria-label": label, "data-col": col });
-  const pcs = num("Qty", "pcs"), dur = num("Durasi", "dur", "1"), hjs = num("Harga jual satuan", "hjs"), jual = num("Total harga jual", "jual"), price = num("Modal satuan", "price");
+  const pcs = num("Qty", "pcs"), dur = num("Duration", "dur", "1"), hjs = num("Unit selling price", "hjs"), jual = num("Total selling price", "jual"), price = num("Unit cost price", "price");
   /* mengubah Qty / Durasi / Harga Jual Satuan mengembalikan Total Harga Jual ke hitungan otomatis (bila Harga Jual Satuan sudah ada) */
   const auto = () => { if ((it.hjs || 0) > 0) it.jm = false; };
   bindNum(pcs, () => it.pcs, v => { it.pcs = v; auto(); }, it, "pcs");
@@ -1076,17 +1076,17 @@ vo.addEventListener("input", () => { it.vendor = vo.value; save(); });
   bindNum(price, () => it.price || 0, v => { it.price = v; it.offerId = null; }, it, "price");
   [pcs, dur, hjs, jual, price].forEach(inp => inp.addEventListener("keydown", gridNav));
   const mod = h("td", { class: "td-mod" }), mar = h("td", { class: "td-mar" });
-  const ada = h("input", { type: "checkbox", "aria-label": "Item ada" });
+  const ada = h("input", { type: "checkbox", "aria-label": "Item available" });
   ada.checked = !it.off;
   ada.addEventListener("change", () => { it.off = !ada.checked; update(); save(); });
   const act = h("td", { class: "td-act" }, ada);
-  if (!sub) act.append(h("button", { class: "x add-sub", type: "button", title: "Tambah sub item", "aria-label": "Tambah sub item", text: "+",
+  if (!sub) act.append(h("button", { class: "x add-sub", type: "button", title: "Add sub-item", "aria-label": "Add sub-item", text: "+",
     onclick: () => {
       if (!(it.subs && it.subs.length)) { it.pcs = 0; it.dur = 1; it.hjs = 0; it.price = 0; it.jual = 0; it.jm = false; it.vendor = ""; it.vOther = false; it.offerId = null; }
       const sb = newItem(); (it.subs = it.subs || []).push(sb); render(); update(); save();
       const r = refs.items[sb.id]; if (r) r.nameInp.focus();
     } }));
-  if (sub || it.custom) act.append(h("button", { class: "x", type: "button", title: "Hapus", "aria-label": "Hapus", text: "×",
+  if (sub || it.custom) act.append(h("button", { class: "x", type: "button", title: "Delete", "aria-label": "Delete", text: "×",
     onclick: () => { if (sub) parent.subs = parent.subs.filter(x => x.id !== it.id); else cat.items = cat.items.filter(x => x.id !== it.id); render(); update(); save(); } }));
   const r = refs.items[it.id] = { tr: null, mod, mar, jual, pcs, dur, hjs, price, ada, nameInp: nm, sub, sel, vo, vb, vopt: vendorOptions, vauto: autoVendor };
   vendorOptions();
@@ -1128,7 +1128,7 @@ function paint(r, it, dead) {
   r.mod.textContent = dead || !m ? "–" : fmt(m);
   if (document.activeElement !== r.jual) r.jual.value = j ? fmt(j) : "";   /* total otomatis ikut berubah saat Qty / Durasi / harga diubah */
   r.jual.classList.toggle("man", isMan(it) && j > 0);
-  if (!(it.fx && it.fx.jual)) r.jual.title = isMan(it) && j > 0 ? "Total diisi manual" : "Qty × Durasi × Harga Jual Satuan";
+  if (!(it.fx && it.fx.jual)) r.jual.title = isMan(it) && j > 0 ? "Total entered manually" : "Qty × Duration × Unit Selling Price";
   marText(r.mar, j, m, dead);
 }
 function calc(st = state) {
@@ -1164,8 +1164,8 @@ function update() {
     GJ = round2(GJ + cj); GM = round2(GM + cm);
   });
   $("grand").textContent = rp(GJ);
-  $("grand-sub").textContent = "Modal " + rp(GM) + " · Margin " + rp(GJ - GM) + (GJ > 0 ? " (" + (Math.round((GJ - GM) / GJ * 1000) / 10).toString().replace(".", ",") + "%)" : "");
-  $("b-foot").textContent = "Total Harga Jual = Qty × Durasi × Harga Jual Satuan, atau ketik langsung di kolom Total Harga Jual untuk mengisi manual (garis putus-putus = manual). Total Modal = Qty × Durasi × Modal Satuan. Memilih vendor dari database mengisi Modal Satuan otomatis (harga per hari sesuai Durasi); bisa diubah manual.";
+  $("grand-sub").textContent = "Cost Price " + rp(GM) + " · Margin " + rp(GJ - GM) + (GJ > 0 ? " (" + (Math.round((GJ - GM) / GJ * 1000) / 10).toString().replace(".", ",") + "%)" : "");
+  $("b-foot").textContent = "Total Selling Price = Qty × Duration × Unit Selling Price, or type directly in the Total Selling Price column to enter it manually (dashed line = manual). Total Cost Price = Qty × Duration × Unit Cost Price. Choosing a vendor from the database fills the Unit Cost Price automatically (per-day price matching the Duration); it can be edited manually.";
 }
 
 /* ===== kontrol di luar tabel ===== */
@@ -1193,7 +1193,7 @@ function syncStatic() {   /* isi ulang kolom dari proyek yang sedang dibuka */
 }
 
 $("add-cat").addEventListener("click", () => {
-  const cat = { id: nid(), name: "Kategori baru", custom: true, items: [newItem(true)] };
+  const cat = { id: nid(), name: "New category", custom: true, items: [newItem(true)] };
   state.cats.push(cat); render(); update(); save();
   const ci = refs.catInp[cat.id]; if (ci) { ci.focus(); ci.select(); }
 });
@@ -1202,12 +1202,12 @@ let resetTimer = null;
 $("reset").addEventListener("click", () => {
   const btn = $("reset");
   if (!resetTimer) {
-    btn.textContent = "Yakin? Klik lagi untuk reset";
-    resetTimer = setTimeout(() => { btn.textContent = "Kembalikan ke template"; resetTimer = null; }, 3000);
+    btn.textContent = "Sure? Click again to reset";
+    resetTimer = setTimeout(() => { btn.textContent = "Reset to template"; resetTimer = null; }, 3000);
     return;
   }
   clearTimeout(resetTimer); resetTimer = null;
-  btn.textContent = "Kembalikan ke template";
+  btn.textContent = "Reset to template";
   const keep = state.project; state = freshState(); state.project = keep;
   syncStatic(); render(); update(); save();
 });
@@ -1216,7 +1216,7 @@ $("reset").addEventListener("click", () => {
 function longDate(v) {
   if (!v) return "";
   const [y, m, d] = v.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(y, m - 1, d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 function buildPreview() {
   const p = state.project, root = $("prev-body");
@@ -1226,9 +1226,9 @@ function buildPreview() {
   const info = (k, v) => h("div", { class: "p-info" }, h("span", { class: "p-info-k", text: k }), h("span", { text: v || "–" }));
   root.append(
     h("h1", { class: "p-title", text: "Budget: " + (p.nama || "–") }),
-    h("div", { class: "p-meta" }, info("Tanggal Event:", dates), info("Venue:", p.venue)));
+    h("div", { class: "p-meta" }, info("Event Date:", dates), info("Venue:", p.venue)));
   const table = h("table", { class: "ptable" },
-    h("thead", {}, h("tr", {}, ...["Item", "Vendor", "Qty", "Durasi", "Harga Jual Satuan", "Total Harga Jual", "Modal Satuan", "Total Modal", "Margin"].map(t => h("th", { text: t })))));
+    h("thead", {}, h("tr", {}, ...["Item", "Vendor", "Qty", "Duration", "Unit Selling Price", "Total Selling Price", "Unit Cost Price", "Total Cost Price", "Margin"].map(t => h("th", { text: t })))));
   let GJ = 0, GM = 0;
   const marTd = (j, m) => { const td = h("td", { class: "td-mar" }); marText(td, j, m, false); return td; };
   const nz = v => v ? fmt(v) : "–";
@@ -1236,7 +1236,7 @@ function buildPreview() {
   state.cats.map(cat => ({ cat, items: cat.items.filter(it => !it.off) })).filter(v => v.items.length).forEach(({ cat, items }, ci) => {
     let cj = 0, cm = 0; const body = [];
     const line = (o, indent) => { const m = lineModal(o), j = jualOf(o); return h("tr", { class: rowCls(j, m, false) },
-      h("td", indent ? { text: o.name || "(tanpa nama)", style: "padding-left:32px" } : { text: o.name || "(tanpa nama)" }),
+      h("td", indent ? { text: o.name || "(unnamed)", style: "padding-left:32px" } : { text: o.name || "(unnamed)" }),
       h("td", { text: (o.vendor && o.vendor !== "-") ? o.vendor : "–" }),
       h("td", { text: nz(o.pcs) }), h("td", { text: nz(o.dur) }), h("td", { text: isMan(o) ? "–" : nz(o.hjs) }), h("td", { text: fmt(j) }),
       h("td", { text: nz(o.price) }), h("td", { text: fmt(m) }), marTd(j, m)); };
@@ -1244,16 +1244,16 @@ function buildPreview() {
       const subs = (it.subs || []).filter(x => !x.off);
       if ((it.subs || []).length) {
         let ij = 0, im = 0; subs.forEach(x => { ij = round2(ij + jualOf(x)); im = round2(im + lineModal(x)); });
-        body.push(h("tr", { class: rowCls(ij, im, false) + " parent" }, h("td", { text: it.name || "(tanpa nama)" }), E(), E(), E(), E(), h("td", { text: fmt(ij) }), E(), h("td", { text: fmt(im) }), marTd(ij, im)));
+        body.push(h("tr", { class: rowCls(ij, im, false) + " parent" }, h("td", { text: it.name || "(unnamed)" }), E(), E(), E(), E(), h("td", { text: fmt(ij) }), E(), h("td", { text: fmt(im) }), marTd(ij, im)));
         subs.forEach(x => body.push(line(x, true))); cj = round2(cj + ij); cm = round2(cm + im);
       } else { body.push(line(it, false)); cj = round2(cj + jualOf(it)); cm = round2(cm + lineModal(it)); }
     });
     GJ = round2(GJ + cj); GM = round2(GM + cm);
-    table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: letter(ci) + ".  " + (cat.name || "(tanpa nama)") }), E(), E(), E(), E(), h("td", { text: fmt(cj) }), E(), h("td", { text: fmt(cm) }), h("td", { text: sgn(cj - cm) })), ...body));
+    table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: letter(ci) + ".  " + (cat.name || "(unnamed)") }), E(), E(), E(), E(), h("td", { text: fmt(cj) }), E(), h("td", { text: fmt(cm) }), h("td", { text: sgn(cj - cm) })), ...body));
   });
   table.append(h("tbody", {}, h("tr", { class: "cat" }, h("td", { text: "Total" }), E(), E(), E(), E(), h("td", { text: rp(GJ) }), E(), h("td", { text: rp(GM) }), h("td", { text: sgn(GJ - GM) + (GJ > 0 ? "  (" + (Math.round((GJ - GM) / GJ * 1000) / 10).toString().replace(".", ",") + "%)" : "") }))));
   root.append(h("div", { class: "p-tablewrap" }, table));
-  root.append(h("div", { class: "p-foot", text: "Dibuat " + new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) }));
+  root.append(h("div", { class: "p-foot", text: "Created " + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) }));
 }
 function showView(name) {
   const prev = name === "prev";
@@ -1263,11 +1263,11 @@ function showView(name) {
   window.scrollTo(0, 0);
 }
 function checkRequired() {
-  const need = [["p-nama", "nama event"], ["p-venue", "venue"]].filter(([id]) => !$(id).value.trim());
+  const need = [["p-nama", "event name"], ["p-venue", "venue"]].filter(([id]) => !$(id).value.trim());
   ["p-nama", "p-venue"].forEach(id => $(id).classList.toggle("invalid", need.some(n => n[0] === id)));
   const msg = $("req-msg");
   if (!need.length) { msg.hidden = true; return true; }
-  msg.textContent = "Isi " + need.map(n => n[1]).join(" dan ") + " dulu sebelum lanjut ke Preview.";
+  msg.textContent = "Please fill in the " + need.map(n => n[1]).join(" and ") + " before continuing to Preview.";
   msg.hidden = false;
   window.scrollTo(0, 0);
   $(need[0][0]).focus();
@@ -1348,11 +1348,11 @@ function buildWorkbook() {
 
   /* judul kolom */
   grid(15, true);
-  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "MODAL"], ["N", "MARGIN"], ["O", "MODAL SATUAN"], ["P", "VENDOR"]]
+  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "COST PRICE"], ["N", "MARGIN"], ["O", "UNIT COST PRICE"], ["P", "VENDOR"]]
     .forEach(([col, t]) => put(col + 15, t, { font: FB, align: CENTER, border: GRID }));
   ["E15:F15", "G15:H15", "I15:J15"].forEach(rg => ws.mergeCells(rg));
 
-  /* kategori & item (item "tidak ada" tidak ditulis) */
+  /* kategori & item (item "unavailable" tidak ditulis) */
   const mktFee = 0;   /* Budget tidak punya Marketing Fee */
   let r = 16, sumJual = 0, sumMargin = 0, sumModal = 0;
   const catRows = [];
@@ -1360,7 +1360,7 @@ function buildWorkbook() {
     const catR = r;
     grid(catR, false);
     ws.mergeCells(`B${catR}:C${catR}`);
-    put("B" + catR, cat.name || "(tanpa nama)", { font: FB, border: GRID });
+    put("B" + catR, cat.name || "(unnamed)", { font: FB, border: GRID });
     r++;
     const first = r;
     let catSum = 0;
@@ -1369,7 +1369,7 @@ function buildWorkbook() {
       const n = 2 + subs.length;   /* 1 baris item + 1 baris per sub item + 1 baris kosong pemisah */
       for (let k = 0; k < n; k++) grid(r + k, true);
       put("B" + r, i + 1, { fmt: "###0;###0", align: CENTER, border: GRID });
-      put("C" + r, it.name || "(tanpa nama)", { border: GRID });
+      put("C" + r, it.name || "(unnamed)", { border: GRID });
       const val = (rr, o, nm) => {
         const jual = jualOf(o), modal = lineModal(o);
         put("E" + rr, o.pcs || "", { fmt: "General", align: CENTER, border: GRID });
@@ -1382,7 +1382,7 @@ function buildWorkbook() {
         put("P" + rr, (o.vendor && o.vendor !== "-") ? o.vendor : "", { border: GRID });   /* nama vendor */
         catSum = round2(catSum + jual); sumMargin = round2(sumMargin + jual - modal); sumModal = round2(sumModal + modal);
       };
-      if (hasSub) subs.forEach((sb, k) => val(r + 1 + k, sb, sb.name || "(tanpa nama)"));
+      if (hasSub) subs.forEach((sb, k) => val(r + 1 + k, sb, sb.name || "(unnamed)"));
       else val(r, it);
       r += n;
     });
@@ -1416,10 +1416,10 @@ function buildWorkbook() {
   const lab = (rr, t) => put("L" + rr, t, { font: FN, align: RIGHT });
   const num = (rr, v) => put("M" + rr, v, { font: FN, fmt: ACC11 });
   const b0 = agencyR, modalAll = round2(sumModal), totalCost = round2(modalAll + mktFee), tagihan = before;
-  lab(b0 + 1, "Modal");      num(b0 + 1, { formula: `SUM(M16:M${b0})`, result: modalAll });
+  lab(b0 + 1, "Cost Price");      num(b0 + 1, { formula: `SUM(M16:M${b0})`, result: modalAll });
   lab(b0 + 2, "Marketing Fee"); num(b0 + 2, mktFee);
   lab(b0 + 3, "Total Cost Before VAT"); num(b0 + 3, { formula: `M${b0 + 1}+M${b0 + 2}`, result: totalCost });
-  lab(b0 + 5, "Tagihan Before VAT"); num(b0 + 5, { formula: `K${beforeR}`, result: tagihan });
+  lab(b0 + 5, "Invoice Before VAT"); num(b0 + 5, { formula: `K${beforeR}`, result: tagihan });
   lab(b0 + 6, "Margin");     num(b0 + 6, { formula: `M${b0 + 5}-M${b0 + 3}`, result: round2(tagihan - totalCost) });
   put("N" + (b0 + 6), { formula: `IF(K${costR}=0,0,M${b0 + 6}/K${costR})`, result: sumJual ? round2(tagihan - totalCost) / sumJual : 0 }, { font: FN, fmt: "0%" });
 
@@ -1458,7 +1458,7 @@ function buildWorkbook() {
 let dlCap = null, directMode = false;   /* directMode: dibuka sebagai file HTML biasa (tanpa claude.ai) */
 async function exportExcel() {
   const btn = $("xlsx"), msg = $("x-msg");
-  if (typeof ExcelJS === "undefined") { msg.textContent = "Pustaka Excel gagal dimuat."; return; }
+  if (typeof ExcelJS === "undefined") { msg.textContent = "Excel library failed to load."; return; }
   btn.disabled = true; msg.textContent = "";
   try {
     const buf = await buildWorkbook().xlsx.writeBuffer();
@@ -1471,10 +1471,10 @@ async function exportExcel() {
       document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     }
-    msg.textContent = (dlCap || directMode) ? "Tersimpan" : "Jika file tidak terunduh, buka file HTML ini langsung di browser (klik dua kali)";
+    msg.textContent = (dlCap || directMode) ? "Saved" : "If the file doesn't download, open this HTML file directly in your browser (double-click it)";
     setTimeout(() => { msg.textContent = ""; }, (dlCap || directMode) ? 2500 : 9000);
   } catch (e) {
-    msg.textContent = e && e.code === "declined" ? "" : "Gagal menyimpan (" + ((e && e.code) || "error") + ")";
+    msg.textContent = e && e.code === "declined" ? "" : "Failed to save (" + ((e && e.code) || "error") + ")";
   } finally { btn.disabled = false; }
 }
 $("xlsx").addEventListener("click", exportExcel);
@@ -1509,13 +1509,13 @@ function addProject(st, label) {
 }
 function renderAccount() {
   const box = $("pj-acct"); box.textContent = "";
-  if (!cloudOn()) { box.append(h("span", { text: "Tersimpan di browser ini" + (cloudNote ? " · " + cloudNote : "") })); return; }
+  if (!cloudOn()) { box.append(h("span", { text: "Saved in this browser" + (cloudNote ? " · " + cloudNote : "") })); return; }
   if (FB_WORKSPACE) {
-    box.append(h("span", { text: "Cloud · ruang bersama: semua yang membuka halaman ini melihat proyek yang sama." }));
-    box.append(h("div", { class: "pj-hint", text: "Siapa pun yang membuka halaman ini bisa melihat, mengubah, dan menghapus semua proyek." }));
+    box.append(h("span", { text: "Cloud · shared workspace: everyone who opens this page sees the same projects." }));
+    box.append(h("div", { class: "pj-hint", text: "Anyone who opens this page can view, edit, and delete all projects." }));
   } else {
-    box.append(h("span", { text: "Cloud · ruang pribadi (terikat ke browser ini)." }));
-    box.append(h("div", { class: "pj-hint", text: "Isi FB_WORKSPACE di kode agar proyek dibagikan ke semua yang membuka halaman." }));
+    box.append(h("span", { text: "Cloud · private workspace (tied to this browser)." }));
+    box.append(h("div", { class: "pj-hint", text: "Set FB_WORKSPACE in the code to share projects with everyone who opens the page." }));
   }
 }
 function renderProjects() {
@@ -1524,25 +1524,25 @@ function renderProjects() {
   Object.keys(store.items).sort(byNewest).forEach(id => {
     const it = store.items[id], st = it.state;
     let c; try { c = calc(st); } catch (e) { return; }
-    const when = it.updated ? new Date(it.updated).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+    const when = it.updated ? new Date(it.updated).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
     const sub = st.project.venue || "";
     const info = h("div", {},
-      h("div", {}, h("span", { class: "nm", text: st.project.nama || "(tanpa nama)" }), h("span", { class: "st ok", text: rp(c.total) })),
-      h("div", { class: "sub", text: (sub ? sub + " · " : "") + "diubah " + when }));
-    const open = h("button", { class: "ghost", type: "button", text: "Buka" });
+      h("div", {}, h("span", { class: "nm", text: st.project.nama || "(unnamed)" }), h("span", { class: "st ok", text: rp(c.total) })),
+      h("div", { class: "sub", text: (sub ? sub + " · " : "") + "edited " + when }));
+    const open = h("button", { class: "ghost", type: "button", text: "Open" });
     if (id === curId) open.disabled = true; else open.addEventListener("click", () => openProject(id));
-    const dup = h("button", { class: "ghost", type: "button", text: "Duplikat", onclick: () => {
+    const dup = h("button", { class: "ghost", type: "button", text: "Duplicate", onclick: () => {
       const copy = JSON.parse(JSON.stringify(st));
-      copy.project.nama = (copy.project.nama || "Proyek") + " (salinan)";
+      copy.project.nama = (copy.project.nama || "Project") + " (copy)";
       const nid2 = newPid(); fixUid(copy);
       store.items[nid2] = { updated: Date.now(), state: copy };
       commitProject(nid2);
-      renderProjects(); pjMsg("Disalin sebagai “" + copy.project.nama + "”.");
+      renderProjects(); pjMsg("Copied as “" + copy.project.nama + "”.");
     } });
     let t = null;
-    const del = h("button", { class: "ghost", type: "button", text: "Hapus" });
+    const del = h("button", { class: "ghost", type: "button", text: "Delete" });
     del.addEventListener("click", () => {
-      if (!t) { del.textContent = "Yakin?"; t = setTimeout(() => { del.textContent = "Hapus"; t = null; }, 3000); return; }
+      if (!t) { del.textContent = "Sure?"; t = setTimeout(() => { del.textContent = "Delete"; t = null; }, 3000); return; }
       clearTimeout(t);
       const wasCur = id === curId;
       if (wasCur) {   /* pindah dulu ke proyek lain, baru hapus (kabar "terhapus" dari Firestore memicu penyegaran daftar) */
@@ -1552,7 +1552,7 @@ function renderProjects() {
       }
       removeProject(id);
       if (wasCur) { showCurrent(); save(true); }
-      renderProjects(); pjMsg("Proyek dihapus.");
+      renderProjects(); pjMsg("Project deleted.");
     });
     ul.append(h("li", { class: id === curId ? "cur" : "" }, info, h("div", { class: "btns" }, open, dup, del)));
   });
@@ -1560,7 +1560,7 @@ function renderProjects() {
 $("pj-open").addEventListener("click", () => { pjMsg(""); renderProjects(); dlg.showModal(); });
 $("pj-close").addEventListener("click", () => dlg.close());
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
-$("pj-new").addEventListener("click", () => addProject(freshState(true), "Proyek baru dibuat dan sedang dibuka."));
+$("pj-new").addEventListener("click", () => addProject(freshState(true), "New project created and now open."));
 
 const BOOT_TIMEOUT = 12000;   /* batas tunggu cloud (ms); lewat itu aplikasi memakai penyimpanan browser */
 function bootWithTimeout() {
@@ -1577,23 +1577,23 @@ function bootWithTimeout() {
   if (useCloud) {   /* tampilkan kerangka dulu agar halaman tidak kosong selagi menghubungkan */
     state = freshState(true); syncStatic(); render(); update();
     document.body.classList.add("booting");
-    setSync("Menghubungkan ke cloud…", "");
+    setSync("Connecting to cloud…", "");
   }
   const r = await bootWithTimeout();
   if (r !== "ok") {   /* cloud lambat / galat: jatuh ke penyimpanan browser dan sebutkan alasannya */
     try { if (unsubCloud) unsubCloud(); } catch (e) {}
     fb = null; store = { current: null, items: {} }; curId = null; state = freshState();
     cloudNote = r === "timeout"
-      ? "cloud tidak menjawab (cek koneksi, aturan Firestore, atau pemblokir iklan)"
-      : "cloud bermasalah: " + ((r && (r.code || r.message)) || "error");
+      ? "cloud not responding (check connection, Firestore rules, or ad blocker)"
+      : "cloud problem: " + ((r && (r.code || r.message)) || "error");
     loadLocal();
-    setSync("Tersimpan di browser · " + cloudNote, "err");
+    setSync("Saved in browser · " + cloudNote, "err");
   }
   syncStatic(); render(); update(); save(true);
   if (!store.items[curId]) save();
   document.body.classList.remove("booting");
-  fetchDb().then(res => { indexDb(res); Object.values(refs.items).forEach(r => r.vopt && r.vopt()); $("b-status").textContent = "Database terhubung: " + DB.items.size + " item dari " + DB.vendors.length + " vendor."; })
-    .catch(err => { const s = $("b-status"); s.className = "b-status err"; s.textContent = "Database gagal dimuat (" + ((err && err.message) || "error") + "). Anda tetap bisa mengisi manual."; });
+  fetchDb().then(res => { indexDb(res); Object.values(refs.items).forEach(r => r.vopt && r.vopt()); $("b-status").textContent = "Database connected: " + DB.items.size + " items from " + DB.vendors.length + " vendors."; })
+    .catch(err => { const s = $("b-status"); s.className = "b-status err"; s.textContent = "Failed to load the database (" + ((err && err.message) || "error") + "). You can still enter data manually."; });
 })();
 </script>
 <script src="js/theme.js?v=20261030b"></script>

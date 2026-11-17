@@ -15,7 +15,7 @@
      all()            semua event (array, lengkap dengan item)
      get(id)          satu event atau null
      save(report)     simpan (baru / edit) -> { eventId, done: Promise }
-     duplicate(id)    salin event -> event baru "(salinan)"
+     duplicate(id)    salin event -> event baru "(copy)"
      remove(id)       hapus event
      subscribe(fn)    dipanggil tiap data berubah; mengembalikan fungsi berhenti
      status()         { mode: "cloud"|"local"|"connecting", note, text }
@@ -165,7 +165,7 @@
         if (first) { first = false; flushPending(); resolve(); }
         emit();
       }, function (err) {
-        mode = "local"; note = "Gagal membaca cloud (" + ((err && err.code) || "error") + ")"; cloudUp = false;
+        mode = "local"; note = "Failed to read cloud (" + ((err && err.code) || "error") + ")"; cloudUp = false;
         if (first) { first = false; resolve(); }
         emit();
       });
@@ -180,7 +180,7 @@
     var done = false, timer;
     var fin = function () { if (!done) { done = true; clearTimeout(timer); resolve(); } };
     timer = setTimeout(function () {
-      if (mode === "connecting") { mode = "local"; note = "cloud tidak menjawab — memakai salinan di browser ini"; emit(); }
+      if (mode === "connecting") { mode = "local"; note = "cloud not responding — using the copy in this browser"; emit(); }
       fin();
     }, BOOT_TIMEOUT);
     if (hadCache) fin();            // tampil cepat dari salinan; cloud menyusul lewat subscribe()
@@ -188,8 +188,8 @@
       console.warn("[event-store] cloud tidak tersedia:", e);
       var c = (e && e.code) || "";
       mode = "local";
-      note = c === "auth/operation-not-allowed" ? "aktifkan Anonymous di Firebase Authentication"
-        : "cloud bermasalah (" + (c || (e && e.message) || "error") + ")";
+      note = c === "auth/operation-not-allowed" ? "enable Anonymous in Firebase Authentication"
+        : "cloud problem (" + (c || (e && e.message) || "error") + ")";
       emit(); fin();
     });
   });
@@ -200,7 +200,7 @@
     pendingWrites++; emit();
     return fb.fsM.setDoc(fb.fsM.doc(col(), ev.eventId), toDoc(ev))
       .then(function () { if (dirty.delete(ev.eventId)) writeLocal(); return true; })
-      .catch(function (e) { dirty.add(ev.eventId); writeLocal(); note = "Gagal menyimpan ke cloud (" + ((e && e.code) || "error") + ")"; throw e; })
+      .catch(function (e) { dirty.add(ev.eventId); writeLocal(); note = "Failed to save to cloud (" + ((e && e.code) || "error") + ")"; throw e; })
       .finally(function () { pendingWrites--; emit(); });
   }
 
@@ -231,10 +231,10 @@
 
   function duplicate(id) {
     var src = events.get(String(id));
-    if (!src) throw new Error("Event tidak ditemukan.");
+    if (!src) throw new Error("Event not found.");
     var copy = JSON.parse(JSON.stringify(src));
     copy.eventId = "";
-    copy.event = (src.event || "Event") + " (salinan)";
+    copy.event = (src.event || "Event") + " (copy)";
     delete copy.submittedAt; delete copy.updatedAt; copy.draft = false;
     return save(copy);
   }
@@ -248,16 +248,16 @@
     pendingWrites++;
     return fb.fsM.deleteDoc(fb.fsM.doc(col(), id))
       .then(function () { return had; })
-      .catch(function (e) { tomb.add(id); writeLocal(); note = "Gagal menghapus di cloud (" + ((e && e.code) || "error") + ")"; throw e; })
+      .catch(function (e) { tomb.add(id); writeLocal(); note = "Failed to delete in cloud (" + ((e && e.code) || "error") + ")"; throw e; })
       .finally(function () { pendingWrites--; emit(); });
   }
 
   /* ---------- status & API ---------- */
   function status() {
     var text;
-    if (mode === "connecting") text = "Menghubungkan ke cloud…";
-    else if (mode === "cloud") text = pendingWrites ? "Menyimpan…" : (fromCache || dirty.size || tomb.size) ? "Menunggu sambungan — perubahan aman di perangkat ini" : "Tersimpan di cloud (ruang bersama)";
-    else text = "Tersimpan di browser · " + (note || "cloud tidak tersedia");
+    if (mode === "connecting") text = "Connecting to cloud…";
+    else if (mode === "cloud") text = pendingWrites ? "Saving…" : (fromCache || dirty.size || tomb.size) ? "Waiting for connection — changes are safe on this device" : "Saved to cloud (shared workspace)";
+    else text = "Saved in browser · " + (note || "cloud unavailable");
     return { mode: mode, note: note, pending: pendingWrites, text: text };
   }
   var all = function () { return Array.from(events.values()); };
@@ -283,7 +283,7 @@
   window.loadEventById = async function (id) {
     await ready;
     var ev = events.get(String(id));
-    if (!ev) throw new Error("Event tidak ditemukan.");
+    if (!ev) throw new Error("Event not found.");
     return JSON.parse(JSON.stringify(ev));
   };
   window.loadStats = async function () {

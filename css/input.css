@@ -547,7 +547,7 @@ fieldset.form-section { min-width: 0; }
   .items-table .field input[data-name="nominalDP"] { text-align: left; }
   .items-table .field .hint { text-align: left; padding: 0; }
   .items-table td.col-no { display: flex; gap: 4px; padding: 0 0 8px; font-size: 0.95rem; }
-  .items-table td.col-no::before { content: "BARANG #"; margin: 0; font-size: 0.95rem; }
+  .items-table td.col-no::before { content: "ITEM #"; margin: 0; font-size: 0.95rem; }
   .items-table td.col-act { position: absolute !important; top: 10px; right: 12px; padding: 0; }
   .items-table td.col-act::before { display: none; }
 

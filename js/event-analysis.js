@@ -44,8 +44,8 @@
   function groupBy(items, keyFn, labelFn, total) {
     var map = {};
     (items || []).forEach(function (it) {
-      var k = canon(keyFn(it)) || "(tanpa nama)";
-      if (!map[k]) map[k] = { name: labelFn(it) || "(tanpa nama)", total: 0, count: 0 };
+      var k = canon(keyFn(it)) || "(unnamed)";
+      if (!map[k]) map[k] = { name: labelFn(it) || "(unnamed)", total: 0, count: 0 };
       map[k].total += num(it.totalPrice); map[k].count++;
     });
     return Object.keys(map).map(function (k) {
@@ -94,34 +94,34 @@
       var sameVendor = pool.filter(function (x) { return x.vendor && x.vendor === canon(it.vendor); });
       var useVendor = sameVendor.length >= 2;
       var ref = useVendor ? sameVendor : pool;
-      var out = { itemName: it.itemName, vendor: it.vendor, totalPrice: t, perDay: perDay, samples: ref.length, basis: useVendor ? "vendor" : "semua vendor", median: null, diffPct: null, verdict: "Belum ada pembanding" };
+      var out = { itemName: it.itemName, vendor: it.vendor, totalPrice: t, perDay: perDay, samples: ref.length, basis: useVendor ? "vendor" : "all vendors", median: null, diffPct: null, verdict: "No comparison yet" };
       if (ref.length >= 2 && t > 0) {
         var med = median(ref.map(function (x) { return x.perDay; }));
         out.median = med;
         out.diffPct = med > 0 ? (perDay - med) / med * 100 : 0;
-        out.verdict = out.diffPct > 25 ? "Lebih mahal" : out.diffPct < -25 ? "Lebih murah" : "Wajar";
+        out.verdict = out.diffPct > 25 ? "More expensive" : out.diffPct < -25 ? "Cheaper" : "Fair";
       }
       return out;
     });
 
     /* --- catatan ringkas dalam kalimat --- */
     var notes = [];
-    if (totals.count === 0) notes.push("Event ini belum punya barang sewa.");
-    if (byCategory[0] && totals.total > 0) notes.push("Kategori terbesar: " + byCategory[0].name + " (" + byCategory[0].pct.toFixed(0) + "% dari total biaya).");
+    if (totals.count === 0) notes.push("This event has no rental items yet.");
+    if (byCategory[0] && totals.total > 0) notes.push("Largest category: " + byCategory[0].name + " (" + byCategory[0].pct.toFixed(0) + "% of total cost).");
     if (byVendor[0] && totals.total > 0) {
       var top = byVendor[0];
-      notes.push("Vendor terbesar: " + top.name + " (" + top.pct.toFixed(0) + "% dari total)." + (top.pct >= 50 && byVendor.length > 1 ? " Ketergantungan pada satu vendor cukup tinggi." : ""));
+      notes.push("Largest vendor: " + top.name + " (" + top.pct.toFixed(0) + "% of total)." + (top.pct >= 50 && byVendor.length > 1 ? " Dependence on a single vendor is fairly high." : ""));
     }
     if (eventBenchmark) {
-      var lv = eventBenchmark.level === "tinggi" ? "di atas rentang umum (Q3)" : eventBenchmark.level === "rendah" ? "di bawah rentang umum (Q1)" : "dalam rentang umum (Q1–Q3)";
-      notes.push("Total biaya " + rp(totals.total) + " " + lv + " dari " + eventBenchmark.n + " event lain; median " + rp(eventBenchmark.median) + ".");
+      var lv = eventBenchmark.level === "tinggi" ? "above the usual range (Q3)" : eventBenchmark.level === "rendah" ? "below the usual range (Q1)" : "within the usual range (Q1–Q3)";
+      notes.push("Total cost " + rp(totals.total) + " " + lv + " compared with " + eventBenchmark.n + " other events; median " + rp(eventBenchmark.median) + ".");
     }
-    var mahal = itemChecks.filter(function (c) { return c.verdict === "Lebih mahal"; });
-    var murah = itemChecks.filter(function (c) { return c.verdict === "Lebih murah"; });
-    if (mahal.length) notes.push(mahal.length + " barang lebih dari 25% di atas median harga per hari: " + mahal.slice(0, 3).map(function (c) { return c.itemName; }).join(", ") + (mahal.length > 3 ? ", dll." : "."));
-    if (murah.length) notes.push(murah.length + " barang lebih dari 25% di bawah median harga per hari.");
-    if (totals.sisa > 0) notes.push("Masih ada sisa pembayaran " + rp(totals.sisa) + " (" + (totals.total ? (totals.sisa / totals.total * 100).toFixed(0) : 0) + "% dari total).");
-    else if (totals.count) notes.push("Seluruh barang sudah lunas.");
+    var mahal = itemChecks.filter(function (c) { return c.verdict === "More expensive"; });
+    var murah = itemChecks.filter(function (c) { return c.verdict === "Cheaper"; });
+    if (mahal.length) notes.push(mahal.length + " items more than 25% above the median price per day: " + mahal.slice(0, 3).map(function (c) { return c.itemName; }).join(", ") + (mahal.length > 3 ? ", etc." : "."));
+    if (murah.length) notes.push(murah.length + " items more than 25% below the median price per day.");
+    if (totals.sisa > 0) notes.push("Remaining payment outstanding: " + rp(totals.sisa) + " (" + (totals.total ? (totals.sisa / totals.total * 100).toFixed(0) : 0) + "% of total).");
+    else if (totals.count) notes.push("All items are paid in full.");
 
     return { totals: totals, days: days, byCategory: byCategory, byVendor: byVendor, eventBenchmark: eventBenchmark, itemChecks: itemChecks, notes: notes };
   }

@@ -23,17 +23,17 @@
 
   async function fetchDatabase(spreadsheetId, apiKey){
     if(!spreadsheetId || spreadsheetId.indexOf('PASTE_') === 0){
-      throw new Error('SPREADSHEET_ID belum diisi di CONFIG (lihat bagian atas script).');
+      throw new Error('SPREADSHEET_ID has not been set in CONFIG (see the top of the script).');
     }
     if(!apiKey || apiKey.indexOf('PASTE_') === 0){
-      throw new Error('API_KEY belum diisi di CONFIG (lihat bagian atas script).');
+      throw new Error('API_KEY has not been set in CONFIG (see the top of the script).');
     }
 
     const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?key=${apiKey}&fields=sheets.properties`;
     const metaRes = await fetch(metaUrl);
     if(!metaRes.ok){
       const t = await metaRes.text();
-      throw new Error(`Gagal mengambil daftar sheet (HTTP ${metaRes.status}). Pastikan spreadsheet sudah "Anyone with the link - Viewer" dan API key valid.\n${t}`);
+      throw new Error(`Failed to fetch the sheet list (HTTP ${metaRes.status}). Make sure the spreadsheet is set to "Anyone with the link - Viewer" and the API key is valid.\n${t}`);
     }
     const meta = await metaRes.json();
     const sheetsMeta = (meta.sheets || []).map(s => s.properties);
@@ -43,7 +43,7 @@
     const valuesRes = await fetch(valuesUrl);
     if(!valuesRes.ok){
       const t = await valuesRes.text();
-      throw new Error(`Gagal mengambil isi sheet (HTTP ${valuesRes.status}).\n${t}`);
+      throw new Error(`Failed to fetch the sheet contents (HTTP ${valuesRes.status}).\n${t}`);
     }
     const valuesData = await valuesRes.json();
 
@@ -149,7 +149,7 @@
           qtySatuan: col.qtySatuan !== undefined ? String(row[col.qtySatuan] || '').trim() : '',
           combos: comboPrices,
           rateSatuan: (col.rateSatuan !== undefined && row[col.rateSatuan] !== '' && !isNaN(Number(row[col.rateSatuan]))) ? Number(row[col.rateSatuan]) : null,
-          vendor: (col.vendor !== undefined && row[col.vendor]) ? String(row[col.vendor]).trim() : '(vendor tidak diketahui)',
+          vendor: (col.vendor !== undefined && row[col.vendor]) ? String(row[col.vendor]).trim() : '(unknown vendor)',
           updateTerakhir: col.updateTerakhir !== undefined ? String(row[col.updateTerakhir] || '').trim() : '',
           sheetName: sheetName,
           sheetGid: sheetGid,
@@ -165,7 +165,7 @@
         key: key,
         eventDay: c.eventDay,
         grDay: c.grDay,
-        label: c.eventDay + ' Hari Event' + (c.grDay > 0 ? ' + ' + c.grDay + ' Hari GR' : ' (Tanpa GR)')
+        label: c.eventDay + ' Event Days' + (c.grDay > 0 ? ' + ' + c.grDay + ' GR Days' : ' (No GR)')
       };
     }).sort(function(a, b){
       if(a.eventDay !== b.eventDay) return a.eventDay - b.eventDay;
@@ -203,7 +203,7 @@
     })
     .catch(function(error){
       document.getElementById('loading').innerHTML =
-        'Gagal mengambil database.<br><br>' + escapeHtml(error.message).replace(/\n/g,'<br>');
+        'Failed to fetch the database.<br><br>' + escapeHtml(error.message).replace(/\n/g,'<br>');
     });
 
   /* =====================================================
@@ -265,7 +265,7 @@
 
   function renderSpec(text, q){
     text = String(text || '').trim();
-    if(!text) return '<span class="spec-empty">— tidak ada spesifikasi —</span>';
+    if(!text) return '<span class="spec-empty">— no specification —</span>';
 
     const threshold = 150;
     if(text.length <= threshold){
@@ -280,7 +280,7 @@
     return `
       <div class="spec-preview" id="${uid}-prev">${highlight(cut, q)}…</div>
       <div class="spec-full" id="${uid}-full">${highlight(text, q)}</div>
-      <button type="button" class="spec-toggle" data-target="${uid}">Lihat spesifikasi lengkap ▾</button>
+      <button type="button" class="spec-toggle" data-target="${uid}">View full specification ▾</button>
     `;
   }
 
@@ -292,7 +292,7 @@
     const full = document.getElementById(uid+'-full');
     const isOpen = full.classList.toggle('open');
     if(prev) prev.style.display = isOpen ? 'none' : 'block';
-    btn.textContent = isOpen ? 'Sembunyikan spesifikasi ▴' : 'Lihat spesifikasi lengkap ▾';
+    btn.textContent = isOpen ? 'Hide specification ▴' : 'View full specification ▾';
   });
 
   /* =====================================================
@@ -338,8 +338,8 @@
   function updateDurationNote(reqKey){
     const c = comboByKey(reqKey);
     const noData = data.filter(r => !r._pricing).length;
-    let msg = c ? `Menampilkan harga untuk <b>${escapeHtml(c.label)}</b>.` : 'Pilih kombinasi hari.';
-    if(noData>0) msg += ` ${noData} listing tidak punya data harga sama sekali untuk kombinasi manapun dan disembunyikan dari tabel.`;
+    let msg = c ? `Showing prices for <b>${escapeHtml(c.label)}</b>.` : 'Select a day combination.';
+    if(noData>0) msg += ` ${noData} listings have no price data at all for any combination and are hidden from the table.`;
     document.getElementById('durationNote').innerHTML = msg;
   }
 
@@ -410,13 +410,13 @@
       let priceNotes = '';
       if(!p.exact){
         const used = comboByKey(p.key);
-        priceNotes += `<div class="price-note approx">≈ tidak ada data kombinasi ini, dipakai kombinasi terdekat: ${used ? escapeHtml(used.label) : ''}</div>`;
+        priceNotes += `<div class="price-note approx">≈ no data for this combination, using the closest combination: ${used ? escapeHtml(used.label) : ''}</div>`;
       } else {
         const used = comboByKey(p.key);
         priceNotes += `<div class="price-note">${used ? escapeHtml(used.label) : ''}</div>`;
       }
       if(r.rateSatuan){
-        priceNotes += `<div class="price-note">≈ ${fmtRp(r.rateSatuan)} / ${r.qtySatuan || 'satuan'}</div>`;
+        priceNotes += `<div class="price-note">≈ ${fmtRp(r.rateSatuan)} / ${r.qtySatuan || 'unit'}</div>`;
       }
 
       const tr = document.createElement('tr');
@@ -436,7 +436,7 @@
           ${priceNotes}
         </td>
         <td class="sheet-tag">${highlight(r.sheetName,q)}</td>
-        <td><a class="viewlink" href="${sheetLink(r)}" target="_blank" rel="noopener">🔗 Lihat</a></td>
+        <td><a class="viewlink" href="${sheetLink(r)}" target="_blank" rel="noopener">🔗 View</a></td>
       `;
       tbody.appendChild(tr);
     });
@@ -475,7 +475,7 @@
 
   function optKategoriOptionsHtml(){
     const kategoriSet = new Set(data.map(r=>r.kategori).filter(Boolean));
-    return '<option value="">Semua Kategori</option>' +
+    return '<option value="">All Categories</option>' +
       Array.from(kategoriSet).sort().map(function(k){
         return `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`;
       }).join('');
@@ -508,13 +508,13 @@
     candidates = candidates.slice(0, 8);
 
     if(!candidates.length){
-      box.innerHTML = '<div class="cmp-suggestion" style="cursor:default;color:var(--v-muted)">Tidak ada item yang cocok.</div>';
+      box.innerHTML = '<div class="cmp-suggestion" style="cursor:default;color:var(--v-muted)">No matching items.</div>';
       box.classList.add('open');
       return;
     }
 
     box.innerHTML =
-      (isDefault ? '<div class="cmp-suggest-label">Contoh item</div>' : '') +
+      (isDefault ? '<div class="cmp-suggest-label">Example items</div>' : '') +
       candidates.map(function(it){
         return `
           <div class="cmp-suggestion" data-item="${escapeHtml(it.itemId)}" data-label="${escapeHtml(it.item)}">
@@ -542,14 +542,14 @@
       <div class="opt-item-cell">
         <div class="opt-item-controls">
           <select class="opt-kategori">${optKategoriOptionsHtml()}</select>
-          <input type="text" class="opt-item-search" placeholder="Cari item..." autocomplete="off" value="${escapeHtml(label)}">
+          <input type="text" class="opt-item-search" placeholder="Search item..." autocomplete="off" value="${escapeHtml(label)}">
         </div>
         <input type="hidden" class="opt-item-id" value="${escapeHtml(itemId)}">
         <div class="opt-item-suggestions"></div>
       </div>
       <input type="number" class="opt-qty" min="1" value="1">
       <select class="opt-combo">${comboOptionsHtml()}</select>
-      <button class="opt-remove" title="Hapus">×</button>
+      <button class="opt-remove" title="Delete">×</button>
     `;
 
     const searchInput = row.querySelector('.opt-item-search');
@@ -611,12 +611,12 @@
     });
 
     if(!reqRows.length){
-      showOptimizerMessage('Tambahkan minimal satu item.');
+      showOptimizerMessage('Add at least one item.');
       return;
     }
 
     if(reqRows.some(r => !r.itemId)){
-      showOptimizerMessage('Ada baris yang belum memilih item dari daftar saran — ketik nama item lalu pilih salah satu saran yang muncul.');
+      showOptimizerMessage('Some rows have no item selected from the suggestions — type an item name, then pick one of the suggestions that appear.');
       return;
     }
 
@@ -648,7 +648,7 @@
     });
 
     if(!assignment.length){
-      showOptimizerMessage('Tidak ada kombinasi yang bisa dihitung dari kebutuhan ini.');
+      showOptimizerMessage('No combination can be calculated from these requirements.');
       return;
     }
 
@@ -674,7 +674,7 @@
       items.forEach(function(a){
         let note = '';
         if(!a.exact){
-          note += `<span class="approx-note">≈ tidak ada kombinasi persis, dipakai kombinasi terdekat: ${escapeHtml(a.comboUsedLabel)}</span>`;
+          note += `<span class="approx-note">≈ no exact combination, using the closest combination: ${escapeHtml(a.comboUsedLabel)}</span>`;
         } else {
           note += `<span class="gr-note">✓ ${escapeHtml(a.comboUsedLabel)}</span>`;
         }
@@ -684,7 +684,7 @@
               ${escapeHtml(a.item)}
               ${a.tbc ? '<span class="tbcbadge">TBC</span>' : ''}
               ${note}
-              <a href="${a.sheetLink}" target="_blank" rel="noopener" class="viewlink" style="margin-top:4px">🔗 Lihat cell</a>
+              <a href="${a.sheetLink}" target="_blank" rel="noopener" class="viewlink" style="margin-top:4px">🔗 View cell</a>
             </td>
             <td>${a.qty}</td>
             <td>${fmtRp(a.total / a.qty)}</td>
@@ -695,17 +695,17 @@
     });
 
     const missingHtml = best.missing && best.missing.length
-      ? `<div class="miss-note">⚠ Tidak ditemukan penawaran untuk: ${best.missing.map(escapeHtml).join(', ')}</div>`
+      ? `<div class="miss-note">⚠ No offer found for: ${best.missing.map(escapeHtml).join(', ')}</div>`
       : '';
 
     el.innerHTML = `
       <div class="opt-summary">
-        <div class="box"><div class="l">Jumlah Item</div><div class="v">${best.assignment.length}</div></div>
-        <div class="box hero"><div class="l">Total Termurah</div><div class="v">${fmtRp(best.itemTotal)}</div></div>
+        <div class="box"><div class="l">Number of Items</div><div class="v">${best.assignment.length}</div></div>
+        <div class="box hero"><div class="l">Cheapest Total</div><div class="v">${fmtRp(best.itemTotal)}</div></div>
       </div>
 
       <table class="opt-table">
-        <thead><tr><th>Item</th><th>Qty</th><th>Harga Satuan</th><th>Subtotal</th></tr></thead>
+        <thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
         <tbody>${rowsHtml}</tbody>
       </table>
 
@@ -784,19 +784,19 @@
     candidates = candidates.slice(0, 8);
 
     if(!candidates.length){
-      box.innerHTML = '<div class="cmp-suggestion" style="cursor:default;color:var(--v-muted)">Tidak ada item yang cocok.</div>';
+      box.innerHTML = '<div class="cmp-suggestion" style="cursor:default;color:var(--v-muted)">No matching items.</div>';
       box.classList.add('open');
       return;
     }
 
     box.innerHTML =
-      (isDefaultList ? '<div class="cmp-suggest-label">Contoh item</div>' : '') +
+      (isDefaultList ? '<div class="cmp-suggest-label">Example items</div>' : '') +
       candidates.map(function(g){
         const min = cheapestPriceForGroup(g, previewComboKey);
         return `
           <div class="cmp-suggestion" data-item="${escapeHtml(g.itemId)}">
             <div class="s-nm">${highlight(g.item, q)}</div>
-            <div class="s-meta">${escapeHtml(g.kategori)} · ${g.rows.length} vendor · mulai ${min!==null ? fmtRp(min) : '-'}</div>
+            <div class="s-meta">${escapeHtml(g.kategori)} · ${g.rows.length} vendors · from ${min!==null ? fmtRp(min) : '-'}</div>
           </div>
         `;
       }).join('');
@@ -843,7 +843,7 @@
     }
 
     if(!q){
-      showCmpMessage('Ketik dulu nama item yang mau dibandingkan, lalu pilih dari daftar saran.');
+      showCmpMessage('Type the name of the item you want to compare first, then pick from the suggestions.');
       return;
     }
 
@@ -856,9 +856,9 @@
     if(matches.length === 1){
       renderComparisonResult(matches[0]);
     } else if(matches.length === 0){
-      showCmpMessage(`Tidak ditemukan item yang cocok dengan "${document.getElementById('cmpSearchInput').value.trim()}".`);
+      showCmpMessage(`No items found matching "${document.getElementById('cmpSearchInput').value.trim()}".`);
     } else {
-      showCmpMessage(`Ada ${matches.length} item yang cocok — silakan pilih salah satu dari daftar saran di atas kolom pencarian.`);
+      showCmpMessage(`${matches.length} items match — please pick one from the suggestions above the search box.`);
       refreshCmpSuggestions();
     }
   }
@@ -885,7 +885,7 @@
 
     if(!resolved.length){
       document.getElementById('cmpResult').innerHTML =
-        '<div class="cmp-result-empty">Tidak ada data harga untuk item ini pada kombinasi manapun.</div>';
+        '<div class="cmp-result-empty">No price data for this item in any combination.</div>';
       return;
     }
 
@@ -896,7 +896,7 @@
     const availCombos = comboKeysAvailableForGroup(g);
     const comboSelectHtml = combosMaster.map(function(c){
       const has = availCombos.some(a=>a.key===c.key);
-      return `<option value="${escapeHtml(c.key)}" ${c.key===comboKey?'selected':''}>${escapeHtml(c.label)}${has?'':' (approx utk semua vendor)'}</option>`;
+      return `<option value="${escapeHtml(c.key)}" ${c.key===comboKey?'selected':''}>${escapeHtml(c.label)}${has?'':' (approx. for all vendors)'}</option>`;
     }).join('');
 
     let vendorRowsHtml = '';
@@ -907,16 +907,16 @@
       vendorRowsHtml += `
         <div class="cmp-vendor-row">
           <div class="vn">${escapeHtml(o.vendor)}
-            ${isCheapest ? '<span class="cheapest-badge">✓ Termurah</span>' : ''}
+            ${isCheapest ? '<span class="cheapest-badge">✓ Cheapest</span>' : ''}
             ${o.tbc ? '<span class="tbcbadge">TBC</span>' : ''}
           </div>
-          <div class="spec">${o.spesifikasi ? escapeHtml(o.spesifikasi) : '<span class="spec-empty">— tidak ada spesifikasi —</span>'}</div>
+          <div class="spec">${o.spesifikasi ? escapeHtml(o.spesifikasi) : '<span class="spec-empty">— no specification —</span>'}</div>
           <div class="qty">${o.qtyNumber ? escapeHtml(o.qtyNumber + (o.qtySatuan?(' '+o.qtySatuan):'')) : '-'}</div>
           <div class="price">
             <span class="mono">${fmtRp(p.price)}</span>
             ${!p.exact ? `<span class="persat" style="color:var(--v-amber)">≈ ${usedCombo?escapeHtml(usedCombo.label):''}</span>` : `<span class="persat">${usedCombo?escapeHtml(usedCombo.label):''}</span>`}
-            ${o.rateSatuan ? `<span class="persat">≈ ${fmtRp(o.rateSatuan)} / ${o.qtySatuan || 'satuan'}</span>` : ''}
-            <br><a href="${sheetLink(o)}" target="_blank" rel="noopener" class="viewlink" style="margin-top:6px">🔗 Lihat</a>
+            ${o.rateSatuan ? `<span class="persat">≈ ${fmtRp(o.rateSatuan)} / ${o.qtySatuan || 'unit'}</span>` : ''}
+            <br><a href="${sheetLink(o)}" target="_blank" rel="noopener" class="viewlink" style="margin-top:6px">🔗 View</a>
           </div>
         </div>
       `;
@@ -927,7 +927,7 @@
         <div class="cmp-item-head">
           <div class="left">
             <div class="nm">${escapeHtml(g.item)}</div>
-            <div class="meta">${escapeHtml(g.kategori)} · ${escapeHtml(g.itemId)} · ${g.rows.length} vendor tersedia</div>
+            <div class="meta">${escapeHtml(g.kategori)} · ${escapeHtml(g.itemId)} · ${g.rows.length} vendors available</div>
           </div>
           <div class="right">
             <div class="range">
@@ -936,9 +936,9 @@
           </div>
         </div>
         <div class="cmp-combo-bar">
-          <label>Kombinasi Hari + GR</label>
+          <label>Day + GR Combination</label>
           <select id="cmpComboSelect">${comboSelectHtml}</select>
-          <span class="cmp-combo-hint">Ganti kombinasi untuk melihat apakah vendor termurah berubah.</span>
+          <span class="cmp-combo-hint">Change the combination to see whether the cheapest vendor changes.</span>
         </div>
         <div class="cmp-item-body">${vendorRowsHtml}</div>
       </div>

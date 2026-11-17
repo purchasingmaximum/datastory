@@ -31,7 +31,7 @@
 
   function setLoading(isLoading) {
     submitBtn.disabled = isLoading;
-    submitBtn.textContent = isLoading ? "Memeriksa…" : "Masuk";
+    submitBtn.textContent = isLoading ? "Checking…" : "Sign in";
   }
 
   function toEmail(username) {
@@ -41,12 +41,12 @@
 
   function messageFor(code) {
     if (/INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|EMAIL_NOT_FOUND|INVALID_EMAIL/.test(code)) {
-      return "Username atau password salah.";
+      return "Incorrect username or password.";
     }
-    if (/TOO_MANY_ATTEMPTS/.test(code)) return "Terlalu banyak percobaan. Coba lagi beberapa menit lagi.";
-    if (/USER_DISABLED/.test(code)) return "Akun ini dinonaktifkan.";
-    if (/OPERATION_NOT_ALLOWED/.test(code)) return "Login Email/Password belum diaktifkan di Firebase.";
-    return "Login gagal (" + code + ").";
+    if (/TOO_MANY_ATTEMPTS/.test(code)) return "Too many attempts. Please try again in a few minutes.";
+    if (/USER_DISABLED/.test(code)) return "This account has been disabled.";
+    if (/OPERATION_NOT_ALLOWED/.test(code)) return "Email/Password sign-in is not enabled in Firebase.";
+    return "Sign-in failed (" + code + ").";
   }
 
   form.addEventListener("submit", async function (evt) {
@@ -57,12 +57,12 @@
     var password = passwordInput.value;
 
     if (!username || !password) {
-      setError("Username dan password wajib diisi.");
+      setError("Username and password are required.");
       return;
     }
 
     setLoading(true);
-    MaximumLoader.show("Memeriksa Akun");
+    MaximumLoader.show("Checking Account");
 
     try {
       var res = await fetch(SIGNIN_URL, {
@@ -81,7 +81,7 @@
           sessionStorage.setItem(AUTH_CONFIG.SESSION_KEY, username);
           sessionStorage.setItem("maximum_auth_token", data.idToken);
         } catch (_) {}
-        MaximumLoader.setLabel("Harap Tunggu");
+        MaximumLoader.setLabel("Please Wait");
         var goToIndex = function () { window.location.href = "index.html"; };
         if (typeof requestAnimationFrame === "function") {
           requestAnimationFrame(function () { requestAnimationFrame(goToIndex); });
@@ -98,7 +98,7 @@
     } catch (err) {
       console.error(err);
       MaximumLoader.hide();
-      setError("Tidak bisa terhubung ke server login. Coba lagi.");
+      setError("Unable to connect to the login server. Please try again.");
       setLoading(false);
     }
   });

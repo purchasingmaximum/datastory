@@ -23,11 +23,11 @@
   try {
     rawEvents = ensurePaymentFields(await loadAllEvents((attempt, attempts) => {
       const labelEl = loadingState.querySelector(".mx-label");
-      if (labelEl) labelEl.textContent = `Masih memuat, mencoba lagi… (${attempt}/${attempts})`;
+      if (labelEl) labelEl.textContent = `Still loading, retrying… (${attempt}/${attempts})`;
     }));
   } catch (err) {
     console.error(err);
-    loadingState.innerHTML = "<p>Gagal memuat data. Periksa koneksi internet lalu muat ulang halaman.</p>";
+    loadingState.innerHTML = "<p>Failed to load data. Check your internet connection and reload the page.</p>";
     return;
   }
 
@@ -114,13 +114,13 @@
   const evKey = (ev) => String(ev.eventId);
 
   function eventFilterLabel() {
-    if (!selectedIds) return "Event: Semua";
+    if (!selectedIds) return "Event: All";
     const picked = rawEvents.filter((ev) => selectedIds.has(evKey(ev)));
     if (picked.length === 1) {
-      const n = picked[0].event || "(Tanpa nama)";
+      const n = picked[0].event || "(Unnamed)";
       return "Event: " + (n.length > 26 ? n.slice(0, 25) + "…" : n);
     }
-    return "Event: " + picked.length + " dipilih";
+    return "Event: " + picked.length + " selected";
   }
   function paintEventBtn() {
     evBtn.textContent = eventFilterLabel() + " ▾";
@@ -136,7 +136,7 @@
     evList.textContent = "";
     const rows = eventsForPop();
     if (!rows.length) {
-      const li = document.createElement("li"); li.className = "event-pop-empty"; li.textContent = "Tidak ada event yang cocok."; evList.append(li);
+      const li = document.createElement("li"); li.className = "event-pop-empty"; li.textContent = "No matching events."; evList.append(li);
     }
     rows.forEach((ev) => {
       const li = document.createElement("li");
@@ -144,11 +144,11 @@
       const cb = document.createElement("input"); cb.type = "checkbox";
       cb.checked = !selectedIds || selectedIds.has(evKey(ev));
       cb.addEventListener("change", () => toggleEvent(ev, cb.checked));
-      const txt = document.createElement("span"); txt.className = "event-pop-name"; txt.textContent = ev.event || "(Tanpa nama event)";
+      const txt = document.createElement("span"); txt.className = "event-pop-name"; txt.textContent = ev.event || "(Unnamed event)";
       const sub = document.createElement("small");
       sub.textContent = [ev.city, ev.eventDate ? formatDateID(ev.eventDate) : ""].filter(Boolean).join(" · ");
       label.append(cb, txt, sub);
-      const only = document.createElement("button"); only.type = "button"; only.className = "event-pop-only"; only.textContent = "hanya ini";
+      const only = document.createElement("button"); only.type = "button"; only.className = "event-pop-only"; only.textContent = "only this";
       only.addEventListener("click", () => setSelection(new Set([evKey(ev)])));
       li.append(label, only); evList.append(li);
     });
@@ -243,7 +243,7 @@
     };
   }
 
-  const compactRupiah = (v) => "Rp " + Math.round(v / 1e6).toLocaleString("id-ID") + " Jt";
+  const compactRupiah = (v) => "Rp " + Math.round(v / 1e6).toLocaleString("id-ID") + " mn";
 
   /* -----------------------------------------------------------------------
      Hero — 5 angka ringkasan + kalimat otomatis.
@@ -251,20 +251,20 @@
   function renderHero(view) {
     countUp(document.getElementById("hero-count-events"), view.events.length);
     countUp(document.getElementById("hero-count-vendors"), view.vendorCount);
-    countUp(document.getElementById("hero-count-spending"), view.totalSpending, { prefix: "Rp ", formatter: (v) => Math.round(v / 1e6).toLocaleString("id-ID"), suffix: " Jt" });
-    countUp(document.getElementById("hero-count-paid"), view.paymentSummary.paid, { prefix: "Rp ", formatter: (v) => Math.round(v / 1e6).toLocaleString("id-ID"), suffix: " Jt" });
-    countUp(document.getElementById("hero-count-outstanding"), view.paymentSummary.outstanding, { prefix: "Rp ", formatter: (v) => Math.round(v / 1e6).toLocaleString("id-ID"), suffix: " Jt" });
+    countUp(document.getElementById("hero-count-spending"), view.totalSpending, { prefix: "Rp ", formatter: (v) => Math.round(v / 1e6).toLocaleString("id-ID"), suffix: " mn" });
+    countUp(document.getElementById("hero-count-paid"), view.paymentSummary.paid, { prefix: "Rp ", formatter: (v) => Math.round(v / 1e6).toLocaleString("id-ID"), suffix: " mn" });
+    countUp(document.getElementById("hero-count-outstanding"), view.paymentSummary.outstanding, { prefix: "Rp ", formatter: (v) => Math.round(v / 1e6).toLocaleString("id-ID"), suffix: " mn" });
 
     const topVendor = view.vendorBySpending[0];
     const topItem = view.itemAgg[0];
     const sentenceEl = document.getElementById("hero-summary-sentence");
     if (view.events.length === 0) {
-      sentenceEl.textContent = "Tidak ada data pada periode yang dipilih.";
+      sentenceEl.textContent = "No data in the selected period.";
     } else {
       sentenceEl.textContent =
-        `Procurement mencapai ${formatRupiah(view.totalSpending)}, dengan ${formatRupiah(view.paymentSummary.paid)} sudah dibayar (Lunas/DP) dan ${formatRupiah(view.paymentSummary.outstanding)} masih outstanding.` +
-        (topVendor ? ` Vendor terbesar: ${topVendor.vendor}.` : "") +
-        (topItem ? ` Item terbesar: ${topItem.itemName}.` : "");
+        `Procurement reached ${formatRupiah(view.totalSpending)}, with ${formatRupiah(view.paymentSummary.paid)} already paid (paid in full/DP) and ${formatRupiah(view.paymentSummary.outstanding)} still outstanding.` +
+        (topVendor ? ` Largest vendor: ${topVendor.vendor}.` : "") +
+        (topItem ? ` Largest item: ${topItem.itemName}.` : "");
     }
   }
 
@@ -280,18 +280,18 @@
     const box = document.getElementById("payment-legend");
     const total = summary.lunasTotal + summary.dpPaidTotal + summary.outstanding;
     const rows = [
-      ["Lunas", summary.lunasTotal, summary.lunasCount, ACCENT.lunas],
+      ["Paid in full", summary.lunasTotal, summary.lunasCount, ACCENT.lunas],
       ["DP", summary.dpPaidTotal, summary.dpCount, ACCENT.dp],
       // "Belum Dibayar" = sisa dari item DP yang belum dibayarkan + item
       // yang sama sekali belum dibayar, jadi jumlah itemnya adalah
       // gabungan keduanya (satu item DP bisa ikut dihitung di sini untuk
       // porsi sisanya, sekaligus di baris "DP" di atas untuk porsi yang
       // sudah dibayar).
-      ["Belum Dibayar", summary.outstanding, summary.dpCount + summary.belumCount, ACCENT.belum],
+      ["Unpaid", summary.outstanding, summary.dpCount + summary.belumCount, ACCENT.belum],
     ];
     box.className = "payment-breakdown";
     if (total === 0) {
-      box.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;margin:0">Belum ada data pembayaran pada periode ini.</p>';
+      box.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;margin:0">No payment data in this period.</p>';
     } else {
       box.innerHTML = rows.map(([label, val, count, color]) => {
         const pct = (val / total) * 100;
@@ -305,7 +305,7 @@
             <div class="pb-bar"><span style="width:${pct}%;background:${color}"></span></div>
             <div class="pb-row-bottom">
               <span>${formatRupiah(val)}</span>
-              <span>${count} item</span>
+              <span>${count} items</span>
             </div>
           </div>`;
       }).join("");
@@ -314,7 +314,7 @@
     const noteEl = document.getElementById("payment-unknown-note");
     if (summary.unknownTotal > 0) {
       noteEl.hidden = false;
-      noteEl.textContent = `${formatRupiahCompact(summary.unknownTotal)} dari ${summary.unknownCount} item belum mencantumkan status pembayaran (menunggu pembaruan backend ke skema sheet baru) — tidak dihitung sebagai Lunas maupun DP di atas.`;
+      noteEl.textContent = `${formatRupiahCompact(summary.unknownTotal)} across ${summary.unknownCount} items have no payment status recorded (awaiting a backend update to the new sheet schema) — not counted as Paid in full or DP above.`;
     } else {
       noteEl.hidden = true;
     }
@@ -323,7 +323,7 @@
   function renderOutstandingList(rows) {
     const list = document.getElementById("list-outstanding");
     if (!rows.length) {
-      list.innerHTML = '<li class="empty">Tidak ada outstanding pada periode ini.</li>';
+      list.innerHTML = '<li class="empty">No outstanding balance in this period.</li>';
       return;
     }
     list.innerHTML = rows.map((r, i) =>
@@ -374,8 +374,8 @@
         select.appendChild(opt);
       }
     };
-    fillSelect(paymentVendorSelect, "Semua Vendor", vendors);
-    fillSelect(paymentEventSelect, "Semua Event", eventNames);
+    fillSelect(paymentVendorSelect, "All Vendors", vendors);
+    fillSelect(paymentEventSelect, "All Events", eventNames);
   }
   populatePaymentFilterOptions(rawEvents);
 
@@ -427,8 +427,8 @@
       "section-vendor-freq": () => {
         renderHorizontalBars(document.getElementById("chart-vendor-freq"), view.vendorAgg, {
           valueKey: "eventCount", labelKey: "vendor", color: ACCENT.vendorFreq,
-          valueFormatter: (v) => `${v} event`,
-          tooltipFn: (d) => `<strong>${d.vendor}</strong><br>Jumlah event: ${d.eventCount}<br>Jumlah item: ${d.itemOccurrences}<br>Total pengeluaran: ${formatRupiah(d.totalSpending)}`,
+          valueFormatter: (v) => `${v} events`,
+          tooltipFn: (d) => `<strong>${d.vendor}</strong><br>Number of events: ${d.eventCount}<br>Number of items: ${d.itemOccurrences}<br>Total spending: ${formatRupiah(d.totalSpending)}`,
         });
       },
       "section-vendor-spend": () => {
@@ -437,22 +437,22 @@
         const insightEl = document.getElementById("spend-insight");
         if (spendLeaderByFreq && spendLeaderBySpend) {
           insightEl.textContent = spendLeaderByFreq.vendor === spendLeaderBySpend.vendor
-            ? `${spendLeaderBySpend.vendor} unggul baik dari sisi frekuensi maupun total pengeluaran.`
-            : `${spendLeaderByFreq.vendor} paling sering dipakai, tapi ${spendLeaderBySpend.vendor} yang menyerap pengeluaran terbesar.`;
+            ? `${spendLeaderBySpend.vendor} leads in both frequency and total spending.`
+            : `${spendLeaderByFreq.vendor} is used most often, but ${spendLeaderBySpend.vendor} absorbs the largest spending.`;
         } else {
-          insightEl.textContent = "Tidak ada data pada periode ini.";
+          insightEl.textContent = "No data in this period.";
         }
         renderHorizontalBars(document.getElementById("chart-vendor-spend"), view.vendorBySpending, {
           valueKey: "totalSpending", labelKey: "vendor", color: ACCENT.vendorSpend,
           valueFormatter: (v) => formatRupiahCompact(v),
-          tooltipFn: (d) => `<strong>${d.vendor}</strong><br>Total pengeluaran: ${formatRupiah(d.totalSpending)}<br>Jumlah event: ${d.eventCount}<br>Rata-rata/event: ${formatRupiah(d.avgSpendingPerEvent)}`,
+          tooltipFn: (d) => `<strong>${d.vendor}</strong><br>Total spending: ${formatRupiah(d.totalSpending)}<br>Number of events: ${d.eventCount}<br>Average/event: ${formatRupiah(d.avgSpendingPerEvent)}`,
         });
       },
       "section-items": () => {
         renderHorizontalBars(document.getElementById("chart-items"), view.itemAgg, {
           valueKey: "occurrences", labelKey: "itemName", color: ACCENT.item,
           valueFormatter: (v) => `${v}×`,
-          tooltipFn: (d) => `<strong>${d.itemName}</strong><br>Jumlah event: ${d.eventCount}<br>Total pengeluaran: ${formatRupiah(d.totalSpending)}`,
+          tooltipFn: (d) => `<strong>${d.itemName}</strong><br>Number of events: ${d.eventCount}<br>Total spending: ${formatRupiah(d.totalSpending)}`,
         });
       },
       "section-item-vendor": () => {
@@ -466,8 +466,8 @@
         const busiestWeek = [...view.peakWeekData].sort((a, b) => b.count - a.count)[0];
         document.getElementById("peak-insight").textContent =
           busiestMonth && busiestMonth.count > 0
-            ? `${busiestMonth.label} menjadi bulan paling sibuk, dengan puncak aktivitas di minggu ke-${busiestWeek.week}.`
-            : "Tidak ada data pada periode ini.";
+            ? `${busiestMonth.label} is the busiest month, with peak activity in week ${busiestWeek.week}.`
+            : "No data in this period.";
         renderVerticalBars(document.getElementById("chart-week"), view.peakWeekData.map((d) => ({ label: "W" + d.week, count: d.count })), { labelKey: "label", valueKey: "count", color: ACCENT.vendorFreq });
         renderVerticalBars(document.getElementById("chart-month"), view.peakMonthData, { labelKey: "label", valueKey: "count", color: ACCENT.item });
       },
@@ -478,8 +478,8 @@
   }
 
   /* -----------------------------------------------------------------------
-     applyFilter — dipanggil setiap kali preset dipilih, tombol "Terapkan"
-     ditekan, atau checkbox "Bandingkan" diubah. Ini satu-satunya tempat
+     applyFilter — dipanggil setiap kali preset dipilih, tombol "Apply"
+     ditekan, atau checkbox "Compare" diubah. Ini satu-satunya tempat
      yang menyaring rawEvents dan memicu render ulang semua bagian.
      ----------------------------------------------------------------------- */
   let currentRenderers = {};
@@ -502,22 +502,22 @@
     everRendered.forEach((id) => currentRenderers[id] && currentRenderers[id]());
 
     const dateText = (activeFrom || activeTo)
-      ? `${activeFrom ? formatDateID(activeFrom) : "awal data"} – ${activeTo ? formatDateID(activeTo) : "sekarang"}`
+      ? `${activeFrom ? formatDateID(activeFrom) : "start of data"} – ${activeTo ? formatDateID(activeTo) : "now"}`
       : "";
     const picked = selectedIds ? rawEvents.filter((ev) => selectedIds.has(evKey(ev))).length : 0;
     let rangeText;
     if (selectedIds) {
-      rangeText = `Menampilkan ${view.events.length} dari ${picked} event pilihan` + (dateText ? `, rentang ${dateText}.` : ".");
-      if (picked && !view.events.length && dateText) rangeText += " Event pilihan berada di luar rentang tanggal.";
+      rangeText = `Showing ${view.events.length} of ${picked} selected events` + (dateText ? `, range ${dateText}.` : ".");
+      if (picked && !view.events.length && dateText) rangeText += " The selected events fall outside the date range.";
     } else {
       rangeText = dateText
-        ? `Menampilkan ${dateText} (${view.events.length} event).`
-        : `Menampilkan seluruh data (${view.events.length} event).`;
+        ? `Showing ${dateText} (${view.events.length} events).`
+        : `Showing all data (${view.events.length} events).`;
     }
     rangeLabelEl.textContent = rangeText;
   }
 
-  applyFilter(); // render awal: "Semua Data"
+  applyFilter(); // render awal: "All Data"
 
   /* -----------------------------------------------------------------------
      Reveal + lazy render on scroll, and progress rail sync. Re-plays the

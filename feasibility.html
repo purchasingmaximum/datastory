@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cek Kelayakan Anggaran Event</title>
+<title>Event Budget Feasibility Check</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -283,7 +283,7 @@ dialog#projects::backdrop { background: rgba(8, 14, 20, .5); }
 .pj-list .st.no { color: var(--red); }
 .pj-list .btns { display: flex; gap: 6px; flex-wrap: wrap; }
 .pj-list .ghost { padding: 5px 10px; font-size: 13px; }
-.pj-list li.cur .nm::after { content: " · dibuka"; font-weight: 400; color: var(--muted); }
+.pj-list li.cur .nm::after { content: " · open"; font-weight: 400; color: var(--muted); }
 .ghost:disabled { opacity: .45; cursor: default; }
 .pj-acct { font-size: 12.5px; color: var(--muted); margin: 12px 0 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .pj-acct .ghost { padding: 3px 9px; font-size: 12.5px; }
@@ -341,9 +341,9 @@ body.booting #view-edit { opacity: .55; pointer-events: none; }
 </head>
 <body>
 <header class="topnav homebar">
-  <a class="home-btn" href="index.html" aria-label="Kembali ke Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
+  <a class="home-btn" href="index.html" aria-label="Back to Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></a>
   <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>Feasibility</div>
-  <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Gelap</button></div>
+  <div class="topnav-actions"><button type="button" class="theme-toggle" data-theme-toggle>🌙 Dark</button></div>
 </header>
 <div class="wrap">
 <div id="view-edit">
@@ -352,26 +352,26 @@ body.booting #view-edit { opacity: .55; pointer-events: none; }
     <div class="top">
       <div class="top-title">
         <label for="p-nama">Budget Feasibility:</label>
-        <input class="title-in" id="p-nama" aria-label="Nama event (wajib diisi)" placeholder="Nama event (wajib diisi)" autocomplete="off">
+        <input class="title-in" id="p-nama" aria-label="Event name (required)" placeholder="Event name (required)" autocomplete="off">
       </div>
       <div class="top-row">
-        <span class="top-k">Tanggal Event:</span>
+        <span class="top-k">Event Date:</span>
         <div class="dates">
-          <input class="top-in" id="p-mulai" type="date" aria-label="Tanggal mulai event">
-          <span class="sd">sampai</span>
-          <input class="top-in" id="p-selesai" type="date" aria-label="Tanggal selesai event">
+          <input class="top-in" id="p-mulai" type="date" aria-label="Event start date">
+          <span class="sd">to</span>
+          <input class="top-in" id="p-selesai" type="date" aria-label="Event end date">
         </div>
       </div>
       <div class="top-row">
         <label class="top-k req" for="p-venue">Venue:</label>
-        <input class="top-in" id="p-venue" placeholder="Nama venue (wajib diisi)" autocomplete="off">
+        <input class="top-in" id="p-venue" placeholder="Venue name (required)" autocomplete="off">
       </div>
       <p class="req-msg" id="req-msg" role="alert" hidden></p>
     </div>
     <div class="actions">
       <span class="sync" id="sync" role="status"></span>
-      <button class="ghost" id="pj-open" type="button">Proyek</button>
-      <button class="ghost" id="reset" type="button">Kembalikan ke template</button>
+      <button class="ghost" id="pj-open" type="button">Projects</button>
+      <button class="ghost" id="reset" type="button">Reset to template</button>
       <button class="primary go-prev" type="button">Next: Preview →</button>
     </div>
   </div>
@@ -387,50 +387,50 @@ body.booting #view-edit { opacity: .55; pointer-events: none; }
         <table class="sheet" id="sheet">
           <colgroup><col><col class="c-num"><col class="c-num"><col class="c-mar"><col class="c-act"></colgroup>
           <thead>
-            <tr><th>Item</th><th>Harga Jual</th><th>Modal</th><th>Margin</th><th style="text-align:center">Ada</th></tr>
+            <tr><th>Item</th><th>Selling Price</th><th>Cost Price</th><th>Margin</th><th style="text-align:center"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Available" style="vertical-align:middle"><title>Available</title><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></th></tr>
           </thead>
         </table>
       </div>
-      <button class="add-cat" id="add-cat" type="button">+ Tambah kategori khusus untuk proyek ini</button>
+      <button class="add-cat" id="add-cat" type="button">+ Add a custom category for this project</button>
       <button class="primary block go-prev" type="button">Next: Preview →</button>
     </main>
 
     <aside>
       <div class="verdict" id="verdict" aria-live="polite">
-        <div class="v-label">Status kelayakan</div>
+        <div class="v-label">Feasibility status</div>
         <div class="v-word" id="v-word">Feasible</div>
         <div class="v-reason" id="v-reason" hidden></div>
         <div class="gauge"><i id="gauge"></i></div>
-        <div class="v-gap"><span id="v-pct-label">Plafon terpakai</span><strong id="v-pct"></strong></div>
-        <div class="v-gap"><span id="v-gap-label">Sisa plafon</span><strong id="v-gap"></strong></div>
+        <div class="v-gap"><span id="v-pct-label">Ceiling used</span><strong id="v-pct"></strong></div>
+        <div class="v-gap"><span id="v-gap-label">Ceiling remaining</span><strong id="v-gap"></strong></div>
       </div>
 
-      <div class="card" aria-label="Plafon klien">
-        <div class="row"><span class="k">Plafon Klien <span class="unit">Before VAT</span></span><input class="wide" id="in-plafon" inputmode="decimal" aria-label="Plafon klien before VAT" placeholder="0"></div>
+      <div class="card" aria-label="Client ceiling">
+        <div class="row"><span class="k">Client Ceiling <span class="unit">Before VAT</span></span><input class="wide" id="in-plafon" inputmode="decimal" aria-label="Client ceiling before VAT" placeholder="0"></div>
       </div>
 
-      <div class="card" aria-label="Harga Jual">
-        <div class="row"><span class="k">Total Harga Jual Before EO Fee</span><span class="v" id="s-jual"></span></div>
-        <div class="row"><span class="k">EO Fee <input class="pct" id="in-eo" type="number" min="0" step="0.5" inputmode="decimal" aria-label="Persen EO Fee"><span class="unit">%</span></span><span class="v" id="s-eo"></span></div>
+      <div class="card" aria-label="Selling Price">
+        <div class="row"><span class="k">Total Selling Price Before EO Fee</span><span class="v" id="s-jual"></span></div>
+        <div class="row"><span class="k">EO Fee <input class="pct" id="in-eo" type="number" min="0" step="0.5" inputmode="decimal" aria-label="EO Fee percent"><span class="unit">%</span></span><span class="v" id="s-eo"></span></div>
         <div class="row strong"><span class="k">Total Before VAT</span><span class="v" id="s-before"></span></div>
-        <div class="row"><span class="k">VAT <input class="pct" id="in-vat" type="number" min="0" step="0.5" inputmode="decimal" aria-label="Persen VAT"><span class="unit">%</span></span><span class="v" id="s-vat"></span></div>
+        <div class="row"><span class="k">VAT <input class="pct" id="in-vat" type="number" min="0" step="0.5" inputmode="decimal" aria-label="VAT percent"><span class="unit">%</span></span><span class="v" id="s-vat"></span></div>
         <div class="row strong"><span class="k">Total After VAT</span><span class="v" id="s-after"></span></div>
       </div>
 
-      <div class="card" aria-label="Modal dan margin">
-        <div class="row"><span class="k">Total Modal</span><span class="v" id="s-modal"></span></div>
+      <div class="card" aria-label="Cost price and margin">
+        <div class="row"><span class="k">Total Cost Price</span><span class="v" id="s-modal"></span></div>
         <div class="row"><span class="k">Marketing Fee</span><input class="wide" id="in-mkt" inputmode="decimal" aria-label="Marketing Fee" placeholder="0"></div>
         <div class="row"><span class="k">Total Margin</span><span class="v" id="s-margin"></span></div>
-        <div class="row"><span class="k">Persentase Margin</span><span class="v" id="s-mpct"></span></div>
+        <div class="row"><span class="k">Margin Percentage</span><span class="v" id="s-mpct"></span></div>
       </div>
     </aside>
   </div>
 </div>
 
 <dialog id="projects" aria-labelledby="pj-title">
-  <div class="pj-head"><h2 id="pj-title">Proyek tersimpan</h2><button class="x" id="pj-close" type="button" aria-label="Tutup">×</button></div>
+  <div class="pj-head"><h2 id="pj-title">Saved projects</h2><button class="x" id="pj-close" type="button" aria-label="Close">×</button></div>
   <div class="pj-tools">
-    <button class="primary" id="pj-new" type="button">+ Proyek baru</button>
+    <button class="primary" id="pj-new" type="button">+ New project</button>
   </div>
   <div class="pj-msg" id="pj-msg" role="status"></div>
   <ul class="pj-list" id="pj-list"></ul>
@@ -439,11 +439,11 @@ body.booting #view-edit { opacity: .55; pointer-events: none; }
 
 <div id="view-prev" hidden>
   <div class="toolbar noprint">
-    <button class="ghost" id="back" type="button">← Kembali ke isian</button>
+    <button class="ghost" id="back" type="button">← Back to editing</button>
     <div class="actions">
       <span class="xmsg" id="x-msg" role="status"></span>
-      <button class="ghost" id="xlsx" type="button" hidden>Simpan Excel</button>
-      <button class="primary" id="print" type="button">Cetak / Simpan PDF</button>
+      <button class="ghost" id="xlsx" type="button" hidden>Save Excel</button>
+      <button class="primary" id="print" type="button">Print / Save as PDF</button>
     </div>
   </div>
   <div class="paper" id="prev-body"></div>
@@ -520,8 +520,8 @@ const cloudOn = () => !!(fb && fb.user);
 
 /* --- lokal --- */
 function localWrite() {
-  try { localStorage.setItem(PROJ_KEY, JSON.stringify(store)); setSync("Tersimpan di browser" + (cloudNote ? " · " + cloudNote : ""), cloudNote ? "" : "ok"); }
-  catch (e) { setSync("Gagal menyimpan (penyimpanan browser diblokir/penuh)", "err"); }
+  try { localStorage.setItem(PROJ_KEY, JSON.stringify(store)); setSync("Saved in browser" + (cloudNote ? " · " + cloudNote : ""), cloudNote ? "" : "ok"); }
+  catch (e) { setSync("Failed to save (browser storage blocked/full)", "err"); }
 }
 function loadLocal() {
   try {
@@ -569,14 +569,14 @@ function cloudData(id) {
 }
 function queueCloud(id, now) {
   clearTimeout(saveTimers[id]);
-  setSync("Menyimpan…", "");
+  setSync("Saving…", "");
   const run = () => {
     delete saveTimers[id];
     if (!store.items[id]) return;
     fb.fsM.setDoc(fb.fsM.doc(cloudCol(), id), cloudData(id))
-      .then(() => { if (!Object.keys(saveTimers).length) setSync("Tersimpan di cloud", "ok"); })
-      .catch(e => setSync("Gagal menyimpan (" + ((e && e.code) || "error") + ")", "err"));
-    if (!navigator.onLine) setSync("Offline: akan tersimpan saat tersambung", "");
+      .then(() => { if (!Object.keys(saveTimers).length) setSync("Saved to cloud", "ok"); })
+      .catch(e => setSync("Failed to save (" + ((e && e.code) || "error") + ")", "err"));
+    if (!navigator.onLine) setSync("Offline: will be saved when reconnected", "");
   };
   if (now) run(); else saveTimers[id] = setTimeout(run, 700);
 }
@@ -600,12 +600,12 @@ function removeProject(id) {
   delete store.items[id];
   if (cloudOn()) {
     clearTimeout(saveTimers[id]); delete saveTimers[id];
-    fb.fsM.deleteDoc(fb.fsM.doc(cloudCol(), id)).catch(e => setSync("Gagal menghapus (" + ((e && e.code) || "error") + ")", "err"));
+    fb.fsM.deleteDoc(fb.fsM.doc(cloudCol(), id)).catch(e => setSync("Failed to delete (" + ((e && e.code) || "error") + ")", "err"));
   } else localWrite();
 }
 
 async function initCloud() {
-  if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) { cloudNote = "Firebase belum diatur"; return false; }
+  if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) { cloudNote = "Firebase not configured"; return false; }
   try {
     const base = "https://www.gstatic.com/firebasejs/" + FB_VER + "/";
     const [appM, authM, fsM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
@@ -616,7 +616,7 @@ async function initCloud() {
     catch (e) { db = fsM.getFirestore(app); }
     fb = { appM, authM, fsM, auth, db, user: null };
     return true;
-  } catch (e) { cloudNote = "Firebase tidak bisa dimuat (periksa koneksi)"; return false; }
+  } catch (e) { cloudNote = "Firebase could not be loaded (check connection)"; return false; }
 }
 function waitAuth() {
   return new Promise(res => {
@@ -642,8 +642,8 @@ function startCloud(user) {
     let first = true;
     unsubCloud = fb.fsM.onSnapshot(cloudCol(), snap => {
       if (bootAborted) return;
-      if (snap.metadata && snap.metadata.fromCache) setSync("Menunggu sambungan ke cloud…", "");
-      else if (!first && !Object.keys(saveTimers).length) setSync("Tersimpan di cloud" + (FB_WORKSPACE ? " (ruang bersama)" : ""), "ok");
+      if (snap.metadata && snap.metadata.fromCache) setSync("Waiting for cloud connection…", "");
+      else if (!first && !Object.keys(saveTimers).length) setSync("Saved to cloud" + (FB_WORKSPACE ? " (shared workspace)" : ""), "ok");
       snap.docChanges().forEach(ch => {
         const id = ch.doc.id;
         if (ch.type === "removed") { if (id !== curId) delete store.items[id]; return; }
@@ -663,7 +663,7 @@ function startCloud(user) {
       if (first) { first = false; resolve(); }
       else if ($("projects").open) renderProjects();
     }, err => {
-      setSync("Gagal membaca cloud (" + ((err && err.code) || "error") + ")", "err");
+      setSync("Failed to read cloud (" + ((err && err.code) || "error") + ")", "err");
       if (first) { first = false; resolve(); }
     });
   });
@@ -685,19 +685,19 @@ async function bootStorage() {
         const c = (e && e.code) || "";
         fb = null;
         cloudNote = c === "auth/operation-not-allowed"
-          ? "aktifkan Anonymous di Firebase (Authentication → Sign-in method)"
-          : "gagal masuk otomatis (" + (c || "error") + ")";
-        loadLocal(); setSync("Tersimpan di browser · " + cloudNote, ""); return;
+          ? "enable Anonymous in Firebase (Authentication → Sign-in method)"
+          : "automatic sign-in failed (" + (c || "error") + ")";
+        loadLocal(); setSync("Saved in browser · " + cloudNote, ""); return;
       }
     }
     await startCloud(user);
     if (bootAborted) return;
     openInitialCloud();
-    setSync("Tersimpan di cloud" + (FB_WORKSPACE ? " (ruang bersama)" : ""), "ok");
+    setSync("Saved to cloud" + (FB_WORKSPACE ? " (shared workspace)" : ""), "ok");
     return;
   }
   loadLocal();
-  setSync(cloudNote ? "Tersimpan di browser · " + cloudNote : "Tersimpan di browser", cloudNote ? "" : "ok");
+  setSync(cloudNote ? "Saved in browser · " + cloudNote : "Saved in browser", cloudNote ? "" : "ok");
 }
 
 /* ===== util ===== */
@@ -844,7 +844,7 @@ function render() {
     const jualT = h("td", { class: "n" }), modalT = h("td", { class: "n" }), marT = h("td", { class: "n" });
     let nameCell;
     if (cat.custom) {
-      const inp = h("input", { class: "cat-in", value: cat.name, "aria-label": "Nama kategori" });
+      const inp = h("input", { class: "cat-in", value: cat.name, "aria-label": "Category name" });
       inp.addEventListener("input", () => { cat.name = inp.value; save(); });
       nameCell = h("div", { class: "cat-name" }, h("span", { class: "code", text: letter(ci) + "." }), inp);
       refs.catInp[cat.id] = inp;
@@ -853,7 +853,7 @@ function render() {
     }
     const actCell = h("td", { class: "td-act" });
     if (cat.custom) {
-      actCell.append(h("button", { class: "x", type: "button", title: "Hapus kategori", "aria-label": "Hapus kategori", text: "×",
+      actCell.append(h("button", { class: "x", type: "button", title: "Delete category", "aria-label": "Delete category", text: "×",
         onclick: () => { state.cats = state.cats.filter(c => c.id !== cat.id); render(); update(); save(); } }));
     }
     tb.append(h("tr", { class: "cat" }, h("td", {}, nameCell), jualT, modalT, marT, actCell));
@@ -861,7 +861,7 @@ function render() {
 
     cat.items.forEach(it => { tb.append(itemRow(cat, it)); (it.subs || []).forEach(sb => tb.append(subRow(cat, it, sb))); });
 
-    const addBtn = h("button", { class: "add", type: "button", text: "+ Tambah item",
+    const addBtn = h("button", { class: "add", type: "button", text: "+ Add item",
       onclick: () => {
         const it = { id: nid(), name: "", jual: 0, modal: 0, off: false, custom: true };
         cat.items.push(it); render(); update(); save();
@@ -873,26 +873,26 @@ function render() {
 }
 
 function itemRow(cat, it) {
-  const nameInp = h("input", { class: "cell name", value: it.name, "aria-label": "Nama item", placeholder: "Nama item" });
+  const nameInp = h("input", { class: "cell name", value: it.name, "aria-label": "Item name", placeholder: "Item name" });
   if (!it.custom) nameInp.readOnly = true, nameInp.tabIndex = -1;
   else {
     nameInp.addEventListener("input", () => { it.name = nameInp.value; save(); });
     nameInp.setAttribute("data-col", "name"); nameInp.addEventListener("keydown", gridNav);
   }
 
-  const jual = h("input", { class: "cell", inputmode: "decimal", "aria-label": it.name + " Harga Jual", placeholder: "0", "data-col": "jual" });
-  const modal = h("input", { class: "cell", inputmode: "decimal", "aria-label": it.name + " modal", placeholder: "0", "data-col": "modal" });
+  const jual = h("input", { class: "cell", inputmode: "decimal", "aria-label": it.name + " Selling Price", placeholder: "0", "data-col": "jual" });
+  const modal = h("input", { class: "cell", inputmode: "decimal", "aria-label": it.name + " cost price", placeholder: "0", "data-col": "modal" });
   bindNum(jual, () => it.jual, v => it.jual = v, it, "jual");
   bindNum(modal, () => it.modal, v => it.modal = v, it, "modal");
   [jual, modal].forEach(inp => inp.addEventListener("keydown", gridNav));
 
   const mar = h("td", { class: "td-mar" });
-  const ada = h("input", { type: "checkbox", "aria-label": "Item ada" });
+  const ada = h("input", { type: "checkbox", "aria-label": "Item available" });
   ada.checked = !it.off;
   ada.addEventListener("change", () => { it.off = !ada.checked; update(); save(); });
 
   const act = h("td", { class: "td-act" }, ada);
-  act.append(h("button", { class: "x add-sub", type: "button", title: "Tambah sub item", "aria-label": "Tambah sub item", text: "+",
+  act.append(h("button", { class: "x add-sub", type: "button", title: "Add sub-item", "aria-label": "Add sub-item", text: "+",
     onclick: () => {
       const sb = { id: nid(), name: "", jual: 0, modal: 0, off: false };
       if (!(it.subs && it.subs.length)) { it.jual = 0; it.modal = 0; }
@@ -900,7 +900,7 @@ function itemRow(cat, it) {
       const r = refs.items[sb.id]; if (r) r.nameInp.focus();
     } }));
   if (it.custom) {
-    act.append(h("button", { class: "x", type: "button", title: "Hapus item", "aria-label": "Hapus item", text: "×",
+    act.append(h("button", { class: "x", type: "button", title: "Delete item", "aria-label": "Delete item", text: "×",
       onclick: () => { cat.items = cat.items.filter(x => x.id !== it.id); render(); update(); save(); } }));
   }
   const tr = h("tr", {}, h("td", { class: "td-name" }, nameInp), h("td", {}, jual), h("td", {}, modal), mar, act);
@@ -909,20 +909,20 @@ function itemRow(cat, it) {
 }
 
 function subRow(cat, it, sb) {
-  const nameInp = h("input", { class: "cell name", value: sb.name, "aria-label": "Nama sub item", placeholder: "Sub item", "data-col": "name" });
+  const nameInp = h("input", { class: "cell name", value: sb.name, "aria-label": "Sub-item name", placeholder: "Sub-item", "data-col": "name" });
   nameInp.addEventListener("input", () => { sb.name = nameInp.value; save(); });
   nameInp.addEventListener("keydown", gridNav);
-  const jual = h("input", { class: "cell", inputmode: "decimal", "aria-label": "Sub item Harga Jual", placeholder: "0", "data-col": "jual" });
-  const modal = h("input", { class: "cell", inputmode: "decimal", "aria-label": "Sub item modal", placeholder: "0", "data-col": "modal" });
+  const jual = h("input", { class: "cell", inputmode: "decimal", "aria-label": "Sub-item Selling Price", placeholder: "0", "data-col": "jual" });
+  const modal = h("input", { class: "cell", inputmode: "decimal", "aria-label": "Sub-item cost price", placeholder: "0", "data-col": "modal" });
   bindNum(jual, () => sb.jual, v => sb.jual = v, sb, "jual");
   bindNum(modal, () => sb.modal, v => sb.modal = v, sb, "modal");
   [jual, modal].forEach(inp => inp.addEventListener("keydown", gridNav));
   const mar = h("td", { class: "td-mar" });
-  const ada = h("input", { type: "checkbox", "aria-label": "Sub item ada" });
+  const ada = h("input", { type: "checkbox", "aria-label": "Sub-item available" });
   ada.checked = !sb.off;
   ada.addEventListener("change", () => { sb.off = !ada.checked; update(); save(); });
   const act = h("td", { class: "td-act" }, ada,
-    h("button", { class: "x", type: "button", title: "Hapus sub item", "aria-label": "Hapus sub item", text: "×",
+    h("button", { class: "x", type: "button", title: "Delete sub-item", "aria-label": "Delete sub-item", text: "×",
       onclick: () => { it.subs = it.subs.filter(x => x.id !== sb.id); render(); update(); save(); } }));
   const tr = h("tr", { class: "subrow" }, h("td", { class: "td-name" }, nameInp), h("td", {}, jual), h("td", {}, modal), mar, act);
   refs.items[sb.id] = { tr, mar, jual, modal, ada, nameInp, sub: true };
@@ -1017,21 +1017,21 @@ function update() {
   const usage = state.plafon > 0 ? basisTotal / state.plafon : (basisTotal > 0 ? Infinity : 0);
   const v = $("verdict");
   v.className = "verdict" + (ok ? "" : " no");
-  $("v-word").textContent = ok ? "Feasible" : "Tidak feasible";
+  $("v-word").textContent = ok ? "Feasible" : "Not feasible";
   const vr = $("v-reason");
   vr.hidden = ok;
   vr.textContent = ok ? "" : reasons.join(" · ");
   $("v-pct").textContent = pctText(usage, gap);
-  $("v-pct-label").textContent = isFinite(usage) ? "Plafon terpakai" : "Plafon belum diisi";
-  $("v-gap-label").textContent = gap < 0 ? "Melebihi plafon" : "Sisa plafon";
+  $("v-pct-label").textContent = isFinite(usage) ? "Ceiling used" : "Ceiling not set";
+  $("v-gap-label").textContent = gap < 0 ? "Exceeds ceiling" : "Ceiling remaining";
   $("v-gap").textContent = rp(Math.abs(gap));
   $("gauge").style.width = Math.min(usage, 1) * 100 + "%";
 
   const mini = $("mini");
   mini.classList.toggle("no", !ok);
-  $("mini-word").textContent = ok ? "Feasible" : "Tidak feasible";
-  $("mini-sub").textContent = ok ? pctText(usage, gap) + " dari plafon" : reasons.join(" · ");
-  $("mini-gap").textContent = (gap < 0 ? "Lebih " : "Sisa ") + rp(Math.abs(gap));
+  $("mini-word").textContent = ok ? "Feasible" : "Not feasible";
+  $("mini-sub").textContent = ok ? pctText(usage, gap) + " of ceiling" : reasons.join(" · ");
+  $("mini-gap").textContent = (gap < 0 ? "Over " : "Left ") + rp(Math.abs(gap));
 }
 
 /* ===== kontrol di luar tabel ===== */
@@ -1069,7 +1069,7 @@ function syncStatic() {   /* isi ulang kolom dari proyek yang sedang dibuka */
 }
 
 $("add-cat").addEventListener("click", () => {
-  const cat = { id: nid(), name: "Kategori baru", custom: true, items: [{ id: nid(), name: "", jual: 0, modal: 0, off: false, custom: true }] };
+  const cat = { id: nid(), name: "New category", custom: true, items: [{ id: nid(), name: "", jual: 0, modal: 0, off: false, custom: true }] };
   state.cats.push(cat); render(); update(); save();
   const ci = refs.catInp[cat.id]; if (ci) { ci.focus(); ci.select(); }
 });
@@ -1078,12 +1078,12 @@ let resetTimer = null;
 $("reset").addEventListener("click", () => {
   const btn = $("reset");
   if (!resetTimer) {
-    btn.textContent = "Yakin? Klik lagi untuk reset";
-    resetTimer = setTimeout(() => { btn.textContent = "Kembalikan ke template"; resetTimer = null; }, 3000);
+    btn.textContent = "Sure? Click again to reset";
+    resetTimer = setTimeout(() => { btn.textContent = "Reset to template"; resetTimer = null; }, 3000);
     return;
   }
   clearTimeout(resetTimer); resetTimer = null;
-  btn.textContent = "Kembalikan ke template";
+  btn.textContent = "Reset to template";
   const keep = state.project; state = freshState(); state.project = keep;
   syncStatic(); render(); update(); save();
 });
@@ -1104,8 +1104,8 @@ function rowClass(it) {
 /* feasible = muat di plafon DAN margin total tidak negatif */
 function statusReasons(gap, margin) {
   const r = [];
-  if (gap < 0) r.push("Melebihi plafon");
-  if (margin < 0) r.push("Margin negatif");
+  if (gap < 0) r.push("Exceeds ceiling");
+  if (margin < 0) r.push("Negative margin");
   return r;
 }
 /* persen plafon terpakai; kalau melebihi plafon, tidak pernah tampil 100% atau kurang */
@@ -1134,7 +1134,7 @@ function calc(st = state) {
 function longDate(v) {
   if (!v) return "";
   const [y, m, d] = v.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(y, m - 1, d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 function buildPreview() {
   const c = calc(), p = state.project, root = $("prev-body");
@@ -1145,18 +1145,18 @@ function buildPreview() {
   const info = (k, v) => h("div", { class: "p-info" }, h("span", { class: "p-info-k", text: k }), h("span", { text: v || "–" }));
   root.append(
     h("h1", { class: "p-title", text: "Budget Feasibility: " + (p.nama || "–") }),
-    h("div", { class: "p-meta" }, info("Tanggal Event:", dates), info("Venue:", p.venue)));
+    h("div", { class: "p-meta" }, info("Event Date:", dates), info("Venue:", p.venue)));
 
   /* kiri: tabel per kategori */
   const table = h("table", { class: "ptable" },
-    h("thead", {}, h("tr", {}, h("th", { text: "Item" }), h("th", { text: "Harga Jual" }), h("th", { text: "Modal" }), h("th", { text: "Margin" }))));
+    h("thead", {}, h("tr", {}, h("th", { text: "Item" }), h("th", { text: "Selling Price" }), h("th", { text: "Cost Price" }), h("th", { text: "Margin" }))));
   const shown = visibleCats();
   shown.forEach(({ cat, items }, ci) => {
     let cj = 0, cm = 0;
     items.forEach(it => { const e = effv(it); cj = round2(cj + e.j); cm = round2(cm + e.m); });
     const tb = h("tbody");
     tb.append(h("tr", { class: "cat" },
-      h("td", { text: letter(ci) + ".  " + (cat.name || "(tanpa nama)") }),
+      h("td", { text: letter(ci) + ".  " + (cat.name || "(unnamed)") }),
       h("td", { text: fmt(cj) }), h("td", { text: fmt(cm) }), h("td", { text: sgn(cj - cm) })));
     const line = (nm, o, indent) => {
       const cls = rowClass(o), m = round2(o.jual - o.modal);
@@ -1173,9 +1173,9 @@ function buildPreview() {
     items.forEach(it => {
       if ((it.subs || []).length) {
         const pe = effv(it);
-        tb.append(h("tr", { class: rowClass({ jual: pe.j, modal: pe.m, off: false }) + " parent" }, h("td", { text: it.name || "(tanpa nama)" }), h("td"), h("td"), h("td")));
-        it.subs.filter(sb => !sb.off).forEach(sb => tb.append(line(sb.name || "(tanpa nama)", sb, true)));
-      } else tb.append(line(it.name || "(tanpa nama)", it, false));
+        tb.append(h("tr", { class: rowClass({ jual: pe.j, modal: pe.m, off: false }) + " parent" }, h("td", { text: it.name || "(unnamed)" }), h("td"), h("td"), h("td")));
+        it.subs.filter(sb => !sb.off).forEach(sb => tb.append(line(sb.name || "(unnamed)", sb, true)));
+      } else tb.append(line(it.name || "(unnamed)", it, false));
     });
     table.append(tb);
   });
@@ -1184,32 +1184,32 @@ function buildPreview() {
   const row = (k, v, cls, vcls) => h("div", { class: "row" + (cls ? " " + cls : "") },
     h("span", { class: "k", text: k }), v == null ? null : h("span", { class: "v" + (vcls ? " " + vcls : ""), text: v }));
   const verdict = h("div", { class: "verdict" + (c.ok ? "" : " no") },
-    h("div", { class: "v-label", text: "Status kelayakan" }),
-    h("div", { class: "v-word", text: c.ok ? "Feasible" : "Tidak feasible" }),
+    h("div", { class: "v-label", text: "Feasibility status" }),
+    h("div", { class: "v-word", text: c.ok ? "Feasible" : "Not feasible" }),
     c.ok ? null : h("div", { class: "v-reason", text: statusReasons(c.gap, c.margin).join(" · ") }),
     h("div", { class: "gauge" }, h("i", { style: "width:" + Math.min(c.usage, 1) * 100 + "%" })),
-    h("div", { class: "v-gap" }, h("span", { text: isFinite(c.usage) ? "Plafon terpakai" : "Plafon belum diisi" }), h("strong", { text: pctText(c.usage, c.gap) })),
-    h("div", { class: "v-gap" }, h("span", { text: c.gap < 0 ? "Melebihi plafon" : "Sisa plafon" }), h("strong", { text: rp(Math.abs(c.gap)) })));
+    h("div", { class: "v-gap" }, h("span", { text: isFinite(c.usage) ? "Ceiling used" : "Ceiling not set" }), h("strong", { text: pctText(c.usage, c.gap) })),
+    h("div", { class: "v-gap" }, h("span", { text: c.gap < 0 ? "Exceeds ceiling" : "Ceiling remaining" }), h("strong", { text: rp(Math.abs(c.gap)) })));
   const rowN = (kKids, v, cls, vcls) => h("div", { class: "row" + (cls ? " " + cls : "") },
     h("span", { class: "k" }, ...kKids), v == null ? null : h("span", { class: "v" + (vcls ? " " + vcls : ""), text: v }));
   const chip = t => h("span", { class: "chip", text: t });
   const aside = h("div", {}, verdict,
     h("div", { class: "card" },
-      row("Plafon Klien Before VAT", rp(state.plafon))),
+      row("Client Ceiling Before VAT", rp(state.plafon))),
     h("div", { class: "card" },
-      row("Total Harga Jual Before EO Fee", rp(c.T)),
+      row("Total Selling Price Before EO Fee", rp(c.T)),
       rowN(["EO Fee", chip(state.eoPct + "%")], rp(c.eo)),
       row("Total Before VAT", rp(c.before), "strong"),
       rowN(["VAT", chip(state.vatPct + "%")], rp(c.vat)),
       row("Total After VAT", rp(c.after), "strong")),
     h("div", { class: "card" },
-      row("Total Modal", rp(c.M)),
+      row("Total Cost Price", rp(c.M)),
       row("Marketing Fee", rp(c.mkt)),
       row("Total Margin", rp(c.margin), "", c.margin < 0 ? "neg" : c.margin > 0 ? "pos" : ""),
-      row("Persentase Margin", c.T > 0 ? (c.margin / c.T * 100).toFixed(1).replace(".", ",") + "%" : "–")));
+      row("Margin Percentage", c.T > 0 ? (c.margin / c.T * 100).toFixed(1).replace(".", ",") + "%" : "–")));
 
   root.append(h("div", { class: "p-grid" }, h("div", { class: "p-tablewrap" }, table), aside));
-  root.append(h("div", { class: "p-foot", text: "Dibuat " + new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) }));
+  root.append(h("div", { class: "p-foot", text: "Created " + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) }));
 }
 function showView(name) {
   const prev = name === "prev";
@@ -1219,11 +1219,11 @@ function showView(name) {
   window.scrollTo(0, 0);
 }
 function checkRequired() {
-  const need = [["p-nama", "nama event"], ["p-venue", "venue"]].filter(([id]) => !$(id).value.trim());
+  const need = [["p-nama", "event name"], ["p-venue", "venue"]].filter(([id]) => !$(id).value.trim());
   ["p-nama", "p-venue"].forEach(id => $(id).classList.toggle("invalid", need.some(n => n[0] === id)));
   const msg = $("req-msg");
   if (!need.length) { msg.hidden = true; return true; }
-  msg.textContent = "Isi " + need.map(n => n[1]).join(" dan ") + " dulu sebelum lanjut ke Preview.";
+  msg.textContent = "Please fill in the " + need.map(n => n[1]).join(" and ") + " before continuing to Preview.";
   msg.hidden = false;
   window.scrollTo(0, 0);
   $(need[0][0]).focus();
@@ -1258,7 +1258,7 @@ window.addEventListener("beforeprint", fitPrint);
 window.addEventListener("afterprint", unfitPrint);
 $("print").addEventListener("click", () => {
   const old = document.title;
-  document.title = (state.project.nama || "Anggaran") + " - Anggaran";
+  document.title = (state.project.nama || "Budget") + " - Budget";
   window.addEventListener("afterprint", () => { document.title = old; }, { once: true });
   try { fitPrint(); window.print(); } catch (e) { document.title = old; }
 });
@@ -1326,7 +1326,7 @@ function buildWorkbook() {
 
   /* judul kolom */
   grid(15, true);
-  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "MODAL"], ["N", "MARGIN"]]
+  [["B", "√"], ["C", "ITEM"], ["D", "BREAKDOWN"], ["E", "QUANTITY"], ["G", "DURATION"], ["I", "SUB TOTAL"], ["M", "COST PRICE"], ["N", "MARGIN"]]
     .forEach(([col, t]) => put(col + 15, t, { font: FB, align: CENTER, border: GRID }));
   ["E15:F15", "G15:H15", "I15:J15"].forEach(rg => ws.mergeCells(rg));
 
@@ -1339,7 +1339,7 @@ function buildWorkbook() {
     const catR = r;
     grid(catR, false);
     ws.mergeCells(`B${catR}:C${catR}`);
-    put("B" + catR, cat.name || "(tanpa nama)", { font: FB, border: GRID });
+    put("B" + catR, cat.name || "(unnamed)", { font: FB, border: GRID });
     r++;
     const first = r;
     let catSum = 0;
@@ -1348,7 +1348,7 @@ function buildWorkbook() {
       const n = 2 + subs.length;   /* 1 baris item + 1 baris per sub item + 1 baris kosong pemisah */
       for (let k = 0; k < n; k++) grid(r + k, true);
       put("B" + r, i + 1, { fmt: "###0;###0", align: CENTER, border: GRID });
-      put("C" + r, it.name || "(tanpa nama)", { border: GRID });
+      put("C" + r, it.name || "(unnamed)", { border: GRID });
       const val = (rr, o, nm) => {
         if (nm !== undefined) put("D" + rr, nm, { border: GRID });
         put("J" + rr, o.jual, { fmt: ACC, border: GRID });
@@ -1356,7 +1356,7 @@ function buildWorkbook() {
         put("N" + rr, { formula: `J${rr}-M${rr}`, result: round2(o.jual - o.modal) }, { fmt: ACC2, border: GRID });
         catSum = round2(catSum + o.jual); sumMargin = round2(sumMargin + o.jual - o.modal); sumModal = round2(sumModal + o.modal);
       };
-      if (hasSub) subs.forEach((sb, k) => val(r + 1 + k, sb, sb.name || "(tanpa nama)"));
+      if (hasSub) subs.forEach((sb, k) => val(r + 1 + k, sb, sb.name || "(unnamed)"));
       else val(r, it);
       r += n;
     });
@@ -1390,10 +1390,10 @@ function buildWorkbook() {
   const lab = (rr, t) => put("L" + rr, t, { font: FN, align: RIGHT });
   const num = (rr, v) => put("M" + rr, v, { font: FN, fmt: ACC11 });
   const b0 = agencyR, modalAll = round2(sumModal), totalCost = round2(modalAll + mktFee), tagihan = before;
-  lab(b0 + 1, "Modal");      num(b0 + 1, { formula: `SUM(M16:M${b0})`, result: modalAll });
+  lab(b0 + 1, "Cost Price");      num(b0 + 1, { formula: `SUM(M16:M${b0})`, result: modalAll });
   lab(b0 + 2, "Marketing Fee"); num(b0 + 2, mktFee);
   lab(b0 + 3, "Total Cost Before VAT"); num(b0 + 3, { formula: `M${b0 + 1}+M${b0 + 2}`, result: totalCost });
-  lab(b0 + 5, "Tagihan Before VAT"); num(b0 + 5, { formula: `K${beforeR}`, result: tagihan });
+  lab(b0 + 5, "Invoice Before VAT"); num(b0 + 5, { formula: `K${beforeR}`, result: tagihan });
   lab(b0 + 6, "Margin");     num(b0 + 6, { formula: `M${b0 + 5}-M${b0 + 3}`, result: round2(tagihan - totalCost) });
   put("N" + (b0 + 6), { formula: `IF(K${costR}=0,0,M${b0 + 6}/K${costR})`, result: sumJual ? round2(tagihan - totalCost) / sumJual : 0 }, { font: FN, fmt: "0%" });
 
@@ -1432,11 +1432,11 @@ function buildWorkbook() {
 let dlCap = null, directMode = false;   /* directMode: dibuka sebagai file HTML biasa (tanpa claude.ai) */
 async function exportExcel() {
   const btn = $("xlsx"), msg = $("x-msg");
-  if (typeof ExcelJS === "undefined") { msg.textContent = "Pustaka Excel gagal dimuat."; return; }
+  if (typeof ExcelJS === "undefined") { msg.textContent = "Excel library failed to load."; return; }
   btn.disabled = true; msg.textContent = "";
   try {
     const buf = await buildWorkbook().xlsx.writeBuffer();
-    const name = ((state.project.nama || "Anggaran").replace(/[\\/:*?"<>|]/g, "").trim() || "Anggaran") + " - Anggaran.xlsx";
+    const name = ((state.project.nama || "Budget").replace(/[\\/:*?"<>|]/g, "").trim() || "Budget") + " - Budget.xlsx";
     if (dlCap) await dlCap.save({ filename: name, data: buf });
     else {
       const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -1445,10 +1445,10 @@ async function exportExcel() {
       document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     }
-    msg.textContent = (dlCap || directMode) ? "Tersimpan" : "Jika file tidak terunduh, buka file HTML ini langsung di browser (klik dua kali)";
+    msg.textContent = (dlCap || directMode) ? "Saved" : "If the file doesn't download, open this HTML file directly in your browser (double-click it)";
     setTimeout(() => { msg.textContent = ""; }, (dlCap || directMode) ? 2500 : 9000);
   } catch (e) {
-    msg.textContent = e && e.code === "declined" ? "" : "Gagal menyimpan (" + ((e && e.code) || "error") + ")";
+    msg.textContent = e && e.code === "declined" ? "" : "Failed to save (" + ((e && e.code) || "error") + ")";
   } finally { btn.disabled = false; }
 }
 $("xlsx").addEventListener("click", exportExcel);
@@ -1483,13 +1483,13 @@ function addProject(st, label) {
 }
 function renderAccount() {
   const box = $("pj-acct"); box.textContent = "";
-  if (!cloudOn()) { box.append(h("span", { text: "Tersimpan di browser ini" + (cloudNote ? " · " + cloudNote : "") })); return; }
+  if (!cloudOn()) { box.append(h("span", { text: "Saved in this browser" + (cloudNote ? " · " + cloudNote : "") })); return; }
   if (FB_WORKSPACE) {
-    box.append(h("span", { text: "Cloud · ruang bersama: semua yang membuka halaman ini melihat proyek yang sama." }));
-    box.append(h("div", { class: "pj-hint", text: "Siapa pun yang membuka halaman ini bisa melihat, mengubah, dan menghapus semua proyek." }));
+    box.append(h("span", { text: "Cloud · shared workspace: everyone who opens this page sees the same projects." }));
+    box.append(h("div", { class: "pj-hint", text: "Anyone who opens this page can view, edit, and delete all projects." }));
   } else {
-    box.append(h("span", { text: "Cloud · ruang pribadi (terikat ke browser ini)." }));
-    box.append(h("div", { class: "pj-hint", text: "Isi FB_WORKSPACE di kode agar proyek dibagikan ke semua yang membuka halaman." }));
+    box.append(h("span", { text: "Cloud · private workspace (tied to this browser)." }));
+    box.append(h("div", { class: "pj-hint", text: "Set FB_WORKSPACE in the code to share projects with everyone who opens the page." }));
   }
 }
 function renderProjects() {
@@ -1498,25 +1498,25 @@ function renderProjects() {
   Object.keys(store.items).sort(byNewest).forEach(id => {
     const it = store.items[id], st = it.state;
     let c; try { c = calc(st); } catch (e) { return; }
-    const when = it.updated ? new Date(it.updated).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+    const when = it.updated ? new Date(it.updated).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
     const sub = st.project.venue || "";
     const info = h("div", {},
-      h("div", {}, h("span", { class: "nm", text: st.project.nama || "(tanpa nama)" }), h("span", { class: "st " + (c.ok ? "ok" : "no"), text: c.ok ? "Feasible" : "Tidak feasible" })),
-      h("div", { class: "sub", text: (sub ? sub + " · " : "") + "diubah " + when }));
-    const open = h("button", { class: "ghost", type: "button", text: "Buka" });
+      h("div", {}, h("span", { class: "nm", text: st.project.nama || "(unnamed)" }), h("span", { class: "st " + (c.ok ? "ok" : "no"), text: c.ok ? "Feasible" : "Not feasible" })),
+      h("div", { class: "sub", text: (sub ? sub + " · " : "") + "edited " + when }));
+    const open = h("button", { class: "ghost", type: "button", text: "Open" });
     if (id === curId) open.disabled = true; else open.addEventListener("click", () => openProject(id));
-    const dup = h("button", { class: "ghost", type: "button", text: "Duplikat", onclick: () => {
+    const dup = h("button", { class: "ghost", type: "button", text: "Duplicate", onclick: () => {
       const copy = JSON.parse(JSON.stringify(st));
-      copy.project.nama = (copy.project.nama || "Proyek") + " (salinan)";
+      copy.project.nama = (copy.project.nama || "Project") + " (copy)";
       const nid2 = newPid(); fixUid(copy);
       store.items[nid2] = { updated: Date.now(), state: copy };
       commitProject(nid2);
-      renderProjects(); pjMsg("Disalin sebagai “" + copy.project.nama + "”.");
+      renderProjects(); pjMsg("Copied as “" + copy.project.nama + "”.");
     } });
     let t = null;
-    const del = h("button", { class: "ghost", type: "button", text: "Hapus" });
+    const del = h("button", { class: "ghost", type: "button", text: "Delete" });
     del.addEventListener("click", () => {
-      if (!t) { del.textContent = "Yakin?"; t = setTimeout(() => { del.textContent = "Hapus"; t = null; }, 3000); return; }
+      if (!t) { del.textContent = "Sure?"; t = setTimeout(() => { del.textContent = "Delete"; t = null; }, 3000); return; }
       clearTimeout(t);
       const wasCur = id === curId;
       if (wasCur) {   /* pindah dulu ke proyek lain, baru hapus (kabar "terhapus" dari Firestore memicu penyegaran daftar) */
@@ -1526,7 +1526,7 @@ function renderProjects() {
       }
       removeProject(id);
       if (wasCur) { showCurrent(); save(true); }
-      renderProjects(); pjMsg("Proyek dihapus.");
+      renderProjects(); pjMsg("Project deleted.");
     });
     ul.append(h("li", { class: id === curId ? "cur" : "" }, info, h("div", { class: "btns" }, open, dup, del)));
   });
@@ -1534,7 +1534,7 @@ function renderProjects() {
 $("pj-open").addEventListener("click", () => { pjMsg(""); renderProjects(); dlg.showModal(); });
 $("pj-close").addEventListener("click", () => dlg.close());
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
-$("pj-new").addEventListener("click", () => addProject(freshState(true), "Proyek baru dibuat dan sedang dibuka."));
+$("pj-new").addEventListener("click", () => addProject(freshState(true), "New project created and now open."));
 
 const BOOT_TIMEOUT = 12000;   /* batas tunggu cloud (ms); lewat itu aplikasi memakai penyimpanan browser */
 function bootWithTimeout() {
@@ -1551,17 +1551,17 @@ function bootWithTimeout() {
   if (useCloud) {   /* tampilkan kerangka dulu agar halaman tidak kosong selagi menghubungkan */
     state = freshState(true); syncStatic(); render(); update();
     document.body.classList.add("booting");
-    setSync("Menghubungkan ke cloud…", "");
+    setSync("Connecting to cloud…", "");
   }
   const r = await bootWithTimeout();
   if (r !== "ok") {   /* cloud lambat / galat: jatuh ke penyimpanan browser dan sebutkan alasannya */
     try { if (unsubCloud) unsubCloud(); } catch (e) {}
     fb = null; store = { current: null, items: {} }; curId = null; state = freshState();
     cloudNote = r === "timeout"
-      ? "cloud tidak menjawab (cek koneksi, aturan Firestore, atau pemblokir iklan)"
-      : "cloud bermasalah: " + ((r && (r.code || r.message)) || "error");
+      ? "cloud not responding (check connection, Firestore rules, or ad blocker)"
+      : "cloud problem: " + ((r && (r.code || r.message)) || "error");
     loadLocal();
-    setSync("Tersimpan di browser · " + cloudNote, "err");
+    setSync("Saved in browser · " + cloudNote, "err");
   }
   syncStatic(); render(); update(); save(true);
   if (!store.items[curId]) save();
