@@ -401,12 +401,12 @@ body.booting #view-edit { opacity: .55; pointer-events: none; }
         <div class="v-word" id="v-word">Feasible</div>
         <div class="v-reason" id="v-reason" hidden></div>
         <div class="gauge"><i id="gauge"></i></div>
-        <div class="v-gap"><span id="v-pct-label">Ceiling used</span><strong id="v-pct"></strong></div>
-        <div class="v-gap"><span id="v-gap-label">Ceiling remaining</span><strong id="v-gap"></strong></div>
+        <div class="v-gap"><span id="v-pct-label">Limit used</span><strong id="v-pct"></strong></div>
+        <div class="v-gap"><span id="v-gap-label">Limit remaining</span><strong id="v-gap"></strong></div>
       </div>
 
-      <div class="card" aria-label="Client ceiling">
-        <div class="row"><span class="k">Client Ceiling <span class="unit">Before VAT</span></span><input class="wide" id="in-plafon" inputmode="decimal" aria-label="Client ceiling before VAT" placeholder="0"></div>
+      <div class="card" aria-label="Client limit">
+        <div class="row"><span class="k">Client Limit <span class="unit">Before VAT</span></span><input class="wide" id="in-plafon" inputmode="decimal" aria-label="Client limit before VAT" placeholder="0"></div>
       </div>
 
       <div class="card" aria-label="Selling Price">
@@ -1022,15 +1022,15 @@ function update() {
   vr.hidden = ok;
   vr.textContent = ok ? "" : reasons.join(" · ");
   $("v-pct").textContent = pctText(usage, gap);
-  $("v-pct-label").textContent = isFinite(usage) ? "Ceiling used" : "Ceiling not set";
-  $("v-gap-label").textContent = gap < 0 ? "Exceeds ceiling" : "Ceiling remaining";
+  $("v-pct-label").textContent = isFinite(usage) ? "Limit used" : "Limit not set";
+  $("v-gap-label").textContent = gap < 0 ? "Exceeds limit" : "Limit remaining";
   $("v-gap").textContent = rp(Math.abs(gap));
   $("gauge").style.width = Math.min(usage, 1) * 100 + "%";
 
   const mini = $("mini");
   mini.classList.toggle("no", !ok);
   $("mini-word").textContent = ok ? "Feasible" : "Not feasible";
-  $("mini-sub").textContent = ok ? pctText(usage, gap) + " of ceiling" : reasons.join(" · ");
+  $("mini-sub").textContent = ok ? pctText(usage, gap) + " of limit" : reasons.join(" · ");
   $("mini-gap").textContent = (gap < 0 ? "Over " : "Left ") + rp(Math.abs(gap));
 }
 
@@ -1104,7 +1104,7 @@ function rowClass(it) {
 /* feasible = muat di plafon DAN margin total tidak negatif */
 function statusReasons(gap, margin) {
   const r = [];
-  if (gap < 0) r.push("Exceeds ceiling");
+  if (gap < 0) r.push("Exceeds limit");
   if (margin < 0) r.push("Negative margin");
   return r;
 }
@@ -1188,14 +1188,14 @@ function buildPreview() {
     h("div", { class: "v-word", text: c.ok ? "Feasible" : "Not feasible" }),
     c.ok ? null : h("div", { class: "v-reason", text: statusReasons(c.gap, c.margin).join(" · ") }),
     h("div", { class: "gauge" }, h("i", { style: "width:" + Math.min(c.usage, 1) * 100 + "%" })),
-    h("div", { class: "v-gap" }, h("span", { text: isFinite(c.usage) ? "Ceiling used" : "Ceiling not set" }), h("strong", { text: pctText(c.usage, c.gap) })),
-    h("div", { class: "v-gap" }, h("span", { text: c.gap < 0 ? "Exceeds ceiling" : "Ceiling remaining" }), h("strong", { text: rp(Math.abs(c.gap)) })));
+    h("div", { class: "v-gap" }, h("span", { text: isFinite(c.usage) ? "Limit used" : "Limit not set" }), h("strong", { text: pctText(c.usage, c.gap) })),
+    h("div", { class: "v-gap" }, h("span", { text: c.gap < 0 ? "Exceeds limit" : "Limit remaining" }), h("strong", { text: rp(Math.abs(c.gap)) })));
   const rowN = (kKids, v, cls, vcls) => h("div", { class: "row" + (cls ? " " + cls : "") },
     h("span", { class: "k" }, ...kKids), v == null ? null : h("span", { class: "v" + (vcls ? " " + vcls : ""), text: v }));
   const chip = t => h("span", { class: "chip", text: t });
   const aside = h("div", {}, verdict,
     h("div", { class: "card" },
-      row("Client Ceiling Before VAT", rp(state.plafon))),
+      row("Client Limit Before VAT", rp(state.plafon))),
     h("div", { class: "card" },
       row("Total Selling Price Before EO Fee", rp(c.T)),
       rowN(["EO Fee", chip(state.eoPct + "%")], rp(c.eo)),
